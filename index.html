@@ -65,73 +65,6 @@
 </style>
 </head>
 <body>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Quem limpa a sala hoje?</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    max-width: 700px;
-  }
-  h1 {
-    color: #2c3e50;
-  }
-  button, input, select {
-    padding: 10px 15px;
-    margin-top: 10px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  #resultado {
-    margin-top: 30px;
-    font-size: 18px;
-  }
-  #resultado ul {
-    list-style: none;
-    padding: 0;
-  }
-  #resultado li {
-    background: #ecf0f1;
-    margin-bottom: 10px;
-    padding: 12px;
-    border-radius: 6px;
-  }
-  #checkboxContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px 30px;
-    margin-top: 10px;
-  }
-  #checkboxContainer div {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  #formQuemLimpou button[type="submit"] {
-    margin-top: 20px;
-    padding: 12px 20px;
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-  }
-  #formQuemLimpou button[type="submit"]:hover {
-    background-color: #34495e;
-  }
-  footer {
-    margin-top: 40px;
-    font-size: 14px;
-    color: #7f8c8d;
-  }
-</style>
-</head>
-<body>
 
 <h1>Quem limpa a sala hoje?</h1>
 <p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
@@ -158,12 +91,31 @@ const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gust
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
+
+// Variável para controlar a inversão das tarefas a cada reset
+let inversaoTarefa = JSON.parse(localStorage.getItem('inversaoTarefa') || 'false');
+
 let escalaAtual = [];
 
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('inversaoTarefa', JSON.stringify(inversaoTarefa));
+}
+
+function inicializarHistoricoTarefa() {
+  historicoTarefa = {};
+  // Se inversaoTarefa for true, inverte a ordem da atribuição
+  for (let i = 0; i < nomes.length; i++) {
+    if (inversaoTarefa) {
+      historicoTarefa[nomes[i]] = (i % 2 === 0) ? "mesa" : "chão";
+    } else {
+      historicoTarefa[nomes[i]] = (i % 2 === 0) ? "chão" : "mesa";
+    }
+  }
+  // Alterna para a próxima vez que resetar
+  inversaoTarefa = !inversaoTarefa;
 }
 
 function proximoIndice(atual, ignorar = []) {
@@ -178,9 +130,10 @@ function proximoIndice(atual, ignorar = []) {
 }
 
 function gerarEscala() {
+  // Se todos já limparam, resetar tudo e reinicializar tarefas alternadas com inversão
   if (jaLimpouHoje.length >= nomes.length) {
     jaLimpouHoje = [];
-    historicoTarefa = {};
+    inicializarHistoricoTarefa();
     posicaoUltimaEscala = -1;
   }
 
@@ -251,6 +204,7 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
       if (novoIndex > maiorIndice) maiorIndice = novoIndex;
       return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
+      // Alterna a tarefa para quem não limpou nesta vez
       historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
       if (pessoa.index > maiorIndice) maiorIndice = pessoa.index;
       return pessoa;
