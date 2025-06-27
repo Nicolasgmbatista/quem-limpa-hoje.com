@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quem limpa a sala hoje?</title>
 <style>
   body {
@@ -116,19 +116,25 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
-  if (jaLimpouHoje.length >= nomes.length) {
+  if (jaLimpouHoje.length >= nomes.length - 1) {
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
   }
 
   const index1 = proximoIndice(posicaoUltimaEscala, []);
-  if (index1 === -1) return alert("Erro ao gerar escala. Nenhum nome disponível.");
-
   const nome1 = nomes[index1];
 
   const index2 = proximoIndice(index1, [nome1]);
-  if (index2 === -1) return alert("Erro ao gerar escala. Nenhum segundo nome disponível.");
+  
+  // Caso só tenha um disponível, resetar
+  if (index2 === -1) {
+    jaLimpouHoje = [];
+    historicoTarefa = {};
+    posicaoUltimaEscala = -1;
+    gerarEscala();
+    return;
+  }
 
   const nome2 = nomes[index2];
 
