@@ -1,22 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Escala Fácil com Rodízio</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #2c3e50; }
-    button { padding: 8px 15px; margin-top: 10px; }
-    #resultado { margin-top: 20px; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Escala Fácil - Limpeza da Sala</title>
+<style>
+  /* Reset simples */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  header {
+    background: #2c3e50;
+    width: 100%;
+    padding: 20px 0;
+    color: white;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  main {
+    flex-grow: 1;
+    width: 90%;
+    max-width: 700px;
+    background: white;
+    margin: 30px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    padding: 30px;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #34495e;
+  }
+
+  p.description {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+  }
+
+  button#gerar {
+    background: #2980b9;
+    border: none;
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block;
+    margin: 0 auto 30px auto;
+  }
+
+  button#gerar:hover {
+    background: #1c5980;
+  }
+
+  #resultado {
+    font-size: 1.2rem;
+    color: #2c3e50;
+  }
+
+  #resultado ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  #resultado li {
+    background: #ecf0f1;
+    margin-bottom: 12px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+    font-weight: 600;
+  }
+
+  footer {
+    width: 100%;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 0.9rem;
+    color: #aaa;
+    background: #f0f0f0;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+  }
+</style>
 </head>
 <body>
 
-<h1>Escala Fácil - Limpeza da Sala (com rodízio)</h1>
+<header>
+  <h1>Escala Fácil - Limpeza da Sala</h1>
+</header>
 
-<button id="gerar">Gerar escala de hoje</button>
+<main>
+  <p class="description">Clique no botão abaixo para gerar a escala automática de limpeza. A escala seleciona duas pessoas para limpar a sala, alternando tarefas entre chão e mesa a cada vez que limpam.</p>
+  <button id="gerar">Gerar escala de hoje</button>
 
-<div id="resultado"></div>
+  <div id="resultado"></div>
+</main>
+
+<footer>
+  &copy; 2025 Nicolas Batista - Todos os direitos reservados
+</footer>
 
 <script>
   const nomes = [
@@ -26,52 +126,48 @@
     "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"
   ];
 
+  // Recupera o histórico de limpeza do localStorage
   let historico = JSON.parse(localStorage.getItem('historicoLimpeza') || '{}');
 
+  // Ordena nomes alfabeticamente
   function ordenar(lista) {
     return lista.slice().sort((a,b) => a.localeCompare(b));
   }
 
+  // Salva histórico no localStorage
   function salvar() {
     localStorage.setItem('historicoLimpeza', JSON.stringify(historico));
   }
 
-  function confirmarLimpeza(nome) {
-    return confirm(`A pessoa "${nome}" já limpou o laboratório hoje? Clique OK para sim, Cancelar para não.`);
-  }
-
+  // Retorna a próxima tarefa da pessoa (chão ou mesa)
   function proximaTarefa(nome) {
-    if (!historico[nome]) return "chao";
-    return historico[nome] === "chao" ? "mesa" : "chao";
+    if (!historico[nome]) return "chão";
+    return historico[nome] === "chão" ? "mesa" : "chão";
   }
 
+  // Gera a escala de hoje, selecionando duas pessoas que ainda não limparam hoje
   function gerarEscala() {
-    let resultadoDiv = document.getElementById('resultado');
+    const resultadoDiv = document.getElementById('resultado');
     resultadoDiv.innerHTML = '';
 
-    let nomesOrdenados = ordenar(nomes);
-    let selecionados = [];
+    const nomesOrdenados = ordenar(nomes);
+    const selecionados = [];
 
-    for (let nome of nomesOrdenados) {
-      if (!historico.hasOwnProperty(nome) || !confirmarLimpeza(nome)) {
-        if (confirmarLimpeza(nome)) {
-          historico[nome] = proximaTarefa(nome);
-          salvar();
-          continue;
-        } else {
-          let tarefa = proximaTarefa(nome);
-          selecionados.push({nome, tarefa});
-          historico[nome] = tarefa;
-          salvar();
-          if (selecionados.length === 2) break;
-        }
+    for (const nome of nomesOrdenados) {
+      if (!historico.hasOwnProperty(nome)) {
+        const tarefa = proximaTarefa(nome);
+        selecionados.push({ nome, tarefa });
+        historico[nome] = tarefa;
+        salvar();
+        if (selecionados.length === 2) break;
       }
     }
 
     if (selecionados.length < 2) {
+      // Resetar histórico e reiniciar escala
       historico = {};
       salvar();
-      resultadoDiv.innerHTML = '<p>Todos já limparam! Reiniciando escala...</p>';
+      resultadoDiv.innerHTML = '<p><em>Todos já limparam! Reiniciando escala...</em></p>';
       gerarEscala();
       return;
     }
@@ -81,6 +177,7 @@
       html += `<li>${p.nome} — limpar <strong>${p.tarefa}</strong></li>`;
     });
     html += '</ul>';
+
     resultadoDiv.innerHTML = html;
   }
 
@@ -89,3 +186,4 @@
 
 </body>
 </html>
+
