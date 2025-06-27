@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escala Fácil - Limpeza da Sala</title>
+<title>Quem limpa a sala hoje?</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -33,12 +33,17 @@
     padding: 12px;
     border-radius: 6px;
   }
+  footer {
+    margin-top: 40px;
+    font-size: 14px;
+    color: #7f8c8d;
+  }
 </style>
 </head>
 <body>
 
-<h1>Escala Fácil - Limpeza da Sala</h1>
-<p>Site para gerenciar automaticamente a escala de limpeza de chão e mesas da sala, seguindo por ordem alfabética.</p>
+<h1>Quem limpa a sala hoje?</h1>
+<p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
 
 <button id="btnGerar">Gerar Escala de Limpeza</button>
 
@@ -51,6 +56,10 @@
     <button type="submit" style="margin-top:10px;">Confirmar</button>
   </form>
 </div>
+
+<footer>
+  © 2025 Nicolas GBM. Email: nicolasgmbatista15@gmail.com
+</footer>
 
 <script>
 const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a,b) => a.localeCompare(b));
