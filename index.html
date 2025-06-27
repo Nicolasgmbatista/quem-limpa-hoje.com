@@ -177,9 +177,9 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
       if (!jaLimpouHoje.includes(novoNome)) {
         jaLimpouHoje.push(novoNome);
       }
-      if (!(novoNome in historicoTarefa)) historicoTarefa[novoNome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
+      historicoTarefa[novoNome] = pessoa.tarefa;
       if (novoIndex > maiorIndice) maiorIndice = novoIndex;
-      return { nome: novoNome, tarefa: historicoTarefa[novoNome], index: novoIndex };
+      return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
       historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
       if (pessoa.index > maiorIndice) maiorIndice = pessoa.index;
