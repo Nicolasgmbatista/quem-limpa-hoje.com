@@ -97,7 +97,6 @@ function gerarEscala() {
   const nome1 = nomes[index1];
   const nome2 = nomes[index2];
 
-  // Corrigido: sempre alternar tarefa corretamente
   const tarefa1 = historicoTarefa[nome1] === 'mesa' ? 'chão' : 'mesa';
   const tarefa2 = historicoTarefa[nome2] === 'mesa' ? 'chão' : 'mesa';
 
@@ -131,56 +130,56 @@ function gerarEscala() {
 
 document.getElementById('btnGerar').onclick = gerarEscala;
 
-// Aqui está a correção do seu problema:
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  // Guarda os nomes já colocados na escala para evitar duplicidade
-  let nomesNaEscala = [];
+  // Pegamos os nomes atuais da escala antes da alteração para controle
+  let nomesNaEscala = escalaAtual.map(p => p.nome);
 
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
 
     if (marcou) {
-      // Pessoa limpou hoje - adicionar à lista de quem limpou
+      // Marca que limpou
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
 
-      // Encontrar próximo índice disponível que não está em jaLimpouHoje nem na escala atual
+      // Buscar próximo índice válido, sem repetição e que não limpou hoje
       let novoIndex = pessoa.index;
       let tentativas = 0;
       do {
         novoIndex = (novoIndex + 1) % nomes.length;
         tentativas++;
-        if (tentativas > nomes.length) break; // Proteção contra loop infinito
-      } while (jaLimpouHoje.includes(nomes[novoIndex]) || nomesNaEscala.includes(nomes[novoIndex]));
+        if (tentativas > nomes.length) break;
+      } while (
+        jaLimpouHoje.includes(nomes[novoIndex]) || 
+        nomesNaEscala.includes(nomes[novoIndex])
+      );
 
       const novoNome = nomes[novoIndex];
+
+      // Atualiza nomesNaEscala removendo o antigo e adicionando o novo
+      nomesNaEscala = nomesNaEscala.filter(n => n !== pessoa.nome);
       nomesNaEscala.push(novoNome);
 
-      // Alterna tarefa, invertendo a anterior da nova pessoa
+      // Alterna tarefa para o novo nome
       const novaTarefa = historicoTarefa[novoNome] === 'mesa' ? 'chão' : 'mesa';
       historicoTarefa[novoNome] = novaTarefa;
 
       return { nome: novoNome, tarefa: novaTarefa, index: novoIndex };
 
     } else {
-      // Pessoa não limpou - mantém e alterna tarefa
+      // Não marcou: mantém e alterna tarefa
       const novaTarefa = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
       historicoTarefa[pessoa.nome] = novaTarefa;
-      nomesNaEscala.push(pessoa.nome);
-
       return { nome: pessoa.nome, tarefa: novaTarefa, index: pessoa.index };
     }
   });
 
-  // Atualiza posição da última escala
   posicaoUltimaEscala = escalaAtual[escalaAtual.length - 1].index;
-
   salvarTudo();
 
-  // Atualiza resultado na tela
   const listaHtml = escalaAtual.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
   document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
   document.getElementById('pergunta').style.display = 'none';
