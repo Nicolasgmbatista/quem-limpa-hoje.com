@@ -1,62 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quem limpa a sala hoje?</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    max-width: 700px;
+  }
+  h1 {
+    color: #2c3e50;
+  }
+  button, input, select {
+    padding: 10px 15px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  #resultado {
+    margin-top: 30px;
+    font-size: 18px;
+  }
+  #resultado ul {
+    list-style: none;
+    padding: 0;
+  }
+  #resultado li {
+    background: #ecf0f1;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 6px;
+  }
+  footer {
+    margin-top: 40px;
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+</style>
+</head>
+<body>
+
+<h1>Quem limpa a sala hoje?</h1>
+<p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
+
+<button id="btnGerar">Gerar Escala de Limpeza</button>
+
+<div id="resultado"></div>
+
+<div id="pergunta" style="display:none;">
+  <p>Alguém da escala limpou o Laboratório hoje? Marque abaixo:</p>
+  <form id="formQuemLimpou">
+    <div id="checkboxContainer"></div>
+    <button type="submit" style="margin-top:10px;">Confirmar</button>
+  </form>
+</div>
+
+<footer>
+  © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
+</footer>
+
+<script>
+const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a,b) => a.localeCompare(b));
+
+let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
+let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
+let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
+let escalaAtual = [];
+
+function salvarTudo() {
+  localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
+  localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
+  localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+}
+
+function proximoIndiceAtual(atual) {
+  let i = atual;
+  for (let count=0; count < nomes.length; count++) {
+    i = (i + 1) % nomes.length;
+    if (!jaLimpouHoje.includes(nomes[i])) return i;
+  }
+  return -1;
+}
+
+function gerarEscala() {
+  if (jaLimpouHoje.length >= nomes.length) {
+    jaLimpouHoje = [];
+    historicoTarefa = {};
+    posicaoUltimaEscala = -1;
+  }
+
+  const index1 = proximoIndiceAtual(posicaoUltimaEscala);
+  const index2 = proximoIndiceAtual(index1);
+
+  const nome1 = nomes[index1];
+  const nome2 = nomes[index2];
+
+  // Corrigido: sempre alternar tarefa corretamente
+  const tarefa1 = historicoTarefa[nome1] === 'mesa' ? 'chão' : 'mesa';
+  const tarefa2 = historicoTarefa[nome2] === 'mesa' ? 'chão' : 'mesa';
+
+  escalaAtual = [
+    { nome: nome1, tarefa: tarefa1, index: index1 },
+    { nome: nome2, tarefa: tarefa2, index: index2 }
+  ];
+
+  const listaHtml = escalaAtual.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
+  document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
+
+  const container = document.getElementById('checkboxContainer');
+  container.innerHTML = '';
+  escalaAtual.forEach(pessoa => {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = pessoa.nome;
+    checkbox.name = "limpou";
+    checkbox.value = pessoa.nome;
+    const label = document.createElement('label');
+    label.htmlFor = pessoa.nome;
+    label.textContent = pessoa.nome;
+    container.appendChild(checkbox);
+    container.appendChild(label);
+    container.appendChild(document.createElement('br'));
+  });
+
+  document.getElementById('pergunta').style.display = 'block';
+  salvarTudo();
+}
+
+document.getElementById('btnGerar').onclick = gerarEscala;
+
+// Aqui está a correção do seu problema:
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  // Lista para nomes novos na escala, já excluindo repetidos
-  let novosNomes = [];
+  // Guarda os nomes já colocados na escala para evitar duplicidade
+  let nomesNaEscala = [];
 
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
 
     if (marcou) {
-      // Pessoa limpou hoje, adicionar na lista de quem já limpou
+      // Pessoa limpou hoje - adicionar à lista de quem limpou
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
-      // Buscar próximo índice disponível que não está em jaLimpouHoje nem nos nomes da escala
+
+      // Encontrar próximo índice disponível que não está em jaLimpouHoje nem na escala atual
       let novoIndex = pessoa.index;
       let tentativas = 0;
       do {
         novoIndex = (novoIndex + 1) % nomes.length;
         tentativas++;
-        // Evitar loop infinito
-        if (tentativas > nomes.length) {
-          // Se não achar ninguém, fica com o mesmo nome (mas isso não deveria ocorrer)
-          break;
-        }
-      } while (jaLimpouHoje.includes(nomes[novoIndex]) || novosNomes.includes(nomes[novoIndex]));
+        if (tentativas > nomes.length) break; // Proteção contra loop infinito
+      } while (jaLimpouHoje.includes(nomes[novoIndex]) || nomesNaEscala.includes(nomes[novoIndex]));
 
       const novoNome = nomes[novoIndex];
-      novosNomes.push(novoNome);
+      nomesNaEscala.push(novoNome);
 
-      // Alterna a tarefa: se último foi mesa, agora chão e vice-versa
-      const novaTarefa = (historicoTarefa[novoNome] === 'mesa') ? 'chão' : 'mesa';
-
-      // Atualiza histórico para esse novo nome
+      // Alterna tarefa, invertendo a anterior da nova pessoa
+      const novaTarefa = historicoTarefa[novoNome] === 'mesa' ? 'chão' : 'mesa';
       historicoTarefa[novoNome] = novaTarefa;
 
-      // Retorna o novo objeto com nome e tarefa atualizados
       return { nome: novoNome, tarefa: novaTarefa, index: novoIndex };
 
     } else {
-      // Pessoa não limpou hoje, mantém na escala, atualiza histórico tarefa (inverte)
-      const novaTarefa = (pessoa.tarefa === 'mesa') ? 'chão' : 'mesa';
+      // Pessoa não limpou - mantém e alterna tarefa
+      const novaTarefa = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
       historicoTarefa[pessoa.nome] = novaTarefa;
-
-      // Também adiciona ao novosNomes para evitar repetição se o outro trocar
-      novosNomes.push(pessoa.nome);
+      nomesNaEscala.push(pessoa.nome);
 
       return { nome: pessoa.nome, tarefa: novaTarefa, index: pessoa.index };
     }
   });
 
-  // Atualiza a posição da última escala com o índice da última pessoa da escala atual
+  // Atualiza posição da última escala
   posicaoUltimaEscala = escalaAtual[escalaAtual.length - 1].index;
 
   salvarTudo();
 
-  // Atualiza a lista na tela
+  // Atualiza resultado na tela
   const listaHtml = escalaAtual.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
   document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
-
   document.getElementById('pergunta').style.display = 'none';
 };
+</script>
+
+</body>
+</html>
