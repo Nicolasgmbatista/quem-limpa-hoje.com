@@ -122,12 +122,12 @@ function gerarEscala() {
     posicaoUltimaEscala = -1;
   }
 
-  const index1 = proximoIndice(posicaoUltimaEscala, []);
+  const nomesIgnorados = escalaAtual.map(p => p.nome);
+  const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
   const nome1 = nomes[index1];
 
-  const index2 = proximoIndice(index1, [nome1]);
-  
-  // Caso só tenha um disponível, resetar
+  const index2 = proximoIndice(index1, [...nomesIgnorados, nome1]);
+
   if (index2 === -1) {
     jaLimpouHoje = [];
     historicoTarefa = {};
