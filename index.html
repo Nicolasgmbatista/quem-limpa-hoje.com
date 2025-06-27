@@ -33,9 +33,8 @@
     padding: 12px;
     border-radius: 6px;
   }
-  #inputNomeLimpeza, #perguntaSeLimpouUltima {
+  #perguntaQuemLimpouUltima, #perguntaLimpeza {
     margin-top: 20px;
-    display: none;
   }
   #mensagemErro {
     color: red;
@@ -53,67 +52,50 @@
   <button id="btnNao">Não</button>
 </div>
 
-<div id="inputNomeLimpeza">
-  <label>Digite o nome da pessoa que já limpou (adicione quantos quiser):</label><br/>
-  <input type="text" id="nomeLimpeza" list="listaNomes" placeholder="Nome exato" />
-  <button id="btnAdicionarNome">Adicionar</button>
-  <button id="btnConcluirNomes">Concluir</button>
-  <button id="btnCancelarNome">Cancelar</button>
-  <div id="mensagemErro"></div>
-  <ul id="listaNomesAdicionados"></ul>
+<div id="perguntaQuemLimpouUltima" style="display:none;">
+  <p>Quem da última escala limpou hoje?</p>
+  <form id="formQuemLimpou">
+    <input type="radio" name="quemLimpou" value="nenhum" id="nenhum" checked />
+    <label for="nenhum">Nenhum</label><br/>
+    <input type="radio" name="quemLimpou" id="pessoa1" />
+    <label for="pessoa1" id="labelPessoa1"></label><br/>
+    <input type="radio" name="quemLimpou" id="pessoa2" />
+    <label for="pessoa2" id="labelPessoa2"></label><br/>
+    <button type="submit" style="margin-top:10px;">Confirmar</button>
+  </form>
 </div>
 
-<div id="perguntaSeLimpouUltima">
-  <p>Na última escala, alguém limpou o laboratório?</p>
-  <button id="btnSimUltima">Sim</button>
-  <button id="btnNaoUltima">Não</button>
-</div>
-
-<button id="gerar" style="display:none;">Gerar escala de hoje</button>
+<button id="btnGerar" style="display:none;">Gerar escala de hoje</button>
 
 <div id="resultado"></div>
 
-<datalist id="listaNomes">
-  <!-- preenchido pelo JS -->
-</datalist>
-
 <script>
+  // Lista fixa dos nomes, ordem alfabética
   const nomes = [
     "Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda",
     "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas",
     "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia",
     "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"
-  ];
+  ].sort((a,b) => a.localeCompare(b));
 
-  // Salvar e recuperar do localStorage
+  // Dados salvos
   let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
   let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
-  let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1'); // índice da última pessoa que limpou
-  let ultimaEscala = JSON.parse(localStorage.getItem('ultimaEscala') || '[]'); // nomes da última escala
+  let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
+  let ultimaEscala = JSON.parse(localStorage.getItem('ultimaEscala') || '[]');
 
   // Elementos DOM
   const perguntaLimpezaDiv = document.getElementById('perguntaLimpeza');
-  const inputNomeLimpezaDiv = document.getElementById('inputNomeLimpeza');
-  const perguntaSeLimpouUltimaDiv = document.getElementById('perguntaSeLimpouUltima');
-  const gerarBtn = document.getElementById('gerar');
+  const perguntaQuemLimpouUltimaDiv = document.getElementById('perguntaQuemLimpouUltima');
+  const btnGerar = document.getElementById('btnGerar');
   const resultadoDiv = document.getElementById('resultado');
-  const nomeLimpezaInput = document.getElementById('nomeLimpeza');
-  const mensagemErroDiv = document.getElementById('mensagemErro');
-  const listaNomesAdicionadosUl = document.getElementById('listaNomesAdicionados');
+  const formQuemLimpou = document.getElementById('formQuemLimpou');
+  const labelPessoa1 = document.getElementById('labelPessoa1');
+  const labelPessoa2 = document.getElementById('labelPessoa2');
+  const inputPessoa1 = document.getElementById('pessoa1');
+  const inputPessoa2 = document.getElementById('pessoa2');
 
-  // Popula datalist
-  function popularDatalist() {
-    const datalist = document.getElementById('listaNomes');
-    datalist.innerHTML = '';
-    nomes.forEach(nome => {
-      const option = document.createElement('option');
-      option.value = nome;
-      datalist.appendChild(option);
-    });
-  }
-  popularDatalist();
-
-  // Salva no localStorage
+  // Salva tudo no localStorage
   function salvarTudo() {
     localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
     localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
@@ -121,12 +103,17 @@
     localStorage.setItem('ultimaEscala', JSON.stringify(ultimaEscala));
   }
 
-  // Ordena nomes alfabeticamente
-  function ordenar(lista) {
-    return lista.slice().sort((a,b) => a.localeCompare(b));
+  // Função para encontrar próximo índice pulando quem já limpou hoje
+  function proximoIndiceAtual(atual) {
+    let i = atual;
+    for (let count=0; count < nomes.length; count++) {
+      i = (i + 1) % nomes.length;
+      if (!jaLimpouHoje.includes(nomes[i])) return i;
+    }
+    return -1; // todos limparam hoje
   }
 
-  // Reseta o dia / escala
+  // Reseta o dia se todos limparam
   function resetarDia() {
     jaLimpouHoje = [];
     historicoTarefa = {};
@@ -135,132 +122,84 @@
     salvarTudo();
   }
 
-  // Adiciona nome que já limpou hoje (sem repetição)
-  function adicionarNomeJaLimpou(nome) {
-    if (!nomes.includes(nome)) {
-      mensagemErroDiv.textContent = 'Nome não está na lista.';
-      return false;
-    }
-    if (jaLimpouHoje.includes(nome)) {
-      mensagemErroDiv.textContent = 'Este nome já foi adicionado.';
-      return false;
-    }
-    jaLimpouHoje.push(nome);
-    salvarTudo();
-    mensagemErroDiv.textContent = '';
-    return true;
-  }
-
-  // Remove nome da lista visual e do array
-  function removerNome(nome) {
-    jaLimpouHoje = jaLimpouHoje.filter(n => n !== nome);
-    salvarTudo();
-  }
-
-  // Atualiza a lista visual de nomes já adicionados
-  function atualizarListaVisual() {
-    listaNomesAdicionadosUl.innerHTML = '';
-    jaLimpouHoje.forEach(nome => {
-      const li = document.createElement('li');
-      li.textContent = nome + ' ';
-      const btnRemover = document.createElement('button');
-      btnRemover.textContent = 'Remover';
-      btnRemover.style.marginLeft = '10px';
-      btnRemover.onclick = () => {
-        removerNome(nome);
-        atualizarListaVisual();
-      };
-      li.appendChild(btnRemover);
-      listaNomesAdicionadosUl.appendChild(li);
-    });
-  }
-
-  // Perguntar se da última escala alguém limpou
-  function perguntarSeLimpouUltima() {
-    if (ultimaEscala.length === 0) {
-      // Sem última escala, mostra botão gerar direto
-      perguntaSeLimpouUltimaDiv.style.display = 'none';
-      gerarBtn.style.display = 'inline-block';
+  // Atualiza as opções da pergunta "Quem limpou?"
+  function atualizarPerguntaQuemLimpou() {
+    if (ultimaEscala.length !== 2) {
+      // Se não tem última escala, pula essa pergunta
+      perguntaQuemLimpouUltimaDiv.style.display = 'none';
+      btnGerar.style.display = 'inline-block';
       return;
     }
-    perguntaSeLimpouUltimaDiv.style.display = 'block';
-    gerarBtn.style.display = 'none';
+    labelPessoa1.textContent = ultimaEscala[0];
+    labelPessoa2.textContent = ultimaEscala[1];
+    inputPessoa1.value = ultimaEscala[0];
+    inputPessoa2.value = ultimaEscala[1];
+    perguntaQuemLimpouUltimaDiv.style.display = 'block';
+    btnGerar.style.display = 'none';
   }
 
-  // Função para gerar escala, seguindo ordem circular, pulando quem já limpou hoje
+  // Função para gerar a escala
   function gerarEscala() {
     resultadoDiv.innerHTML = '';
 
-    const nomesOrdenados = ordenar(nomes);
-
-    // Se todo mundo limpou hoje, resetar e avisar
+    // Se todo mundo limpou, resetar
     if (jaLimpouHoje.length >= nomes.length) {
-      resetarDia();
       resultadoDiv.innerHTML = '<p>Todos já limparam hoje! Reiniciando escala...</p>';
-      setTimeout(() => {
-        gerarEscala();
-      }, 1500);
+      resetarDia();
+      setTimeout(gerarEscala, 1500);
       return;
     }
 
-    // Função para buscar próximo índice disponível, pulando quem já limpou hoje
-    function proximoIndiceAtual(atual) {
-      let i = atual;
-      for (let count=0; count<nomesOrdenados.length; count++) {
-        i = (i+1) % nomesOrdenados.length;
-        if (!jaLimpouHoje.includes(nomesOrdenados[i])) return i;
-      }
-      return -1; // não achou
-    }
-
-    // Selecionar as duas pessoas na ordem circular
-    let index1 = proximoIndiceAtual(posicaoUltimaEscala);
+    // Selecionar duas pessoas seguindo a ordem circular pulando quem já limpou
+    const index1 = proximoIndiceAtual(posicaoUltimaEscala);
     if (index1 === -1) {
-      resetarDia();
+      // Todos limparam, resetar
       resultadoDiv.innerHTML = '<p>Todos já limparam hoje! Reiniciando escala...</p>';
-      setTimeout(() => gerarEscala(), 1500);
+      resetarDia();
+      setTimeout(gerarEscala, 1500);
       return;
     }
-    let index2 = proximoIndiceAtual(index1);
+    const index2 = proximoIndiceAtual(index1);
     if (index2 === -1) {
-      // Só sobrou uma pessoa, então seleciona só ela mesmo
+      // Só sobrou uma pessoa
       index2 = index1;
     }
 
-    const selecionados = [nomesOrdenados[index1], nomesOrdenados[index2]];
+    const selecionados = [nomes[index1], nomes[index2]];
 
-    // Salvar posição da última pessoa selecionada
+    // Atualiza a posição da última escala para continuar o ciclo
     posicaoUltimaEscala = index2;
 
-    // Atribuir tarefas fixas para a rodada:
-    // O primeiro sempre "chão", o segundo sempre "mesa"
-    // Atualizar historicoTarefa para alternar na próxima vez que essa pessoa for selecionada
+    // Função para alternar tarefa para a próxima vez
     function proximaTarefaAtual(nome) {
       if (!historicoTarefa[nome]) return 'chão';
       return historicoTarefa[nome] === 'chão' ? 'mesa' : 'chão';
     }
 
-    const tarefas = [];
-    tarefas.push({ nome: selecionados[0], tarefa: proximaTarefaAtual(selecionados[0]) });
-    tarefas.push({ nome: selecionados[1], tarefa: proximaTarefaAtual(selecionados[1]) });
+    // Atribuir tarefas fixas para esta escala:
+    // Primeiro sempre chão, segundo sempre mesa
+    const tarefas = [
+      { nome: selecionados[0], tarefa: 'chão' },
+      { nome: selecionados[1], tarefa: 'mesa' }
+    ];
 
-    // Atualizar históricoTarefa invertendo para próxima vez
+    // Atualizar histórico para próxima vez
     historicoTarefa[selecionados[0]] = tarefas[0].tarefa === 'chão' ? 'mesa' : 'chão';
     historicoTarefa[selecionados[1]] = tarefas[1].tarefa === 'chão' ? 'mesa' : 'chão';
 
-    // Atualizar lista quem já limpou hoje
+    // Atualiza quem já limpou hoje
     jaLimpouHoje.push(selecionados[0]);
     if (selecionados[1] !== selecionados[0]) {
       jaLimpouHoje.push(selecionados[1]);
     }
 
-    // Salvar ultima escala para próxima pergunta
+    // Salva última escala
     ultimaEscala = selecionados.slice();
 
     salvarTudo();
 
-    // Mostrar resultado
-    let html = '<h2>Pessoas para limpar hoje:</h2><ul>';
+    // Mostra resultado
+    let html = '<h2>Escala de hoje:</h2><ul>';
     tarefas.forEach(t => {
       html += `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`;
     });
@@ -268,78 +207,54 @@
 
     resultadoDiv.innerHTML = html;
 
-    // Esconder o botão gerar para evitar clique repetido
-    gerarBtn.style.display = 'none';
-
-    // Mostrar pergunta se alguém da última escala limpou
-    perguntaSeLimpouUltimaDiv.style.display = 'block';
+    // Esconde botão gerar e mostra pergunta "Quem limpou?"
+    btnGerar.style.display = 'none';
+    atualizarPerguntaQuemLimpou();
   }
 
-  // Botões e eventos
+  // Eventos
 
-  // Inicial - pergunta se alguém já limpou hoje
+  // Quando clicar em "Sim" (alguém já limpou hoje)
   document.getElementById('btnSim').onclick = () => {
     perguntaLimpezaDiv.style.display = 'none';
-    inputNomeLimpezaDiv.style.display = 'block';
-    gerarBtn.style.display = 'none';
-    resultadoDiv.innerHTML = '';
-    mensagemErroDiv.textContent = '';
-    nomeLimpezaInput.value = '';
-    atualizarListaVisual();
+    // Mostrar a pergunta "Quem limpou?"
+    atualizarPerguntaQuemLimpou();
   };
 
+  // Quando clicar em "Não"
   document.getElementById('btnNao').onclick = () => {
     perguntaLimpezaDiv.style.display = 'none';
-    inputNomeLimpezaDiv.style.display = 'none';
-    gerarBtn.style.display = 'inline-block';
-    resultadoDiv.innerHTML = '';
+    btnGerar.style.display = 'inline-block';
   };
 
-  // Adicionar nome que já limpou hoje
-  document.getElementById('btnAdicionarNome').onclick = () => {
-    const nome = nomeLimpezaInput.value.trim();
-    if(adicionarNomeJaLimpou(nome)) {
-      atualizarListaVisual();
-      nomeLimpezaInput.value = '';
+  // Quando confirmar quem limpou da última escala
+  formQuemLimpou.onsubmit = (e) => {
+    e.preventDefault();
+    const escolha = formQuemLimpou.quemLimpou.value;
+
+    if (escolha === 'nenhum') {
+      // Ninguém limpou, só mostrar botão gerar
+      perguntaQuemLimpouUltimaDiv.style.display = 'none';
+      btnGerar.style.display = 'inline-block';
+    } else {
+      // Marcar pessoa que limpou hoje para pular na próxima escala
+      if (!jaLimpouHoje.includes(escolha)) {
+        jaLimpouHoje.push(escolha);
+        salvarTudo();
+      }
+      perguntaQuemLimpouUltimaDiv.style.display = 'none';
+      btnGerar.style.display = 'inline-block';
     }
-  };
-
-  // Cancelar entrada nomes
-  document.getElementById('btnCancelarNome').onclick = () => {
-    inputNomeLimpezaDiv.style.display = 'none';
-    gerarBtn.style.display = 'inline-block';
-    resultadoDiv.innerHTML = '';
-  };
-
-  // Concluir entrada nomes
-  document.getElementById('btnConcluirNomes').onclick = () => {
-    if (jaLimpouHoje.length === 0) {
-      mensagemErroDiv.textContent = 'Adicione pelo menos um nome ou clique cancelar.';
-      return;
-    }
-    inputNomeLimpezaDiv.style.display = 'none';
-    gerarBtn.style.display = 'inline-block';
-    resultadoDiv.innerHTML = `<p>${jaLimpouHoje.length} pessoa(s) marcada(s) como já limpou(aram) hoje.</p>`;
-    mensagemErroDiv.textContent = '';
-  };
-
-  // Pergunta se da última escala alguém limpou
-  document.getElementById('btnSimUltima').onclick = () => {
-    perguntaSeLimpouUltimaDiv.style.display = 'none';
-    inputNomeLimpezaDiv.style.display = 'block';
-    // Limpa campo para nova entrada
-    nomeLimpezaInput.value = '';
-    mensagemErroDiv.textContent = '';
-    atualizarListaVisual();
-  };
-  document.getElementById('btnNaoUltima').onclick = () => {
-    perguntaSeLimpouUltimaDiv.style.display = 'none';
-    gerarBtn.style.display = 'inline-block';
-    resultadoDiv.innerHTML = '';
   };
 
   // Botão gerar escala
-  gerarBtn.onclick = gerarEscala;
+  btnGerar.onclick = gerarEscala;
+
+</script>
+
+</body>
+</html>
+
 
 </script>
 
