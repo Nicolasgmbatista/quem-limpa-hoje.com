@@ -99,11 +99,11 @@ function salvarTudo() {
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
 }
 
-function proximoIndiceDisponivel(atual, excluidos) {
+function proximoIndice(atual) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
     i = (i + 1) % nomes.length;
-    if (!jaLimpouHoje.includes(nomes[i]) && !excluidos.includes(nomes[i])) {
+    if (!jaLimpouHoje.includes(nomes[i])) {
       return i;
     }
   }
@@ -117,8 +117,8 @@ function gerarEscala() {
     posicaoUltimaEscala = -1;
   }
 
-  const index1 = proximoIndiceDisponivel(posicaoUltimaEscala, []);
-  const index2 = proximoIndiceDisponivel(index1, [nomes[index1]]);
+  const index1 = proximoIndice(posicaoUltimaEscala);
+  const index2 = proximoIndice(index1);
 
   const nome1 = nomes[index1];
   const nome2 = nomes[index2];
@@ -165,18 +165,14 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  let novosExcluidos = escalaAtual.map(p => p.nome);
-
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
     if (marcou) {
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
-      let novoIndex = proximoIndiceDisponivel(pessoa.index, novosExcluidos);
+      let novoIndex = proximoIndice(pessoa.index);
       const novoNome = nomes[novoIndex];
-      novosExcluidos.push(novoNome);
-
       const novaTarefa = historicoTarefa[novoNome] === 'mesa' ? 'chão' : 'mesa';
       historicoTarefa[novoNome] = novaTarefa;
       return { nome: novoNome, tarefa: novaTarefa, index: novoIndex };
