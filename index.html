@@ -91,13 +91,10 @@ const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gust
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
-
-// Flag que indica se na próxima inicialização invertremos as tarefas (true/false)
 let inversaoTarefa = JSON.parse(localStorage.getItem('inversaoTarefa') || 'false');
 
 let escalaAtual = [];
 
-// Salva tudo no localStorage
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
@@ -105,19 +102,15 @@ function salvarTudo() {
   localStorage.setItem('inversaoTarefa', JSON.stringify(inversaoTarefa));
 }
 
-// Inicializa o historico de tarefas com inversão alternada
 function inicializarHistoricoTarefa() {
   historicoTarefa = {};
   for (let i = 0; i < nomes.length; i++) {
-    // Se inversaoTarefa == true, pares recebem 'mesa' e impares 'chão', senão o contrário
     historicoTarefa[nomes[i]] = inversaoTarefa ? (i % 2 === 0 ? 'mesa' : 'chão') : (i % 2 === 0 ? 'chão' : 'mesa');
   }
-  // Inverte a flag para próxima inicialização
   inversaoTarefa = !inversaoTarefa;
   salvarTudo();
 }
 
-// Retorna o próximo índice válido que não limpou hoje e não está na lista ignorada
 function proximoIndice(atual, ignorar = []) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
@@ -126,12 +119,10 @@ function proximoIndice(atual, ignorar = []) {
       return i;
     }
   }
-  return -1; // Não achou
+  return -1;
 }
 
-// Gera a escala respeitando o controle de quem limpou e tarefas
 function gerarEscala() {
-  // Reset completo se todos já limparam
   if (jaLimpouHoje.length >= nomes.length) {
     jaLimpouHoje = [];
     inicializarHistoricoTarefa();
@@ -144,7 +135,6 @@ function gerarEscala() {
   const index2 = proximoIndice(index1, [nome1]);
   const nome2 = nomes[index2];
 
-  // Caso alguma pessoa nova não tenha tarefa no historico, atribui agora
   if (!(nome1 in historicoTarefa)) {
     historicoTarefa[nome1] = inversaoTarefa ? (index1 % 2 === 0 ? 'mesa' : 'chão') : (index1 % 2 === 0 ? 'chão' : 'mesa');
   }
@@ -192,7 +182,6 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  // Lista de nomes atualmente na escala para evitar repetições
   const nomesNaEscala = escalaAtual.map(p => p.nome);
   let maiorIndice = posicaoUltimaEscala;
 
@@ -200,23 +189,19 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
     const marcou = document.getElementById(pessoa.nome).checked;
 
     if (marcou) {
-      // Marca que limpou hoje
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
-      // Busca próximo índice para substituição, evitando nomes atuais
       const novoIndex = proximoIndice(pessoa.index, nomesNaEscala);
       const novoNome = nomes[novoIndex];
-      nomesNaEscala.push(novoNome); // adiciona novo nome para não repetir na outra substituição
+      nomesNaEscala.push(novoNome);
 
-      // A nova pessoa herda a tarefa da pessoa que foi substituída
       historicoTarefa[novoNome] = pessoa.tarefa;
 
       if (novoIndex > maiorIndice) maiorIndice = novoIndex;
 
       return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
-      // Para quem não limpou, alterna a tarefa (mesa <-> chão)
       historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
       if (pessoa.index > maiorIndice) maiorIndice = pessoa.index;
       return pessoa;
@@ -227,6 +212,92 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
   salvarTudo();
   atualizarResultadoEFormulario();
 };
+
+// --- NOVO: Carregar escala salva ao abrir a página ---
+function carregarEscalaSalva() {
+  // Verifica se já existe escala salva válida
+  if (posicaoUltimaEscala >= 0 && Object.keys(historicoTarefa).length > 0) {
+    // Reconstrói escalaAtual com base no posicaoUltimaEscala e historicoTarefa
+    // Encontrar os dois nomes atuais baseados na posicaoUltimaEscala e nomes que não limparam hoje
+    let index2 = posicaoUltimaEscala;
+    let nome2 = nomes[index2];
+
+    // Para achar index1: voltamos para trás e pegamos o anterior válido
+    let index1 = index2 - 1;
+    if (index1 < 0) index1 = nomes.length - 1;
+
+    // Se nome2 já limpou hoje, precisa ajustar
+    // Como posicaoUltimaEscala é o último da escala, então index1 deve ser o anterior não limpou hoje
+    // mas pode complicar, então vamos garantir que escalaAtual seja a última exibida armazenada mesmo (localStorage)
+
+    // Como escalaAtual não é salvo diretamente, vamos montar com os nomes que não limparam recentemente a partir do posicaoUltimaEscala
+    // Para simplificar, vamos armazenar escalaAtual no localStorage para carregar exatamente como estava
+    // Vamos tentar carregar escalaAtual do localStorage (se existir)
+
+    const escalaSalva = JSON.parse(localStorage.getItem('escalaAtual'));
+    if (escalaSalva && escalaSalva.length === 2) {
+      escalaAtual = escalaSalva;
+      // Atualiza o formulário e a tela
+      atualizarResultadoEFormulario();
+      return;
+    }
+  }
+
+  // Se não tiver escala salva, gera uma nova
+  gerarEscala();
+}
+
+// Salvando escalaAtual no localStorage a cada atualização
+function salvarEscalaAtual() {
+  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
+}
+
+// Ajustar salvarTudo para também salvar escalaAtual
+function salvarTudo() {
+  localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
+  localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
+  localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('inversaoTarefa', JSON.stringify(inversaoTarefa));
+  salvarEscalaAtual();
+}
+
+// E chamar salvarEscalaAtual dentro do form submit depois da atualização de escalaAtual
+document.getElementById('formQuemLimpou').onsubmit = function(e) {
+  e.preventDefault();
+
+  const nomesNaEscala = escalaAtual.map(p => p.nome);
+  let maiorIndice = posicaoUltimaEscala;
+
+  escalaAtual = escalaAtual.map(pessoa => {
+    const marcou = document.getElementById(pessoa.nome).checked;
+
+    if (marcou) {
+      if (!jaLimpouHoje.includes(pessoa.nome)) {
+        jaLimpouHoje.push(pessoa.nome);
+      }
+      const novoIndex = proximoIndice(pessoa.index, nomesNaEscala);
+      const novoNome = nomes[novoIndex];
+      nomesNaEscala.push(novoNome);
+
+      historicoTarefa[novoNome] = pessoa.tarefa;
+
+      if (novoIndex > maiorIndice) maiorIndice = novoIndex;
+
+      return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
+    } else {
+      historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
+      if (pessoa.index > maiorIndice) maiorIndice = pessoa.index;
+      return pessoa;
+    }
+  });
+
+  posicaoUltimaEscala = maiorIndice;
+  salvarTudo();
+  atualizarResultadoEFormulario();
+};
+
+// Ao carregar a página, carrega a escala salva ou gera uma nova
+window.onload = carregarEscalaSalva;
 </script>
 
 </body>
