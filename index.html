@@ -91,12 +91,13 @@ const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gust
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
-let escalaAtual = [];
+let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
 
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
 }
 
 function alternarTarefa(tarefa) {
@@ -111,7 +112,7 @@ function proximoIndice(atual, nomesIgnorados = []) {
       return i;
     }
   }
-  return -1; 
+  return -1;
 }
 
 function gerarEscala() {
@@ -173,7 +174,7 @@ function atualizarResultadoEFormulario() {
 }
 
 window.onload = function() {
-  if (escalaAtual.length > 0) {
+  if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
   }
 };
