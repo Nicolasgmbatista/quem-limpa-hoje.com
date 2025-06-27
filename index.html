@@ -86,7 +86,7 @@
 </footer>
 
 <script>
-const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a,b) => a.localeCompare(b));
+const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a, b) => a.localeCompare(b));
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
@@ -111,7 +111,7 @@ function proximoIndice(atual, nomesIgnorados = []) {
       return i;
     }
   }
-  return -1;
+  return -1; 
 }
 
 function gerarEscala() {
@@ -122,9 +122,13 @@ function gerarEscala() {
   }
 
   const index1 = proximoIndice(posicaoUltimaEscala, []);
+  if (index1 === -1) return alert("Erro ao gerar escala. Nenhum nome disponível.");
+
   const nome1 = nomes[index1];
 
   const index2 = proximoIndice(index1, [nome1]);
+  if (index2 === -1) return alert("Erro ao gerar escala. Nenhum segundo nome disponível.");
+
   const nome2 = nomes[index2];
 
   const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
@@ -168,29 +172,8 @@ function atualizarResultadoEFormulario() {
   document.getElementById('pergunta').style.display = 'block';
 }
 
-// Carregar última escala salva ao carregar a página
 window.onload = function() {
-  if (posicaoUltimaEscala >= 0) {
-    let index2 = posicaoUltimaEscala;
-    let index1 = (index2 - 1 + nomes.length) % nomes.length;
-
-    if (jaLimpouHoje.includes(nomes[index1])) {
-      index1 = proximoIndice(index1 - 1, []);
-    }
-    if (jaLimpouHoje.includes(nomes[index2])) {
-      index2 = proximoIndice(index2, []);
-    }
-
-    const nome1 = nomes[index1];
-    const nome2 = nomes[index2];
-
-    const tarefa1 = historicoTarefa[nome1] || 'mesa';
-    const tarefa2 = historicoTarefa[nome2] || 'chão';
-
-    escalaAtual = [
-      { nome: nome1, tarefa: tarefa1, index: index1 },
-      { nome: nome2, tarefa: tarefa2, index: index2 }
-    ];
+  if (escalaAtual.length > 0) {
     atualizarResultadoEFormulario();
   }
 };
@@ -200,10 +183,8 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  // Pega quem não marcou para ficar fixo
-  const naoMarcados = escalaAtual.filter(pessoa => !document.getElementById(pessoa.nome).checked).map(p => p.nome);
-
-  let nomesUsados = [...naoMarcados]; // nomes que vão ficar fixos
+  const naoMarcados = escalaAtual.filter(p => !document.getElementById(p.nome).checked).map(p => p.nome);
+  let nomesUsados = [...naoMarcados];
 
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
@@ -213,17 +194,15 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
         jaLimpouHoje.push(pessoa.nome);
       }
 
-      // busca próximo índice ignorando quem vai ficar fixo e quem já limpou hoje
       const novoIndex = proximoIndice(pessoa.index, nomesUsados);
       const novoNome = nomes[novoIndex];
       nomesUsados.push(novoNome);
 
-      const tarefaDaPessoaQueSaiu = pessoa.tarefa;
-      historicoTarefa[novoNome] = tarefaDaPessoaQueSaiu;
+      const tarefaAntiga = pessoa.tarefa;
+      historicoTarefa[novoNome] = tarefaAntiga;
 
-      return { nome: novoNome, tarefa: tarefaDaPessoaQueSaiu, index: novoIndex };
+      return { nome: novoNome, tarefa: tarefaAntiga, index: novoIndex };
     } else {
-      // a pessoa que não foi trocada mantém tudo igual
       return pessoa;
     }
   });
