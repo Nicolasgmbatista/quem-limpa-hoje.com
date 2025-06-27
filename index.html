@@ -86,69 +86,64 @@
 </footer>
 
 <script>
-const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a, b) => a.localeCompare(b));
+const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a,b) => a.localeCompare(b));
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
-let inversaoTarefa = JSON.parse(localStorage.getItem('inversaoTarefa') || 'false');
-
 let escalaAtual = [];
 
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
-  localStorage.setItem('inversaoTarefa', JSON.stringify(inversaoTarefa));
 }
 
-function inicializarHistoricoTarefa() {
-  historicoTarefa = {};
-  for (let i = 0; i < nomes.length; i++) {
-    historicoTarefa[nomes[i]] = inversaoTarefa ? (i % 2 === 0 ? 'mesa' : 'chão') : (i % 2 === 0 ? 'chão' : 'mesa');
-  }
-  inversaoTarefa = !inversaoTarefa;
-  salvarTudo();
-}
-
-function proximoIndice(atual, ignorar = []) {
+function proximoIndice(atual, nomesIgnorados = []) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
     i = (i + 1) % nomes.length;
-    if (!jaLimpouHoje.includes(nomes[i]) && !ignorar.includes(nomes[i])) {
+    if (!jaLimpouHoje.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
       return i;
     }
   }
   return -1;
 }
 
+// Alterna a tarefa da pessoa: se era 'mesa', vira 'chão', se 'chão', vira 'mesa'
+function alternarTarefa(tarefa) {
+  return tarefa === 'mesa' ? 'chão' : 'mesa';
+}
+
 function gerarEscala() {
+  // Resetar lista se todos já limparam hoje
   if (jaLimpouHoje.length >= nomes.length) {
     jaLimpouHoje = [];
-    inicializarHistoricoTarefa();
     posicaoUltimaEscala = -1;
   }
 
+  // Próximo índice 1 e 2, evitando nomes que já limparam ou repetidos na escala
   const index1 = proximoIndice(posicaoUltimaEscala);
   const nome1 = nomes[index1];
-
   const index2 = proximoIndice(index1, [nome1]);
   const nome2 = nomes[index2];
 
-  if (!(nome1 in historicoTarefa)) {
-    historicoTarefa[nome1] = inversaoTarefa ? (index1 % 2 === 0 ? 'mesa' : 'chão') : (index1 % 2 === 0 ? 'chão' : 'mesa');
-  }
-  if (!(nome2 in historicoTarefa)) {
-    historicoTarefa[nome2] = inversaoTarefa ? (index2 % 2 === 0 ? 'mesa' : 'chão') : (index2 % 2 === 0 ? 'chão' : 'mesa');
-  }
+  // Pega tarefa anterior e alterna para cada um
+  const tarefa1Anterior = historicoTarefa[nome1] || 'mesa'; // se não existir, inicia em mesa
+  const tarefa1 = alternarTarefa(tarefa1Anterior);
+
+  const tarefa2Anterior = historicoTarefa[nome2] || 'mesa';
+  const tarefa2 = alternarTarefa(tarefa2Anterior);
+
+  historicoTarefa[nome1] = tarefa1;
+  historicoTarefa[nome2] = tarefa2;
 
   escalaAtual = [
-    { nome: nome1, tarefa: historicoTarefa[nome1], index: index1 },
-    { nome: nome2, tarefa: historicoTarefa[nome2], index: index2 }
+    { nome: nome1, tarefa: tarefa1, index: index1 },
+    { nome: nome2, tarefa: tarefa2, index: index2 }
   ];
 
   posicaoUltimaEscala = index2;
-
   salvarTudo();
   atualizarResultadoEFormulario();
 }
@@ -179,126 +174,66 @@ function atualizarResultadoEFormulario() {
 
 document.getElementById('btnGerar').onclick = gerarEscala;
 
-document.getElementById('formQuemLimpou').onsubmit = function(e) {
-  e.preventDefault();
+// Ao carregar a página, mostra escala atual se existir, sem avançar posição
+window.onload = function() {
+  if (posicaoUltimaEscala >= 0 && escalaAtual.length === 0) {
+    // Recupera escalaAtual do localStorage para mostrar, se quiser podemos salvar escalaAtual no localStorage também
+    // Mas aqui refazemos escalaAtual a partir do histórico e posição
+    const index1 = proximoIndice(posicaoUltimaEscala - 1);
+    const nome1 = nomes[index1];
+    const index2 = proximoIndice(index1, [nome1]);
+    const nome2 = nomes[index2];
 
-  const nomesNaEscala = escalaAtual.map(p => p.nome);
-  let maiorIndice = posicaoUltimaEscala;
+    const tarefa1 = historicoTarefa[nome1] || 'mesa';
+    const tarefa2 = historicoTarefa[nome2] || 'mesa';
 
-  escalaAtual = escalaAtual.map(pessoa => {
-    const marcou = document.getElementById(pessoa.nome).checked;
+    escalaAtual = [
+      { nome: nome1, tarefa: tarefa1, index: index1 },
+      { nome: nome2, tarefa: tarefa2, index: index2 }
+    ];
 
-    if (marcou) {
-      if (!jaLimpouHoje.includes(pessoa.nome)) {
-        jaLimpouHoje.push(pessoa.nome);
-      }
-      const novoIndex = proximoIndice(pessoa.index, nomesNaEscala);
-      const novoNome = nomes[novoIndex];
-      nomesNaEscala.push(novoNome);
-
-      historicoTarefa[novoNome] = pessoa.tarefa;
-
-      if (novoIndex > maiorIndice) maiorIndice = novoIndex;
-
-      return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
-    } else {
-      historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
-      if (pessoa.index > maiorIndice) maiorIndice = pessoa.index;
-      return pessoa;
-    }
-  });
-
-  posicaoUltimaEscala = maiorIndice;
-  salvarTudo();
-  atualizarResultadoEFormulario();
-};
-
-// --- NOVO: Carregar escala salva ao abrir a página ---
-function carregarEscalaSalva() {
-  // Verifica se já existe escala salva válida
-  if (posicaoUltimaEscala >= 0 && Object.keys(historicoTarefa).length > 0) {
-    // Reconstrói escalaAtual com base no posicaoUltimaEscala e historicoTarefa
-    // Encontrar os dois nomes atuais baseados na posicaoUltimaEscala e nomes que não limparam hoje
-    let index2 = posicaoUltimaEscala;
-    let nome2 = nomes[index2];
-
-    // Para achar index1: voltamos para trás e pegamos o anterior válido
-    let index1 = index2 - 1;
-    if (index1 < 0) index1 = nomes.length - 1;
-
-    // Se nome2 já limpou hoje, precisa ajustar
-    // Como posicaoUltimaEscala é o último da escala, então index1 deve ser o anterior não limpou hoje
-    // mas pode complicar, então vamos garantir que escalaAtual seja a última exibida armazenada mesmo (localStorage)
-
-    // Como escalaAtual não é salvo diretamente, vamos montar com os nomes que não limparam recentemente a partir do posicaoUltimaEscala
-    // Para simplificar, vamos armazenar escalaAtual no localStorage para carregar exatamente como estava
-    // Vamos tentar carregar escalaAtual do localStorage (se existir)
-
-    const escalaSalva = JSON.parse(localStorage.getItem('escalaAtual'));
-    if (escalaSalva && escalaSalva.length === 2) {
-      escalaAtual = escalaSalva;
-      // Atualiza o formulário e a tela
-      atualizarResultadoEFormulario();
-      return;
-    }
+    atualizarResultadoEFormulario();
   }
+};
 
-  // Se não tiver escala salva, gera uma nova
-  gerarEscala();
-}
-
-// Salvando escalaAtual no localStorage a cada atualização
-function salvarEscalaAtual() {
-  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
-}
-
-// Ajustar salvarTudo para também salvar escalaAtual
-function salvarTudo() {
-  localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
-  localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
-  localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
-  localStorage.setItem('inversaoTarefa', JSON.stringify(inversaoTarefa));
-  salvarEscalaAtual();
-}
-
-// E chamar salvarEscalaAtual dentro do form submit depois da atualização de escalaAtual
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  const nomesNaEscala = escalaAtual.map(p => p.nome);
-  let maiorIndice = posicaoUltimaEscala;
+  const nomesAtuais = escalaAtual.map(p => p.nome);
+  let novosNomesUsados = [...nomesAtuais];
 
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
-
     if (marcou) {
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
-      const novoIndex = proximoIndice(pessoa.index, nomesNaEscala);
+      const novoIndex = proximoIndice(pessoa.index, novosNomesUsados);
       const novoNome = nomes[novoIndex];
-      nomesNaEscala.push(novoNome);
+      novosNomesUsados.push(novoNome);
 
-      historicoTarefa[novoNome] = pessoa.tarefa;
-
-      if (novoIndex > maiorIndice) maiorIndice = novoIndex;
-
-      return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
+      // A tarefa do novo nome será a tarefa que a pessoa substituída teria
+      // Para isso, pegamos a tarefa da pessoa que foi marcada (antes da troca)
+      // e passamos para a nova pessoa
+      const tarefaSubstituida = pessoa.tarefa;
+      historicoTarefa[novoNome] = tarefaSubstituida;
+      return { nome: novoNome, tarefa: tarefaSubstituida, index: novoIndex };
     } else {
-      historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
-      if (pessoa.index > maiorIndice) maiorIndice = pessoa.index;
-      return pessoa;
+      // Para quem não foi trocado, alterna a tarefa para próxima vez
+      const novaTarefa = alternarTarefa(pessoa.tarefa);
+      historicoTarefa[pessoa.nome] = novaTarefa;
+      return { nome: pessoa.nome, tarefa: novaTarefa, index: pessoa.index };
     }
   });
 
-  posicaoUltimaEscala = maiorIndice;
   salvarTudo();
   atualizarResultadoEFormulario();
 };
-
-// Ao carregar a página, carrega a escala salva ou gera uma nova
-window.onload = carregarEscalaSalva;
 </script>
+
+</body>
+</html>
+
 
 </body>
 </html>
