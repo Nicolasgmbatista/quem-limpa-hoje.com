@@ -5,118 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Escala Fácil - Limpeza da Sala</title>
 <style>
-  /* Reset simples */
-  * {
-    box-sizing: border-box;
-  }
-
   body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f7fa;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    min-height: 100vh;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  header {
-    background: #2c3e50;
-    width: 100%;
-    padding: 20px 0;
-    color: white;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  }
-
-  main {
-    flex-grow: 1;
-    width: 90%;
+    font-family: Arial, sans-serif;
+    margin: 20px;
     max-width: 700px;
-    background: white;
-    margin: 30px 0;
-    border-radius: 8px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-    padding: 30px;
   }
-
   h1 {
-    margin-bottom: 10px;
-    font-weight: 700;
-    color: #34495e;
-  }
-
-  p.description {
-    color: #666;
-    margin-bottom: 30px;
-    font-size: 1.1rem;
-  }
-
-  button#gerar {
-    background: #2980b9;
-    border: none;
-    color: white;
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    display: block;
-    margin: 0 auto 30px auto;
-  }
-
-  button#gerar:hover {
-    background: #1c5980;
-  }
-
-  #resultado {
-    font-size: 1.2rem;
     color: #2c3e50;
   }
-
+  button, input, select {
+    padding: 10px 15px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  #resultado {
+    margin-top: 30px;
+    font-size: 18px;
+  }
   #resultado ul {
-    list-style-type: none;
+    list-style: none;
     padding: 0;
   }
-
   #resultado li {
     background: #ecf0f1;
-    margin-bottom: 12px;
-    padding: 12px 20px;
+    margin-bottom: 10px;
+    padding: 12px;
     border-radius: 6px;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
-    font-weight: 600;
   }
-
-  footer {
-    width: 100%;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 0.9rem;
-    color: #aaa;
-    background: #f0f0f0;
-    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+  #inputNomeLimpeza {
+    margin-top: 10px;
+    display: none;
+  }
+  #confirmaLimpeza {
+    margin-top: 10px;
+    display: none;
+  }
+  #mensagemErro {
+    color: red;
+    margin-top: 10px;
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Escala Fácil - Limpeza da Sala</h1>
-</header>
+<h1>Escala Fácil - Limpeza da Sala</h1>
 
-<main>
-  <p class="description">Clique no botão abaixo para gerar a escala automática de limpeza. A escala seleciona duas pessoas para limpar a sala, alternando tarefas entre chão e mesa a cada vez que limpam.</p>
-  <button id="gerar">Gerar escala de hoje</button>
+<div id="perguntaLimpeza">
+  <label>Alguém já limpou o laboratório hoje?</label><br/>
+  <button id="btnSim">Sim</button>
+  <button id="btnNao">Não</button>
+</div>
 
-  <div id="resultado"></div>
-</main>
+<div id="inputNomeLimpeza">
+  <label>Digite o nome da pessoa que já limpou:</label><br/>
+  <input type="text" id="nomeLimpeza" list="listaNomes" placeholder="Nome exato"/>
+  <datalist id="listaNomes">
+    <!-- Opções inseridas via JS -->
+  </datalist><br/>
+  <button id="btnConfirmaNome">Confirmar</button>
+  <button id="btnCancelarNome">Cancelar</button>
+  <div id="mensagemErro"></div>
+</div>
 
-<footer>
-  &copy; 2025 Nicolas Batista - Todos os direitos reservados
-</footer>
+<button id="gerar" style="display:none;">Gerar escala de hoje</button>
+
+<div id="resultado"></div>
 
 <script>
   const nomes = [
@@ -126,54 +80,94 @@
     "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"
   ];
 
-  // Recupera o histórico de limpeza do localStorage
+  // Históricos salvos no localStorage
   let historico = JSON.parse(localStorage.getItem('historicoLimpeza') || '{}');
+  let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 
-  // Ordena nomes alfabeticamente
+  // Elementos DOM
+  const perguntaLimpezaDiv = document.getElementById('perguntaLimpeza');
+  const inputNomeLimpezaDiv = document.getElementById('inputNomeLimpeza');
+  const gerarBtn = document.getElementById('gerar');
+  const resultadoDiv = document.getElementById('resultado');
+  const nomeLimpezaInput = document.getElementById('nomeLimpeza');
+  const mensagemErroDiv = document.getElementById('mensagemErro');
+
+  // Coloca nomes no datalist para ajudar a escolher
+  function popularDatalist() {
+    const datalist = document.getElementById('listaNomes');
+    datalist.innerHTML = '';
+    nomes.forEach(nome => {
+      const option = document.createElement('option');
+      option.value = nome;
+      datalist.appendChild(option);
+    });
+  }
+
+  popularDatalist();
+
+  // Salva no localStorage
+  function salvarHistorico() {
+    localStorage.setItem('historicoLimpeza', JSON.stringify(historico));
+  }
+  function salvarJaLimpou() {
+    localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
+  }
+
+  // Ordena lista
   function ordenar(lista) {
     return lista.slice().sort((a,b) => a.localeCompare(b));
   }
 
-  // Salva histórico no localStorage
-  function salvar() {
-    localStorage.setItem('historicoLimpeza', JSON.stringify(historico));
+  // Reseta dia (limpa históricos)
+  function resetarDia() {
+    historico = {};
+    jaLimpouHoje = [];
+    salvarHistorico();
+    salvarJaLimpou();
   }
 
-  // Retorna a próxima tarefa da pessoa (chão ou mesa)
+  // Próxima tarefa de uma pessoa
   function proximaTarefa(nome) {
     if (!historico[nome]) return "chão";
     return historico[nome] === "chão" ? "mesa" : "chão";
   }
 
-  // Gera a escala de hoje, selecionando duas pessoas que ainda não limparam hoje
+  // Gera escala seguindo regra (1º chão, 2º mesa, etc)
   function gerarEscala() {
-    const resultadoDiv = document.getElementById('resultado');
     resultadoDiv.innerHTML = '';
 
     const nomesOrdenados = ordenar(nomes);
-    const selecionados = [];
+    const disponiveis = nomesOrdenados.filter(nome => !jaLimpouHoje.includes(nome));
 
-    for (const nome of nomesOrdenados) {
-      if (!historico.hasOwnProperty(nome)) {
-        const tarefa = proximaTarefa(nome);
-        selecionados.push({ nome, tarefa });
-        historico[nome] = tarefa;
-        salvar();
-        if (selecionados.length === 2) break;
-      }
-    }
-
-    if (selecionados.length < 2) {
-      // Resetar histórico e reiniciar escala
-      historico = {};
-      salvar();
-      resultadoDiv.innerHTML = '<p><em>Todos já limparam! Reiniciando escala...</em></p>';
-      gerarEscala();
+    if (disponiveis.length < 2) {
+      resetarDia();
+      resultadoDiv.innerHTML = '<p>Todos já limparam hoje! Reiniciando escala...</p>';
+      setTimeout(gerarEscala, 1500);
       return;
     }
 
+    const selecionados = disponiveis.slice(0, 2);
+
+    const tarefas = [];
+
+    // Primeiro sempre começa em chão
+    const tarefa1 = historico[selecionados[0]] || 'chão';
+    tarefas.push({ nome: selecionados[0], tarefa: tarefa1 });
+    historico[selecionados[0]] = tarefa1 === 'chão' ? 'mesa' : 'chão';
+
+    // Segundo sempre começa em mesa
+    const tarefa2 = historico[selecionados[1]] || 'mesa';
+    tarefas.push({ nome: selecionados[1], tarefa: tarefa2 });
+    historico[selecionados[1]] = tarefa2 === 'chão' ? 'mesa' : 'chão';
+
+    // Marca como já limpou
+    jaLimpouHoje.push(selecionados[0], selecionados[1]);
+
+    salvarHistorico();
+    salvarJaLimpou();
+
     let html = '<h2>Pessoas para limpar hoje:</h2><ul>';
-    selecionados.forEach(p => {
+    tarefas.forEach(p => {
       html += `<li>${p.nome} — limpar <strong>${p.tarefa}</strong></li>`;
     });
     html += '</ul>';
@@ -181,9 +175,58 @@
     resultadoDiv.innerHTML = html;
   }
 
-  document.getElementById('gerar').addEventListener('click', gerarEscala);
+  // Botões "Sim" e "Não" da pergunta inicial
+  document.getElementById('btnSim').onclick = () => {
+    perguntaLimpezaDiv.style.display = 'none';
+    inputNomeLimpezaDiv.style.display = 'block';
+    gerarBtn.style.display = 'none';
+    resultadoDiv.innerHTML = '';
+  };
+
+  document.getElementById('btnNao').onclick = () => {
+    perguntaLimpezaDiv.style.display = 'none';
+    inputNomeLimpezaDiv.style.display = 'none';
+    gerarBtn.style.display = 'inline-block';
+    resultadoDiv.innerHTML = '';
+  };
+
+  // Confirmar nome que limpou
+  document.getElementById('btnConfirmaNome').onclick = () => {
+    const nome = nomeLimpezaInput.value.trim();
+    mensagemErroDiv.textContent = '';
+
+    if (!nome) {
+      mensagemErroDiv.textContent = 'Por favor, digite um nome.';
+      return;
+    }
+    if (!nomes.includes(nome)) {
+      mensagemErroDiv.textContent = 'Nome não encontrado na lista.';
+      return;
+    }
+    if (jaLimpouHoje.includes(nome)) {
+      mensagemErroDiv.textContent = 'Essa pessoa já foi marcada como limpou hoje.';
+      return;
+    }
+
+    // Marca como já limpou hoje e mostra botão gerar
+    jaLimpouHoje.push(nome);
+    salvarJaLimpou();
+
+    inputNomeLimpezaDiv.style.display = 'none';
+    gerarBtn.style.display = 'inline-block';
+    resultadoDiv.innerHTML = `<p>Marcado que <strong>${nome}</strong> já limpou hoje.</p>`;
+  };
+
+  // Cancelar marcar nome
+  document.getElementById('btnCancelarNome').onclick = () => {
+    inputNomeLimpezaDiv.style.display = 'none';
+    gerarBtn.style.display = 'inline-block';
+    resultadoDiv.innerHTML = '';
+  };
+
+  // Botão gerar escala
+  gerarBtn.onclick = gerarEscala;
 </script>
 
 </body>
 </html>
-
