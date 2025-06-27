@@ -164,6 +164,7 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
+  let maiorIndice = posicaoUltimaEscala;
 
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
@@ -173,14 +174,20 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
       }
       const novoIndex = proximoIndice(pessoa.index);
       const novoNome = nomes[novoIndex];
+      if (!jaLimpouHoje.includes(novoNome)) {
+        jaLimpouHoje.push(novoNome);
+      }
       if (!(novoNome in historicoTarefa)) historicoTarefa[novoNome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
+      if (novoIndex > maiorIndice) maiorIndice = novoIndex;
       return { nome: novoNome, tarefa: historicoTarefa[novoNome], index: novoIndex };
     } else {
       historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
+      if (pessoa.index > maiorIndice) maiorIndice = pessoa.index;
       return pessoa;
     }
   });
 
+  posicaoUltimaEscala = maiorIndice;
   salvarTudo();
   atualizarResultadoEFormulario();
 };
