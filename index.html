@@ -2,10 +2,90 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Escala Fácil</title>
+  <title>Escala Fácil com Rodízio</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2c3e50; }
+    button { padding: 8px 15px; margin-top: 10px; }
+    #resultado { margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <h1>Bem-vindo ao Escala Fácil</h1>
-  <p>Site para gerar escala automática de limpeza.</p>
+
+<h1>Escala Fácil - Limpeza da Sala (com rodízio)</h1>
+
+<button id="gerar">Gerar escala de hoje</button>
+
+<div id="resultado"></div>
+
+<script>
+  const nomes = [
+    "Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda",
+    "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas",
+    "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia",
+    "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"
+  ];
+
+  let historico = JSON.parse(localStorage.getItem('historicoLimpeza') || '{}');
+
+  function ordenar(lista) {
+    return lista.slice().sort((a,b) => a.localeCompare(b));
+  }
+
+  function salvar() {
+    localStorage.setItem('historicoLimpeza', JSON.stringify(historico));
+  }
+
+  function confirmarLimpeza(nome) {
+    return confirm(`A pessoa "${nome}" já limpou o laboratório hoje? Clique OK para sim, Cancelar para não.`);
+  }
+
+  function proximaTarefa(nome) {
+    if (!historico[nome]) return "chao";
+    return historico[nome] === "chao" ? "mesa" : "chao";
+  }
+
+  function gerarEscala() {
+    let resultadoDiv = document.getElementById('resultado');
+    resultadoDiv.innerHTML = '';
+
+    let nomesOrdenados = ordenar(nomes);
+    let selecionados = [];
+
+    for (let nome of nomesOrdenados) {
+      if (!historico.hasOwnProperty(nome) || !confirmarLimpeza(nome)) {
+        if (confirmarLimpeza(nome)) {
+          historico[nome] = proximaTarefa(nome);
+          salvar();
+          continue;
+        } else {
+          let tarefa = proximaTarefa(nome);
+          selecionados.push({nome, tarefa});
+          historico[nome] = tarefa;
+          salvar();
+          if (selecionados.length === 2) break;
+        }
+      }
+    }
+
+    if (selecionados.length < 2) {
+      historico = {};
+      salvar();
+      resultadoDiv.innerHTML = '<p>Todos já limparam! Reiniciando escala...</p>';
+      gerarEscala();
+      return;
+    }
+
+    let html = '<h2>Pessoas para limpar hoje:</h2><ul>';
+    selecionados.forEach(p => {
+      html += `<li>${p.nome} — limpar <strong>${p.tarefa}</strong></li>`;
+    });
+    html += '</ul>';
+    resultadoDiv.innerHTML = html;
+  }
+
+  document.getElementById('gerar').addEventListener('click', gerarEscala);
+</script>
+
 </body>
 </html>
