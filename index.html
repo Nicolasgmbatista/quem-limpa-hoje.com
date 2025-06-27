@@ -33,41 +33,34 @@
     padding: 12px;
     border-radius: 6px;
   }
-  footer {
-    margin<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Quem limpa a sala hoje?</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    max-width: 700px;
+  #checkboxContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px 40px;
   }
-  h1 {
-    color: #2c3e50;
+  #checkboxContainer div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  button, input, select {
-    padding: 10px 15px;
-    margin-top: 10px;
-    cursor: pointer;
-    font-size: 16px;
+  #opcaoNenhum {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  #resultado {
-    margin-top: 30px;
-    font-size: 18px;
-  }
-  #resultado ul {
-    list-style: none;
-    padding: 0;
-  }
-  #resultado li {
-    background: #ecf0f1;
-    margin-bottom: 10px;
-    padding: 12px;
+  #formQuemLimpou button[type="submit"] {
+    margin-top: 25px;
+    padding: 12px 20px;
+    background-color: #2c3e50;
+    color: white;
+    border: none;
     border-radius: 6px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  #formQuemLimpou button[type="submit"]:hover {
+    background-color: #34495e;
   }
   footer {
     margin-top: 40px;
@@ -89,11 +82,11 @@
   <p>Alguém da escala limpou o Laboratório hoje? Marque abaixo:</p>
   <form id="formQuemLimpou">
     <div id="checkboxContainer"></div>
-    <div style="margin-top:10px;">
+    <div id="opcaoNenhum">
       <input type="checkbox" id="nenhum" name="nenhum" value="nenhum" />
-      <label for="nenhum"><strong>Nenhum</strong></label>
+      <label for="nenhum">Nenhum</label>
     </div>
-    <button type="submit" style="margin-top:10px;">Confirmar</button>
+    <button type="submit">Confirmar</button>
   </form>
 </div>
 
@@ -115,7 +108,6 @@ function salvarTudo() {
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
 }
 
-// Retorna o próximo índice da lista que não limpou hoje e não está na lista passada
 function proximoIndiceDisponivel(atual, excluidos) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
@@ -128,7 +120,6 @@ function proximoIndiceDisponivel(atual, excluidos) {
 }
 
 function gerarEscala() {
-  // Se todo mundo já limpou, zera
   if (jaLimpouHoje.length >= nomes.length) {
     jaLimpouHoje = [];
     historicoTarefa = {};
@@ -160,6 +151,7 @@ function atualizarResultadoEFormulario() {
   const container = document.getElementById('checkboxContainer');
   container.innerHTML = '';
   escalaAtual.forEach(pessoa => {
+    const wrapper = document.createElement('div');
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = pessoa.nome;
@@ -168,14 +160,13 @@ function atualizarResultadoEFormulario() {
     const label = document.createElement('label');
     label.htmlFor = pessoa.nome;
     label.textContent = pessoa.nome;
-    container.appendChild(checkbox);
-    container.appendChild(label);
-    container.appendChild(document.createElement('br'));
+    wrapper.appendChild(checkbox);
+    wrapper.appendChild(label);
+    container.appendChild(wrapper);
   });
 
   document.getElementById('pergunta').style.display = 'block';
 
-  // Limpa a checkbox "Nenhum" ao gerar nova escala
   document.getElementById('nenhum').checked = false;
 }
 
@@ -189,33 +180,19 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
     return document.getElementById(pessoa.nome).checked;
   }).map(p => p.nome);
 
-  // Se marcou "Nenhum" e alguma outra pessoa, ignora os nomes e considera nenhum
-  if (nenhumChecked) {
-    // Só alterna tarefa, não troca nomes nem adiciona na lista jaLimpouHoje
-    escalaAtual = escalaAtual.map(pessoa => {
-      const novaTarefa = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
-      historicoTarefa[pessoa.nome] = novaTarefa;
-      return { ...pessoa, tarefa: novaTarefa };
-    });
-  } else if (nomesLimpou.length === 0) {
-    // Nenhum marcou nada - mesma lógica de "Nenhum"
-    escalaAtual = escalaAtual.map(pessoa => {
-      const novaTarefa = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
-      historicoTarefa[pessoa.nome] = novaTarefa;
-      return { ...pessoa, tarefa: novaTarefa };
-    });
+  if (nenhumChecked || nomesLimpou.length === 0) {
+    // Nenhum limpou: mantém nomes e tarefas (sem alternar)
+    // Apenas oculta o formulário e salva estado
   } else {
     // Substitui quem limpou pelo próximo da lista na ordem
     let nomesNaEscala = escalaAtual.map(p => p.nome);
 
     escalaAtual = escalaAtual.map(pessoa => {
       if (nomesLimpou.includes(pessoa.nome)) {
-        // Marca que limpou
         if (!jaLimpouHoje.includes(pessoa.nome)) {
           jaLimpouHoje.push(pessoa.nome);
         }
 
-        // Busca próximo índice disponível que não limpou e não está na escala
         let novoIndex = pessoa.index;
         let tentativas = 0;
         do {
@@ -229,17 +206,15 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
         const novoNome = nomes[novoIndex];
 
-        // Atualiza nomesNaEscala removendo o antigo e adicionando o novo para evitar repetição
         nomesNaEscala = nomesNaEscala.filter(n => n !== pessoa.nome);
         nomesNaEscala.push(novoNome);
 
-        // Alterna tarefa do novo nome
         const novaTarefa = historicoTarefa[novoNome] === 'mesa' ? 'chão' : 'mesa';
         historicoTarefa[novoNome] = novaTarefa;
 
         return { nome: novoNome, tarefa: novaTarefa, index: novoIndex };
       } else {
-        // Não marcou - só alterna tarefa
+        // Alterna tarefa para quem não limpou
         const novaTarefa = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
         historicoTarefa[pessoa.nome] = novaTarefa;
         return { ...pessoa, tarefa: novaTarefa };
@@ -249,6 +224,7 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
   posicaoUltimaEscala = escalaAtual[escalaAtual.length - 1].index;
   salvarTudo();
+
   atualizarResultadoEFormulario();
 };
 </script>
