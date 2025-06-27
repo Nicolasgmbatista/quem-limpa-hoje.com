@@ -86,7 +86,7 @@
 </footer>
 
 <script>
-const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a,b) => a.localeCompare(b));
+const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a, b) => a.localeCompare(b));
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
@@ -99,11 +99,11 @@ function salvarTudo() {
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
 }
 
-function proximoIndice(atual, nomesIgnorados = []) {
+function proximoIndice(atual) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
     i = (i + 1) % nomes.length;
-    if (!jaLimpouHoje.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
+    if (!jaLimpouHoje.includes(nomes[i])) {
       return i;
     }
   }
@@ -120,15 +120,15 @@ function gerarEscala() {
   const index1 = proximoIndice(posicaoUltimaEscala);
   const nome1 = nomes[index1];
 
-  const index2 = proximoIndice(index1, [nome1]);
+  const index2 = proximoIndice(index1);
   const nome2 = nomes[index2];
 
-  const tarefa1 = historicoTarefa[nome1] === 'mesa' ? 'chão' : 'mesa';
-  const tarefa2 = historicoTarefa[nome2] === 'mesa' ? 'chão' : 'mesa';
+  if (!(nome1 in historicoTarefa)) historicoTarefa[nome1] = "chão";
+  if (!(nome2 in historicoTarefa)) historicoTarefa[nome2] = "mesa";
 
   escalaAtual = [
-    { nome: nome1, tarefa: tarefa1, index: index1 },
-    { nome: nome2, tarefa: tarefa2, index: index2 }
+    { nome: nome1, tarefa: historicoTarefa[nome1], index: index1 },
+    { nome: nome2, tarefa: historicoTarefa[nome2], index: index2 }
   ];
 
   posicaoUltimaEscala = index2;
@@ -165,25 +165,18 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  const nomesAtuais = escalaAtual.map(p => p.nome);
-  let novosNomesUsados = [...nomesAtuais];
-
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
     if (marcou) {
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
-      const novoIndex = proximoIndice(pessoa.index, novosNomesUsados);
+      const novoIndex = proximoIndice(pessoa.index);
       const novoNome = nomes[novoIndex];
-      novosNomesUsados.push(novoNome);
-
-      const novaTarefa = historicoTarefa[novoNome] === 'mesa' ? 'chão' : 'mesa';
-      historicoTarefa[novoNome] = novaTarefa;
-      return { nome: novoNome, tarefa: novaTarefa, index: novoIndex };
+      if (!(novoNome in historicoTarefa)) historicoTarefa[novoNome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
+      return { nome: novoNome, tarefa: historicoTarefa[novoNome], index: novoIndex };
     } else {
-      const novaTarefa = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
-      historicoTarefa[pessoa.nome] = novaTarefa;
+      historicoTarefa[pessoa.nome] = pessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
       return pessoa;
     }
   });
