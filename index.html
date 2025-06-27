@@ -99,12 +99,10 @@ function salvarTudo() {
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
 }
 
-// Função para alternar tarefa
 function alternarTarefa(tarefa) {
   return tarefa === 'mesa' ? 'chão' : 'mesa';
 }
 
-// Retorna o próximo índice válido, ignorando nomes que já limparam ou que estão na escala atual para evitar repetições
 function proximoIndice(atual, nomesIgnorados = []) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
@@ -113,14 +111,14 @@ function proximoIndice(atual, nomesIgnorados = []) {
       return i;
     }
   }
-  return -1; // Não achou
+  return -1;
 }
 
 function gerarEscala() {
   if (jaLimpouHoje.length >= nomes.length) {
     jaLimpouHoje = [];
-    posicaoUltimaEscala = -1;
     historicoTarefa = {};
+    posicaoUltimaEscala = -1;
   }
 
   const index1 = proximoIndice(posicaoUltimaEscala, []);
@@ -129,11 +127,9 @@ function gerarEscala() {
   const index2 = proximoIndice(index1, [nome1]);
   const nome2 = nomes[index2];
 
-  // Se a pessoa não tem tarefa, começa com 'mesa'
+  // Tarefas alternadas ao gerar escala nova
   const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
   const tarefa1 = alternarTarefa(tarefa1Anterior);
-
-  // Pessoa 2 sempre a tarefa oposta
   const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
 
   historicoTarefa[nome1] = tarefa1;
@@ -173,15 +169,14 @@ function atualizarResultadoEFormulario() {
   document.getElementById('pergunta').style.display = 'block';
 }
 
-// Recarrega escala do localStorage ao abrir a página (se já houver dados)
+// Ao carregar a página, se já houver escala salva, mostra ela
 window.onload = function() {
   if (posicaoUltimaEscala >= 0) {
-    // Reconstruir escalaAtual a partir da última posição e tarefas
-    // Encontrar o primeiro índice (posicaoUltimaEscala -1, circular)
+    // Recupera índice da escala anterior
     let index2 = posicaoUltimaEscala;
     let index1 = (index2 - 1 + nomes.length) % nomes.length;
 
-    // Ajustar para ignorar quem limpou hoje
+    // Ajuste para ignorar quem já limpou
     if (jaLimpouHoje.includes(nomes[index1])) {
       index1 = proximoIndice(index1 - 1, []);
     }
@@ -192,7 +187,7 @@ window.onload = function() {
     const nome1 = nomes[index1];
     const nome2 = nomes[index2];
 
-    // Se não tiver tarefa no histórico, começa com 'mesa'
+    // Recupera tarefas ou atribui padrão
     const tarefa1 = historicoTarefa[nome1] || 'mesa';
     const tarefa2 = historicoTarefa[nome2] || 'chão';
 
@@ -220,22 +215,19 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
         jaLimpouHoje.push(pessoa.nome);
       }
 
-      // Buscar próximo índice, evitando nomes já usados para não repetir
+      // Procura próximo índice que não esteja na escala atual nem limpou hoje
       const novoIndex = proximoIndice(pessoa.index, nomesUsados);
       const novoNome = nomes[novoIndex];
       nomesUsados.push(novoNome);
 
-      // A pessoa substituta recebe a tarefa da pessoa que saiu
-      const tarefaSubstituida = pessoa.tarefa;
-      historicoTarefa[novoNome] = tarefaSubstituida;
+      // A pessoa substituta fica com a MESMA tarefa da pessoa que saiu
+      const tarefaDaPessoaQueSaiu = pessoa.tarefa;
+      historicoTarefa[novoNome] = tarefaDaPessoaQueSaiu;
 
-      return { nome: novoNome, tarefa: tarefaSubstituida, index: novoIndex };
+      return { nome: novoNome, tarefa: tarefaDaPessoaQueSaiu, index: novoIndex };
     } else {
-      // Para quem não foi trocado, alterna a tarefa para a próxima vez
-      const novaTarefa = alternarTarefa(pessoa.tarefa);
-      historicoTarefa[pessoa.nome] = novaTarefa;
-
-      return { nome: pessoa.nome, tarefa: novaTarefa, index: pessoa.index };
+      // A pessoa que não foi substituída mantém a tarefa atual (sem alternar)
+      return pessoa;
     }
   });
 
