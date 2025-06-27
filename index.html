@@ -99,11 +99,11 @@ function salvarTudo() {
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
 }
 
-function proximoIndice(atual) {
+function proximoIndice(atual, nomesIgnorados = []) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
     i = (i + 1) % nomes.length;
-    if (!jaLimpouHoje.includes(nomes[i])) {
+    if (!jaLimpouHoje.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
       return i;
     }
   }
@@ -118,9 +118,9 @@ function gerarEscala() {
   }
 
   const index1 = proximoIndice(posicaoUltimaEscala);
-  const index2 = proximoIndice(index1);
-
   const nome1 = nomes[index1];
+
+  const index2 = proximoIndice(index1, [nome1]);
   const nome2 = nomes[index2];
 
   const tarefa1 = historicoTarefa[nome1] === 'mesa' ? 'chão' : 'mesa';
@@ -131,9 +131,9 @@ function gerarEscala() {
     { nome: nome2, tarefa: tarefa2, index: index2 }
   ];
 
-  atualizarResultadoEFormulario();
   posicaoUltimaEscala = index2;
   salvarTudo();
+  atualizarResultadoEFormulario();
 }
 
 function atualizarResultadoEFormulario() {
@@ -165,14 +165,19 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
+  const nomesAtuais = escalaAtual.map(p => p.nome);
+  let novosNomesUsados = [...nomesAtuais];
+
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
     if (marcou) {
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
-      let novoIndex = proximoIndice(pessoa.index);
+      const novoIndex = proximoIndice(pessoa.index, novosNomesUsados);
       const novoNome = nomes[novoIndex];
+      novosNomesUsados.push(novoNome);
+
       const novaTarefa = historicoTarefa[novoNome] === 'mesa' ? 'chão' : 'mesa';
       historicoTarefa[novoNome] = novaTarefa;
       return { nome: novoNome, tarefa: novaTarefa, index: novoIndex };
