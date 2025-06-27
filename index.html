@@ -37,6 +37,45 @@
     margin-top: 40px;
     font-size: 14px;
     color: #7f8c8d;
+  }<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quem limpa a sala hoje?</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    max-width: 700px;
+  }
+  h1 {
+    color: #2c3e50;
+  }
+  button, input, select {
+    padding: 10px 15px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  #resultado {
+    margin-top: 30px;
+    font-size: 18px;
+  }
+  #resultado ul {
+    list-style: none;
+    padding: 0;
+  }
+  #resultado li {
+    background: #ecf0f1;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 6px;
+  }
+  footer {
+    margin-top: 40px;
+    font-size: 14px;
+    color: #7f8c8d;
   }
 </style>
 </head>
@@ -58,7 +97,7 @@
 </div>
 
 <footer>
-  © 2025 Nicolas GBM. Email: nicolasgmbatista15@gmail.com
+  © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
 </footer>
 
 <script>
@@ -67,6 +106,7 @@ const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gust
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
+let escalaAtual = [];
 
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
@@ -93,30 +133,30 @@ function gerarEscala() {
   const index1 = proximoIndiceAtual(posicaoUltimaEscala);
   const index2 = proximoIndiceAtual(index1);
 
-  const selecionados = [nomes[index1], nomes[index2]];
-  posicaoUltimaEscala = index2;
+  const nome1 = nomes[index1];
+  const nome2 = nomes[index2];
 
-  const tarefas = [
-    { nome: selecionados[0], tarefa: historicoTarefa[selecionados[0]] === 'mesa' ? 'chão' : 'chão' },
-    { nome: selecionados[1], tarefa: historicoTarefa[selecionados[1]] === 'chão' ? 'mesa' : 'mesa' }
+  const tarefa1 = historicoTarefa[nome1] === 'mesa' ? 'chão' : 'chão';
+  const tarefa2 = historicoTarefa[nome2] === 'chão' ? 'mesa' : 'mesa';
+
+  escalaAtual = [
+    { nome: nome1, tarefa: tarefa1, index: index1 },
+    { nome: nome2, tarefa: tarefa2, index: index2 }
   ];
 
-  historicoTarefa[selecionados[0]] = tarefas[0].tarefa === 'chão' ? 'mesa' : 'chão';
-  historicoTarefa[selecionados[1]] = tarefas[1].tarefa === 'chão' ? 'mesa' : 'chão';
-
-  const listaHtml = tarefas.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
+  const listaHtml = escalaAtual.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
   document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
 
   const container = document.getElementById('checkboxContainer');
   container.innerHTML = '';
-  selecionados.forEach(nome => {
+  escalaAtual.forEach(pessoa => {
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.id = nome;
-    checkbox.value = nome;
+    checkbox.id = pessoa.nome;
+    checkbox.value = pessoa.nome;
     const label = document.createElement('label');
-    label.htmlFor = nome;
-    label.textContent = nome;
+    label.htmlFor = pessoa.nome;
+    label.textContent = pessoa.nome;
     container.appendChild(checkbox);
     container.appendChild(label);
     container.appendChild(document.createElement('br'));
@@ -130,12 +170,29 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
-  const checkboxes = document.querySelectorAll('#checkboxContainer input:checked');
-  checkboxes.forEach(cb => {
-    jaLimpouHoje.push(cb.value);
+
+  escalaAtual.forEach(pessoa => {
+    const marcou = document.getElementById(pessoa.nome).checked;
+
+    if (marcou) {
+      jaLimpouHoje.push(pessoa.nome);
+
+      const novoIndex = proximoIndiceAtual(pessoa.index);
+      pessoa.nome = nomes[novoIndex];
+      pessoa.index = novoIndex;
+      pessoa.tarefa = historicoTarefa[pessoa.nome] === 'mesa' ? 'chão' : 'chão';
+      historicoTarefa[pessoa.nome] = pessoa.tarefa === 'chão' ? 'mesa' : 'chão';
+    } else {
+      historicoTarefa[pessoa.nome] = pessoa.tarefa === 'chão' ? 'mesa' : 'chão';
+    }
   });
+
+  posicaoUltimaEscala = escalaAtual[1].index;
   salvarTudo();
-  gerarEscala();
+
+  const listaHtml = escalaAtual.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
+  document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
+  document.getElementById('pergunta').style.display = 'none';
 };
 </script>
 
