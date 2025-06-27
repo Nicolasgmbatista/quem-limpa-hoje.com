@@ -106,7 +106,6 @@ function salvarTudo() {
 
 function inicializarHistoricoTarefa() {
   historicoTarefa = {};
-  // Se inversaoTarefa for true, inverte a ordem da atribuição
   for (let i = 0; i < nomes.length; i++) {
     if (inversaoTarefa) {
       historicoTarefa[nomes[i]] = (i % 2 === 0) ? "mesa" : "chão";
@@ -114,8 +113,9 @@ function inicializarHistoricoTarefa() {
       historicoTarefa[nomes[i]] = (i % 2 === 0) ? "chão" : "mesa";
     }
   }
-  // Alterna para a próxima vez que resetar
+  // Inverte para a próxima vez
   inversaoTarefa = !inversaoTarefa;
+  salvarTudo();
 }
 
 function proximoIndice(atual, ignorar = []) {
@@ -130,8 +130,8 @@ function proximoIndice(atual, ignorar = []) {
 }
 
 function gerarEscala() {
-  // Se todos já limparam, resetar tudo e reinicializar tarefas alternadas com inversão
   if (jaLimpouHoje.length >= nomes.length) {
+    // Resetar tudo e inicializar tarefas com inversão
     jaLimpouHoje = [];
     inicializarHistoricoTarefa();
     posicaoUltimaEscala = -1;
@@ -143,8 +143,13 @@ function gerarEscala() {
   const index2 = proximoIndice(index1, [nome1]);
   const nome2 = nomes[index2];
 
-  if (!(nome1 in historicoTarefa)) historicoTarefa[nome1] = "chão";
-  if (!(nome2 in historicoTarefa)) historicoTarefa[nome2] = "mesa";
+  // Garante que historicoTarefa esteja sempre atualizado segundo o padrão atual
+  if (!(nome1 in historicoTarefa)) {
+    historicoTarefa[nome1] = inversaoTarefa ? (index1 % 2 === 0 ? "mesa" : "chão") : (index1 % 2 === 0 ? "chão" : "mesa");
+  }
+  if (!(nome2 in historicoTarefa)) {
+    historicoTarefa[nome2] = inversaoTarefa ? (index2 % 2 === 0 ? "mesa" : "chão") : (index2 % 2 === 0 ? "chão" : "mesa");
+  }
 
   escalaAtual = [
     { nome: nome1, tarefa: historicoTarefa[nome1], index: index1 },
@@ -200,6 +205,7 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
       if (!jaLimpouHoje.includes(novoNome)) {
         jaLimpouHoje.push(novoNome);
       }
+      // A pessoa nova herda a tarefa da pessoa que foi substituída
       historicoTarefa[novoNome] = pessoa.tarefa;
       if (novoIndex > maiorIndice) maiorIndice = novoIndex;
       return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
