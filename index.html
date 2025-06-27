@@ -127,7 +127,6 @@ function gerarEscala() {
   const index2 = proximoIndice(index1, [nome1]);
   const nome2 = nomes[index2];
 
-  // Tarefas alternadas ao gerar escala nova
   const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
   const tarefa1 = alternarTarefa(tarefa1Anterior);
   const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
@@ -169,14 +168,12 @@ function atualizarResultadoEFormulario() {
   document.getElementById('pergunta').style.display = 'block';
 }
 
-// Ao carregar a página, se já houver escala salva, mostra ela
+// Carregar última escala salva ao carregar a página
 window.onload = function() {
   if (posicaoUltimaEscala >= 0) {
-    // Recupera índice da escala anterior
     let index2 = posicaoUltimaEscala;
     let index1 = (index2 - 1 + nomes.length) % nomes.length;
 
-    // Ajuste para ignorar quem já limpou
     if (jaLimpouHoje.includes(nomes[index1])) {
       index1 = proximoIndice(index1 - 1, []);
     }
@@ -187,7 +184,6 @@ window.onload = function() {
     const nome1 = nomes[index1];
     const nome2 = nomes[index2];
 
-    // Recupera tarefas ou atribui padrão
     const tarefa1 = historicoTarefa[nome1] || 'mesa';
     const tarefa2 = historicoTarefa[nome2] || 'chão';
 
@@ -204,8 +200,10 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  const nomesAtuais = escalaAtual.map(p => p.nome);
-  let nomesUsados = [...nomesAtuais];
+  // Pega quem não marcou para ficar fixo
+  const naoMarcados = escalaAtual.filter(pessoa => !document.getElementById(pessoa.nome).checked).map(p => p.nome);
+
+  let nomesUsados = [...naoMarcados]; // nomes que vão ficar fixos
 
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
@@ -215,18 +213,17 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
         jaLimpouHoje.push(pessoa.nome);
       }
 
-      // Procura próximo índice que não esteja na escala atual nem limpou hoje
+      // busca próximo índice ignorando quem vai ficar fixo e quem já limpou hoje
       const novoIndex = proximoIndice(pessoa.index, nomesUsados);
       const novoNome = nomes[novoIndex];
       nomesUsados.push(novoNome);
 
-      // A pessoa substituta fica com a MESMA tarefa da pessoa que saiu
       const tarefaDaPessoaQueSaiu = pessoa.tarefa;
       historicoTarefa[novoNome] = tarefaDaPessoaQueSaiu;
 
       return { nome: novoNome, tarefa: tarefaDaPessoaQueSaiu, index: novoIndex };
     } else {
-      // A pessoa que não foi substituída mantém a tarefa atual (sem alternar)
+      // a pessoa que não foi trocada mantém tudo igual
       return pessoa;
     }
   });
