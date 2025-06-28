@@ -113,18 +113,17 @@ window.onload = function() {
     "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
   ].sort((a, b) => a.localeCompare(b));
 
-  let jaConfirmouLimpeza = JSON.parse(localStorage.getItem('jaConfirmouLimpeza') || '[]');
+  let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
   let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
   let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
   if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
 
-  let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
+  let escalaAtual = [];
 
   function salvarTudo() {
-    localStorage.setItem('jaConfirmouLimpeza', JSON.stringify(jaConfirmouLimpeza));
+    localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
     localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
     localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
-    localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
   }
 
   function alternarTarefa(tarefa) {
@@ -135,7 +134,7 @@ window.onload = function() {
     let i = atual;
     for (let count = 0; count < nomes.length; count++) {
       i = (i + 1) % nomes.length;
-      if (!jaConfirmouLimpeza.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
+      if (!jaLimpouHoje.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
         return i;
       }
     }
@@ -143,18 +142,14 @@ window.onload = function() {
   }
 
   function gerarEscala() {
-    if (jaConfirmouLimpeza.length >= nomes.length) {
-      jaConfirmouLimpeza = [];
+    if (jaLimpouHoje.length >= nomes.length) {
+      jaLimpouHoje = [];
       historicoTarefa = {};
       posicaoUltimaEscala = -1;
       alert('Todos já participaram da limpeza. A escala foi reiniciada.');
     }
 
-    // Limpa a escala atual antes de gerar uma nova
     escalaAtual = [];
-    jaConfirmouLimpeza = [];
-    salvarTudo();
-
     const nomesIgnorados = [];
 
     const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
@@ -167,7 +162,7 @@ window.onload = function() {
     const index2 = proximoIndice(index1, [nome1, ...nomesIgnorados]);
     if (index2 === -1) {
       alert('Não há pessoas suficientes. A escala será reiniciada.');
-      jaConfirmouLimpeza = [];
+      jaLimpouHoje = [];
       historicoTarefa = {};
       posicaoUltimaEscala = -1;
       gerarEscala();
@@ -222,8 +217,6 @@ window.onload = function() {
     document.getElementById('pergunta').style.display = 'block';
   }
 
-  if (escalaAtual.length === 2) atualizarResultadoEFormulario();
-
   document.getElementById('btnGerar').onclick = gerarEscala;
 
   document.getElementById('formQuemLimpou').onsubmit = function(e) {
@@ -231,10 +224,13 @@ window.onload = function() {
 
     const marcouQuemLimpou = escalaAtual.filter(p => document.getElementById(p.nome).checked).map(p => p.nome);
 
-    jaConfirmouLimpeza = marcouQuemLimpou;
-    salvarTudo();
+    marcouQuemLimpou.forEach(nome => {
+      if (!jaLimpouHoje.includes(nome)) {
+        jaLimpouHoje.push(nome);
+      }
+    });
 
-    let nomesIgnorados = escalaAtual.filter(p => !marcouQuemLimpou.includes(p.nome)).map(p => p.nome);
+    const nomesIgnorados = escalaAtual.filter(p => !marcouQuemLimpou.includes(p.nome)).map(p => p.nome);
 
     escalaAtual = escalaAtual.map(pessoa => {
       if (marcouQuemLimpou.includes(pessoa.nome)) {
@@ -258,7 +254,7 @@ window.onload = function() {
   document.getElementById('btnReset').onclick = function() {
     if (confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
       localStorage.clear();
-      jaConfirmouLimpeza = [];
+      jaLimpouHoje = [];
       historicoTarefa = {};
       posicaoUltimaEscala = -1;
       escalaAtual = [];
@@ -270,4 +266,3 @@ window.onload = function() {
 
 </body>
 </html>
-
