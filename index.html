@@ -123,6 +123,8 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
+  console.log("Gerando escala...");
+
   jaLimpouHoje = [];
 
   if (posicaoUltimaEscala >= nomes.length - 1) {
@@ -162,6 +164,7 @@ function gerarEscala() {
 
   ultimaEscalaOriginal = [index1, index2];
   posicaoUltimaEscala = index2;
+
   salvarTudo();
 
   console.log('Escala gerada:', escalaAtual);
@@ -170,6 +173,8 @@ function gerarEscala() {
 }
 
 function atualizarResultadoEFormulario() {
+  console.log("Atualizando resultado e formulário");
+
   if (escalaAtual.length === 0) {
     document.getElementById('resultado').innerHTML = '';
     document.getElementById('pergunta').style.display = 'none';
@@ -196,11 +201,15 @@ function atualizarResultadoEFormulario() {
     container.appendChild(wrapper);
   });
 
-  // FORÇAR o formulário aparecer
+  // Força o formulário ficar visível
   document.getElementById('pergunta').style.display = 'block';
+  document.getElementById('resultado').style.display = 'block';
 }
 
-document.getElementById('btnGerar').onclick = gerarEscala;
+document.getElementById('btnGerar').onclick = function() {
+  console.log("Botão 'Continuar' clicado");
+  gerarEscala();
+};
 
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
@@ -247,6 +256,8 @@ document.getElementById('btnReset').onclick = function() {
 window.onload = function() {
   if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
+  } else {
+    console.log("Nenhuma escala salva para mostrar ao carregar");
   }
 };
 </script>
