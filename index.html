@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quem limpa a sala hoje?</title>
 <style>
   body {
@@ -69,34 +69,35 @@
 <h1>Quem limpa a sala hoje?</h1>
 <p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
 
-<button id="btnGerar">Gerar Escala de Limpeza</button>
-
 <div id="resultado"></div>
 
 <div id="pergunta" style="display:none;">
-  <p>Alguém da escala limpou o Laboratório hoje? Marque abaixo:</p>
+  <p>Informe quem da escala limpou o laboratório ou faltou (se nada, não selecione):</p>
   <form id="formQuemLimpou">
     <div id="checkboxContainer"></div>
     <button type="submit">Confirmar</button>
   </form>
 </div>
 
+<button id="btnGerar" style="margin-top: 20px;">Gerar Escala de Limpeza</button>
+
 <footer>
   © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
 </footer>
 
 <script>
-const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a,b) => a.localeCompare(b));
+const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a, b) => a.localeCompare(b));
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
-let escalaAtual = [];
+let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
 
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
 }
 
 function alternarTarefa(tarefa) {
@@ -115,16 +116,24 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
-  if (jaLimpouHoje.length >= nomes.length) {
+  if (jaLimpouHoje.length >= nomes.length - 1) {
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
   }
 
-  const index1 = proximoIndice(posicaoUltimaEscala, []);
+  const nomesIgnorados = escalaAtual.map(p => p.nome);
+  const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
   const nome1 = nomes[index1];
 
-  const index2 = proximoIndice(index1, [nome1]);
+  const index2 = proximoIndice(index1, [...nomesIgnorados, nome1]);
+  if (index2 === -1) {
+    jaLimpouHoje = [];
+    historicoTarefa = {};
+    posicaoUltimaEscala = -1;
+    gerarEscala();
+    return;
+  }
   const nome2 = nomes[index2];
 
   const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
@@ -145,7 +154,7 @@ function gerarEscala() {
 }
 
 function atualizarResultadoEFormulario() {
-  const listaHtml = escalaAtual.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
+  const listaHtml = escalaAtual.map(t => `<li>${t.nome} ➔ <strong>${t.tarefa}</strong></li>`).join('');
   document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
 
   const container = document.getElementById('checkboxContainer');
@@ -168,29 +177,8 @@ function atualizarResultadoEFormulario() {
   document.getElementById('pergunta').style.display = 'block';
 }
 
-// Carregar última escala salva ao carregar a página
 window.onload = function() {
-  if (posicaoUltimaEscala >= 0) {
-    let index2 = posicaoUltimaEscala;
-    let index1 = (index2 - 1 + nomes.length) % nomes.length;
-
-    if (jaLimpouHoje.includes(nomes[index1])) {
-      index1 = proximoIndice(index1 - 1, []);
-    }
-    if (jaLimpouHoje.includes(nomes[index2])) {
-      index2 = proximoIndice(index2, []);
-    }
-
-    const nome1 = nomes[index1];
-    const nome2 = nomes[index2];
-
-    const tarefa1 = historicoTarefa[nome1] || 'mesa';
-    const tarefa2 = historicoTarefa[nome2] || 'chão';
-
-    escalaAtual = [
-      { nome: nome1, tarefa: tarefa1, index: index1 },
-      { nome: nome2, tarefa: tarefa2, index: index2 }
-    ];
+  if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
   }
 };
@@ -200,10 +188,8 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  // Pega quem não marcou para ficar fixo
-  const naoMarcados = escalaAtual.filter(pessoa => !document.getElementById(pessoa.nome).checked).map(p => p.nome);
-
-  let nomesUsados = [...naoMarcados]; // nomes que vão ficar fixos
+  const naoMarcados = escalaAtual.filter(p => !document.getElementById(p.nome).checked).map(p => p.nome);
+  let nomesUsados = [...naoMarcados];
 
   escalaAtual = escalaAtual.map(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
@@ -213,17 +199,15 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
         jaLimpouHoje.push(pessoa.nome);
       }
 
-      // busca próximo índice ignorando quem vai ficar fixo e quem já limpou hoje
       const novoIndex = proximoIndice(pessoa.index, nomesUsados);
       const novoNome = nomes[novoIndex];
       nomesUsados.push(novoNome);
 
-      const tarefaDaPessoaQueSaiu = pessoa.tarefa;
-      historicoTarefa[novoNome] = tarefaDaPessoaQueSaiu;
+      const tarefaAntiga = pessoa.tarefa;
+      historicoTarefa[novoNome] = tarefaAntiga;
 
-      return { nome: novoNome, tarefa: tarefaDaPessoaQueSaiu, index: novoIndex };
+      return { nome: novoNome, tarefa: tarefaAntiga, index: novoIndex };
     } else {
-      // a pessoa que não foi trocada mantém tudo igual
       return pessoa;
     }
   });
@@ -235,3 +219,4 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
 </body>
 </html>
+
