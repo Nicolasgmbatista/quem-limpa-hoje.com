@@ -9,18 +9,35 @@
     font-family: Arial, sans-serif;
     margin: 20px;
     max-width: 700px;
+    color: #2c3e50;
   }
   h1 {
     color: #2c3e50;
+    margin-bottom: 5px;
   }
-  button, input, select {
-    padding: 10px 15px;
-    margin-top: 10px;
+  p {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+  button, input[type="checkbox"] {
     cursor: pointer;
+  }
+  button {
+    padding: 12px 20px;
+    margin-top: 15px;
     font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #2c3e50;
+    color: white;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #34495e;
   }
   #resultado {
-    margin-top: 30px;
+    margin-top: 25px;
     font-size: 18px;
   }
   #resultado ul {
@@ -30,14 +47,22 @@
   #resultado li {
     background: #ecf0f1;
     margin-bottom: 10px;
-    padding: 12px;
-    border-radius: 6px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #resultado li span.tarefa {
+    font-weight: bold;
+    color: #2c3e50;
   }
   #checkboxContainer {
     display: flex;
     flex-wrap: wrap;
     gap: 15px 30px;
-    margin-top: 10px;
+    margin-top: 12px;
   }
   #checkboxContainer div {
     display: flex;
@@ -46,16 +71,10 @@
   }
   #formQuemLimpou button[type="submit"] {
     margin-top: 20px;
-    padding: 12px 20px;
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+    background-color: #27ae60;
   }
   #formQuemLimpou button[type="submit"]:hover {
-    background-color: #34495e;
+    background-color: #2ecc71;
   }
   footer {
     margin-top: 40px;
@@ -79,7 +98,7 @@
   </form>
 </div>
 
-<button id="btnGerar" style="margin-top: 20px;">Gerar Escala de Limpeza</button>
+<button id="btnGerar">Gerar Escala de Limpeza</button>
 
 <footer>
   © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
@@ -127,6 +146,7 @@ function gerarEscala() {
   const nome1 = nomes[index1];
 
   const index2 = proximoIndice(index1, [...nomesIgnorados, nome1]);
+
   if (index2 === -1) {
     jaLimpouHoje = [];
     historicoTarefa = {};
@@ -134,6 +154,7 @@ function gerarEscala() {
     gerarEscala();
     return;
   }
+
   const nome2 = nomes[index2];
 
   const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
@@ -154,68 +175,9 @@ function gerarEscala() {
 }
 
 function atualizarResultadoEFormulario() {
-  const listaHtml = escalaAtual.map(t => `<li>${t.nome} ➔ <strong>${t.tarefa}</strong></li>`).join('');
-  document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
-
-  const container = document.getElementById('checkboxContainer');
-  container.innerHTML = '';
-  escalaAtual.forEach(pessoa => {
-    const wrapper = document.createElement('div');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = pessoa.nome;
-    checkbox.name = "limpou";
-    checkbox.value = pessoa.nome;
-    const label = document.createElement('label');
-    label.htmlFor = pessoa.nome;
-    label.textContent = pessoa.nome;
-    wrapper.appendChild(checkbox);
-    wrapper.appendChild(label);
-    container.appendChild(wrapper);
-  });
-
-  document.getElementById('pergunta').style.display = 'block';
-}
-
-window.onload = function() {
-  if (escalaAtual.length === 2) {
-    atualizarResultadoEFormulario();
-  }
-};
-
-document.getElementById('btnGerar').onclick = gerarEscala;
-
-document.getElementById('formQuemLimpou').onsubmit = function(e) {
-  e.preventDefault();
-
-  const naoMarcados = escalaAtual.filter(p => !document.getElementById(p.nome).checked).map(p => p.nome);
-  let nomesUsados = [...naoMarcados];
-
-  escalaAtual = escalaAtual.map(pessoa => {
-    const marcou = document.getElementById(pessoa.nome).checked;
-
-    if (marcou) {
-      if (!jaLimpouHoje.includes(pessoa.nome)) {
-        jaLimpouHoje.push(pessoa.nome);
-      }
-
-      const novoIndex = proximoIndice(pessoa.index, nomesUsados);
-      const novoNome = nomes[novoIndex];
-      nomesUsados.push(novoNome);
-
-      const tarefaAntiga = pessoa.tarefa;
-      historicoTarefa[novoNome] = tarefaAntiga;
-
-      return { nome: novoNome, tarefa: tarefaAntiga, index: novoIndex };
-    } else {
-      return pessoa;
-    }
-  });
-
-  salvarTudo();
-  atualizarResultadoEFormulario();
-};
-</script>
-
-</body>
-</html>
+  const listaHtml = escalaAtual.map(t => `
+    <li>
+      <span>${t.nome}</span> ➔ <span class="tarefa">${t.tarefa}</span>
+    </li>`).join('');
+    
+  document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaH
