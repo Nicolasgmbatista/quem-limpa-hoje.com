@@ -123,6 +123,7 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
+  alert('Botão Continuar clicado!');
   console.log("Gerando escala...");
 
   jaLimpouHoje = [];
@@ -201,15 +202,11 @@ function atualizarResultadoEFormulario() {
     container.appendChild(wrapper);
   });
 
-  // Força o formulário ficar visível
   document.getElementById('pergunta').style.display = 'block';
   document.getElementById('resultado').style.display = 'block';
 }
 
-document.getElementById('btnGerar').onclick = function() {
-  console.log("Botão 'Continuar' clicado");
-  gerarEscala();
-};
+document.getElementById('btnGerar').onclick = gerarEscala;
 
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
@@ -256,8 +253,6 @@ document.getElementById('btnReset').onclick = function() {
 window.onload = function() {
   if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
-  } else {
-    console.log("Nenhuma escala salva para mostrar ao carregar");
   }
 };
 </script>
