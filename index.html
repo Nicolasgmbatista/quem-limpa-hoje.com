@@ -91,14 +91,20 @@ const nomes = [
   "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
 ].sort((a, b) => a.localeCompare(b));
 
+// ------------------ Estado salvo no localStorage ------------------
+// Lista de pessoas que já limpou hoje (substituídos/faltaram)
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
+// Histórico de tarefas (mesa/chão) para cada pessoa
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
+// Índice da última pessoa ORIGINAL que ficou na escala - controle do ciclo de rodízio
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
 if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
-
+// Última escala original salva (sem substituições) - array com índices das 2 pessoas
 let ultimaEscalaOriginal = JSON.parse(localStorage.getItem('ultimaEscalaOriginal') || '[]');
+// Escala atual mostrada (com substituições)
 let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || []);
 
+// ------------------ Função para salvar tudo ------------------
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
@@ -107,10 +113,12 @@ function salvarTudo() {
   localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
 }
 
+// ------------------ Alterna tarefa mesa <-> chão ------------------
 function alternarTarefa(tarefa) {
   return tarefa === 'mesa' ? 'chão' : 'mesa';
 }
 
+// ------------------ Próximo índice disponível (que não limpou hoje nem está ignorado) ------------------
 function proximoIndice(atual, nomesIgnorados = []) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
@@ -122,9 +130,12 @@ function proximoIndice(atual, nomesIgnorados = []) {
   return -1;
 }
 
+// ------------------ Gera nova escala original do dia ------------------
 function gerarEscala() {
+  // Resetar quem limpou hoje, pois é novo dia
   jaLimpouHoje = [];
 
+  // Se passou do final da lista, zera tudo
   if (posicaoUltimaEscala >= nomes.length - 1) {
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
@@ -133,6 +144,7 @@ function gerarEscala() {
   escalaAtual = [];
   const nomesIgnorados = [];
 
+  // Busca dois nomes originais para a escala
   const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
   if (index1 === -1) {
     alert('Não há pessoas disponíveis para a escala.');
@@ -148,6 +160,7 @@ function gerarEscala() {
   }
   const nome2 = nomes[index2];
 
+  // Alterna tarefa da pessoa com base no histórico
   const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
   const tarefa1 = alternarTarefa(tarefa1Anterior);
   const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
@@ -155,18 +168,20 @@ function gerarEscala() {
   historicoTarefa[nome1] = tarefa1;
   historicoTarefa[nome2] = tarefa2;
 
+  // Salva escala ORIGINAL do dia (sem substituições)
   escalaAtual = [
     { nome: nome1, tarefa: tarefa1, index: index1 },
     { nome: nome2, tarefa: tarefa2, index: index2 }
   ];
 
-  // Salva os índices originais da escala, para controlar o ciclo correto
-  ultimaEscalaOriginal = [index1, index2];
-  posicaoUltimaEscala = index2;
+  ultimaEscalaOriginal = [index1, index2]; // <-- SALVA aqui
+  posicaoUltimaEscala = index2; // Atualiza o ciclo com índice da última pessoa original
+
   salvarTudo();
   atualizarResultadoEFormulario();
 }
 
+// ------------------ Atualiza visual da escala e formulário ------------------
 function atualizarResultadoEFormulario() {
   if (escalaAtual.length === 0) {
     document.getElementById('resultado').innerHTML = '';
@@ -197,31 +212,40 @@ function atualizarResultadoEFormulario() {
   document.getElementById('pergunta').style.display = 'block';
 }
 
-document.getElementById('btnGerar').onclick = gerarEscala;
-
+// ------------------ Confirmar quem limpou ou faltou (substituir na escala atual) ------------------
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
+  // Pessoas marcadas como quem limpou/faltou
   const marcouQuemLimpou = escalaAtual.filter(p => document.getElementById(p.nome).checked).map(p => p.nome);
+  // Pessoas não marcadas (devem ser mantidas na escala)
   const nomesIgnorados = escalaAtual.filter(p => !marcouQuemLimpou.includes(p.nome)).map(p => p.nome);
 
+  // Atualiza escala atual substituindo quem limpou/faltou
   escalaAtual = escalaAtual.map(pessoa => {
     if (marcouQuemLimpou.includes(pessoa.nome)) {
+      // Adiciona a pessoa à lista de quem já limpou hoje, para pular no rodízio
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
 
+      // Procura substituto que não limpou hoje nem está na lista ignorada
       const novoIndex = proximoIndice(pessoa.index, nomesIgnorados);
-      if (novoIndex === -1) return pessoa;
+      if (novoIndex === -1) {
+        // Se não achar substituto, mantém a pessoa atual
+        return pessoa;
+      }
 
       const novoNome = nomes[novoIndex];
       nomesIgnorados.push(novoNome);
 
+      // Mantém a tarefa antiga
       historicoTarefa[novoNome] = pessoa.tarefa;
 
-      // Não alterar posicaoUltimaEscala ou ultimaEscalaOriginal aqui
+      // **IMPORTANTE: NÃO alterar posicaoUltimaEscala nem ultimaEscalaOriginal aqui**
       return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
+      // Pessoa não marcou, mantém igual
       return pessoa;
     }
   });
@@ -230,6 +254,7 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
   atualizarResultadoEFormulario();
 };
 
+// ------------------ Botão Resetar escala - limpa tudo ------------------
 document.getElementById('btnReset').onclick = function() {
   if (confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
     localStorage.clear();
@@ -242,8 +267,13 @@ document.getElementById('btnReset').onclick = function() {
   }
 };
 
+// ------------------ Botão Continuar - gera escala nova ------------------
+document.getElementById('btnGerar').onclick = function() {
+  gerarEscala();
+};
+
+// ------------------ Ao carregar a página, mostra escala salva ------------------
 window.onload = function() {
-  // Se tiver escala salva, mostra ela
   if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
   }
