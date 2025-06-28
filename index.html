@@ -185,6 +185,195 @@ function gerarEscala() {
   atualizarResultadoEFormulario();
 }
 
+function atualizarResultadoEFormulario() {<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quem limpa a sala hoje?</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  h1 {
+    color: #2c3e50;
+  }
+  button, input, select {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2c3e50;
+    color: white;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #34495e;
+  }
+  #btnGerar {
+    margin-bottom: 20px;
+  }
+  #resultado {
+    margin-top: 20px;
+    font-size: 18px;
+  }
+  #resultado ul {
+    list-style: none;
+    padding: 0;
+  }
+  #resultado li {
+    background: #ecf0f1;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 6px;
+    color: #2c3e50;
+  }
+  #checkboxContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px 30px;
+    margin-top: 10px;
+  }
+  #checkboxContainer div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #formQuemLimpou button[type="submit"] {
+    margin-top: 20px;
+  }
+  #btnReset {
+    margin-top: 10px;
+    background-color: #c0392b;
+  }
+  #btnReset:hover {
+    background-color: #e74c3c;
+  }
+  #avisoReset {
+    margin-top: 30px;
+    color: #e74c3c;
+    font-weight: bold;
+  }
+  footer {
+    margin-top: 40px;
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+</style>
+</head>
+<body>
+
+<h1>Quem limpa a sala hoje?</h1>
+<p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
+
+<button id="btnGerar">Continuar</button>
+
+<div id="resultado"></div>
+
+<div id="pergunta" style="display:none;">
+  <p>Informe quem da escala limpou o laboratório ou faltou (para atualizar a escala):</p>
+  <form id="formQuemLimpou">
+    <div id="checkboxContainer"></div>
+    <button type="submit">Confirmar</button>
+
+    <div id="avisoReset">
+      ⚠️ Cuidado: o botão resetar apaga <u>TODOS</u> os dados!
+    </div>
+    <button id="btnReset" type="button">
+      Resetar Escala
+    </button>
+  </form>
+</div>
+
+<footer>
+  © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
+</footer>
+
+<script>
+const nomes = [
+  "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle",
+  "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna",
+  "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas",
+  "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
+].sort((a, b) => a.localeCompare(b));
+
+let jaConfirmouLimpeza = JSON.parse(localStorage.getItem('jaConfirmouLimpeza') || '[]');
+let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
+let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
+if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
+
+let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
+
+function salvarTudo() {
+  localStorage.setItem('jaConfirmouLimpeza', JSON.stringify(jaConfirmouLimpeza));
+  localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
+  localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
+}
+
+function alternarTarefa(tarefa) {
+  return tarefa === 'mesa' ? 'chão' : 'mesa';
+}
+
+function proximoIndice(atual, nomesIgnorados = []) {
+  let i = atual;
+  for (let count = 0; count < nomes.length; count++) {
+    i = (i + 1) % nomes.length;
+    if (!jaConfirmouLimpeza.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function gerarEscala() {
+  if (jaConfirmouLimpeza.length >= nomes.length) {
+    jaConfirmouLimpeza = [];
+    historicoTarefa = {};
+    posicaoUltimaEscala = -1;
+    alert('Todos já participaram da limpeza. A escala foi reiniciada.');
+  }
+
+  // NÃO IGNORAR nomes que estão na escala atual (pois ainda não confirmaram limpeza)
+  const nomesIgnorados = [];
+
+  const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
+  if (index1 === -1) {
+    alert('Não há pessoas disponíveis para a escala.');
+    return;
+  }
+  const nome1 = nomes[index1];
+
+  const index2 = proximoIndice(index1, [nome1, ...nomesIgnorados]);
+  if (index2 === -1) {
+    alert('Não há pessoas suficientes. A escala será reiniciada.');
+    jaConfirmouLimpeza = [];
+    historicoTarefa = {};
+    posicaoUltimaEscala = -1;
+    gerarEscala();
+    return;
+  }
+  const nome2 = nomes[index2];
+
+  const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
+  const tarefa1 = alternarTarefa(tarefa1Anterior);
+  const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
+
+  historicoTarefa[nome1] = tarefa1;
+  historicoTarefa[nome2] = tarefa2;
+
+  escalaAtual = [
+    { nome: nome1, tarefa: tarefa1, index: index1 },
+    { nome: nome2, tarefa: tarefa2, index: index2 }
+  ];
+
+  posicaoUltimaEscala = index2;
+  salvarTudo();
+  atualizarResultadoEFormulario();
+}
+
 function atualizarResultadoEFormulario() {
   if (escalaAtual.length === 0) {
     document.getElementById('resultado').innerHTML = '';
@@ -224,29 +413,35 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  const naoMarcados = escalaAtual.filter(p => !document.getElementById(p.nome).checked).map(p => p.nome);
-  let nomesUsados = [...naoMarcados];
+  const marcouQuemLimpou = escalaAtual.filter(p => document.getElementById(p.nome).checked).map(p => p.nome);
+
+  // Adiciona os que confirmaram limpeza na lista, se ainda não estiverem nela
+  marcouQuemLimpou.forEach(nome => {
+    if (!jaConfirmouLimpeza.includes(nome)) {
+      jaConfirmouLimpeza.push(nome);
+    }
+  });
+
+  // Agora, substitui cada pessoa marcada por próxima disponível, ignorando quem já confirmou limpeza
+  // Quem não marcou continua na escala atual
+
+  let nomesIgnorados = escalaAtual.filter(p => !marcouQuemLimpou.includes(p.nome)).map(p => p.nome);
 
   escalaAtual = escalaAtual.map(pessoa => {
-    const marcou = document.getElementById(pessoa.nome).checked;
-
-    if (marcou) {
-      if (!jaConfirmouLimpeza.includes(pessoa.nome)) {
-        jaConfirmouLimpeza.push(pessoa.nome);
-      }
-
-      const novoIndex = proximoIndice(pessoa.index, nomesUsados);
+    if (marcouQuemLimpou.includes(pessoa.nome)) {
+      const novoIndex = proximoIndice(pessoa.index, nomesIgnorados);
       if (novoIndex === -1) {
+        // Não encontrou substituto, mantém a pessoa
         return pessoa;
       }
       const novoNome = nomes[novoIndex];
-      nomesUsados.push(novoNome);
+      nomesIgnorados.push(novoNome);
 
-      const tarefaAntiga = pessoa.tarefa;
-      historicoTarefa[novoNome] = tarefaAntiga;
-
-      return { nome: novoNome, tarefa: tarefaAntiga, index: novoIndex };
+      // Copia a tarefa da pessoa atual para o substituto
+      historicoTarefa[novoNome] = pessoa.tarefa;
+      return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
+      // Pessoa não marcou, mantém na escala
       return pessoa;
     }
   });
