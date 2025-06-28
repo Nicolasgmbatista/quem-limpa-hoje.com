@@ -15,12 +15,26 @@
   }
   button, input, select {
     padding: 10px 15px;
-    margin-top: 10px;
     cursor: pointer;
     font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2c3e50;
+    color: white;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #34495e;
+  }
+  button + button {
+    margin-left: 10px;
+  }
+  #btnGerar {
+    margin-bottom: 20px;
   }
   #resultado {
-    margin-top: 30px;
+    margin-top: 20px;
     font-size: 18px;
   }
   #resultado ul {
@@ -32,6 +46,7 @@
     margin-bottom: 10px;
     padding: 12px;
     border-radius: 6px;
+    color: #2c3e50;
   }
   #checkboxContainer {
     display: flex;
@@ -44,18 +59,8 @@
     align-items: center;
     gap: 6px;
   }
-  #formQuemLimpou button[type="submit"], #btnReset {
+  #formQuemLimpou button[type="submit"] {
     margin-top: 20px;
-    padding: 12px 20px;
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-  }
-  #formQuemLimpou button[type="submit"]:hover, #btnReset:hover {
-    background-color: #34495e;
   }
   footer {
     margin-top: 40px;
@@ -69,6 +74,10 @@
 <h1>Quem limpa a sala hoje?</h1>
 <p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
 
+<!-- Botões no topo -->
+<button id="btnGerar">Continuar</button>
+<button id="btnReset">Resetar Escala</button>
+
 <div id="resultado"></div>
 
 <div id="pergunta" style="display:none;">
@@ -78,9 +87,6 @@
     <button type="submit">Confirmar</button>
   </form>
 </div>
-
-<button id="btnGerar" style="margin-top: 20px;">Continuar</button>
-<button id="btnReset" style="margin-left:10px;">Resetar Escala</button>
 
 <footer>
   © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
@@ -189,6 +195,12 @@ function gerarEscala() {
 }
 
 function atualizarResultadoEFormulario() {
+  if(escalaAtual.length === 0) {
+    document.getElementById('resultado').innerHTML = '';
+    document.getElementById('pergunta').style.display = 'none';
+    return;
+  }
+  
   const listaHtml = escalaAtual.map(t => `<li>${t.nome} ➔ <strong>${t.tarefa}</strong></li>`).join('');
   document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
 
@@ -263,8 +275,6 @@ document.getElementById('btnReset').onclick = function() {
     posicaoUltimaEscala = -1;
     escalaAtual = [];
     atualizarResultadoEFormulario();
-    document.getElementById('pergunta').style.display = 'none';
-    document.getElementById('resultado').innerHTML = '';
   }
 };
 </script>
