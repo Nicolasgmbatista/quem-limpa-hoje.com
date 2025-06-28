@@ -115,7 +115,12 @@ const nomes = [
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
-let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
+
+let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
+if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) {
+  posicaoUltimaEscala = -1;
+}
+
 let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
 
 function salvarTudo() {
@@ -149,6 +154,10 @@ function gerarEscala() {
 
   const nomesIgnorados = escalaAtual.map(p => p.nome);
   const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
+  if (index1 === -1) {
+    alert("Não há pessoas disponíveis para a escala.");
+    return;
+  }
   const nome1 = nomes[index1];
 
   const index2 = proximoIndice(index1, [...nomesIgnorados, nome1]);
@@ -225,6 +234,10 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
       }
 
       const novoIndex = proximoIndice(pessoa.index, nomesUsados);
+      if (novoIndex === -1) {
+        // Nenhum novo disponível, mantém a pessoa atual
+        return pessoa;
+      }
       const novoNome = nomes[novoIndex];
       nomesUsados.push(novoNome);
 
