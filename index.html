@@ -217,10 +217,6 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
       historicoTarefa[novoNome] = pessoa.tarefa;
 
-      if (!jaLimpouHoje.includes(novoNome)) {
-        jaLimpouHoje.push(novoNome);
-      }
-
       return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
       return pessoa;
@@ -245,3 +241,4 @@ document.getElementById('btnReset').onclick = function() {
 
 </body>
 </html>
+
