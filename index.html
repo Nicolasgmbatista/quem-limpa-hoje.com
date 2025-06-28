@@ -105,167 +105,164 @@
 </footer>
 
 <script>
-const nomes = [
-  "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle",
-  "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna",
-  "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas",
-  "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
-].sort((a, b) => a.localeCompare(b));
-
-// Guarda quem limpou na rodada atual (reseta sempre que gerar escala)
-let jaConfirmouLimpeza = JSON.parse(localStorage.getItem('jaConfirmouLimpeza') || '[]');
-let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
-let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
-if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
-
-let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
-
-function salvarTudo() {
-  localStorage.setItem('jaConfirmouLimpeza', JSON.stringify(jaConfirmouLimpeza));
-  localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
-  localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
-  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
-}
-
-function alternarTarefa(tarefa) {
-  return tarefa === 'mesa' ? 'chão' : 'mesa';
-}
-
-function proximoIndice(atual, nomesIgnorados = []) {
-  let i = atual;
-  for (let count = 0; count < nomes.length; count++) {
-    i = (i + 1) % nomes.length;
-    if (!jaConfirmouLimpeza.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-function gerarEscala() {
-  // Se todos já limparam, reinicia o histórico
-  if (jaConfirmouLimpeza.length >= nomes.length) {
-    jaConfirmouLimpeza = [];
-    historicoTarefa = {};
-    posicaoUltimaEscala = -1;
-    alert('Todos já participaram da limpeza. A escala foi reiniciada.');
-  }
-
-  // Limpa a lista de quem limpou nesta rodada, pois vai gerar escala nova
-  jaConfirmouLimpeza = [];
-  salvarTudo();
-
-  const nomesIgnorados = [];
-
-  const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
-  if (index1 === -1) {
-    alert('Não há pessoas disponíveis para a escala.');
-    return;
-  }
-  const nome1 = nomes[index1];
-
-  const index2 = proximoIndice(index1, [nome1, ...nomesIgnorados]);
-  if (index2 === -1) {
-    alert('Não há pessoas suficientes. A escala será reiniciada.');
-    jaConfirmouLimpeza = [];
-    historicoTarefa = {};
-    posicaoUltimaEscala = -1;
-    gerarEscala();
-    return;
-  }
-  const nome2 = nomes[index2];
-
-  const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
-  const tarefa1 = alternarTarefa(tarefa1Anterior);
-  const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
-
-  historicoTarefa[nome1] = tarefa1;
-  historicoTarefa[nome2] = tarefa2;
-
-  escalaAtual = [
-    { nome: nome1, tarefa: tarefa1, index: index1 },
-    { nome: nome2, tarefa: tarefa2, index: index2 }
-  ];
-
-  posicaoUltimaEscala = index2;
-  salvarTudo();
-  atualizarResultadoEFormulario();
-}
-
-function atualizarResultadoEFormulario() {
-  if (escalaAtual.length === 0) {
-    document.getElementById('resultado').innerHTML = '';
-    document.getElementById('pergunta').style.display = 'none';
-    return;
-  }
-
-  const listaHtml = escalaAtual.map(t => `<li>${t.nome} ➔ <strong>${t.tarefa}</strong></li>`).join('');
-  document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
-
-  const container = document.getElementById('checkboxContainer');
-  container.innerHTML = '';
-  escalaAtual.forEach(pessoa => {
-    const wrapper = document.createElement('div');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = pessoa.nome;
-    checkbox.name = "limpou";
-    checkbox.value = pessoa.nome;
-    const label = document.createElement('label');
-    label.htmlFor = pessoa.nome;
-    label.textContent = pessoa.nome;
-    wrapper.appendChild(checkbox);
-    wrapper.appendChild(label);
-    container.appendChild(wrapper);
-  });
-
-  document.getElementById('pergunta').style.display = 'block';
-}
-
 window.onload = function() {
-  if (escalaAtual.length === 2) atualizarResultadoEFormulario();
-};
+  const nomes = [
+    "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle",
+    "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna",
+    "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas",
+    "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
+  ].sort((a, b) => a.localeCompare(b));
 
-document.getElementById('btnGerar').onclick = gerarEscala;
+  let jaConfirmouLimpeza = JSON.parse(localStorage.getItem('jaConfirmouLimpeza') || '[]');
+  let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
+  let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
+  if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
 
-document.getElementById('formQuemLimpou').onsubmit = function(e) {
-  e.preventDefault();
+  let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
 
-  const marcouQuemLimpou = escalaAtual.filter(p => document.getElementById(p.nome).checked).map(p => p.nome);
+  function salvarTudo() {
+    localStorage.setItem('jaConfirmouLimpeza', JSON.stringify(jaConfirmouLimpeza));
+    localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
+    localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+    localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
+  }
 
-  jaConfirmouLimpeza = marcouQuemLimpou;
-  salvarTudo();
+  function alternarTarefa(tarefa) {
+    return tarefa === 'mesa' ? 'chão' : 'mesa';
+  }
 
-  let nomesIgnorados = escalaAtual.filter(p => !marcouQuemLimpou.includes(p.nome)).map(p => p.nome);
-
-  escalaAtual = escalaAtual.map(pessoa => {
-    if (marcouQuemLimpou.includes(pessoa.nome)) {
-      const novoIndex = proximoIndice(pessoa.index, nomesIgnorados);
-      if (novoIndex === -1) {
-        return pessoa;
+  function proximoIndice(atual, nomesIgnorados = []) {
+    let i = atual;
+    for (let count = 0; count < nomes.length; count++) {
+      i = (i + 1) % nomes.length;
+      if (!jaConfirmouLimpeza.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
+        return i;
       }
-      const novoNome = nomes[novoIndex];
-      nomesIgnorados.push(novoNome);
-      historicoTarefa[novoNome] = pessoa.tarefa;
-      return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
-    } else {
-      return pessoa;
     }
-  });
+    return -1;
+  }
 
-  salvarTudo();
-  atualizarResultadoEFormulario();
-};
+  function gerarEscala() {
+    if (jaConfirmouLimpeza.length >= nomes.length) {
+      jaConfirmouLimpeza = [];
+      historicoTarefa = {};
+      posicaoUltimaEscala = -1;
+      alert('Todos já participaram da limpeza. A escala foi reiniciada.');
+    }
 
-document.getElementById('btnReset').onclick = function() {
-  if (confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
-    localStorage.clear();
     jaConfirmouLimpeza = [];
-    historicoTarefa = {};
-    posicaoUltimaEscala = -1;
-    escalaAtual = [];
+    salvarTudo();
+
+    const nomesIgnorados = [];
+
+    const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
+    if (index1 === -1) {
+      alert('Não há pessoas disponíveis para a escala.');
+      return;
+    }
+    const nome1 = nomes[index1];
+
+    const index2 = proximoIndice(index1, [nome1, ...nomesIgnorados]);
+    if (index2 === -1) {
+      alert('Não há pessoas suficientes. A escala será reiniciada.');
+      jaConfirmouLimpeza = [];
+      historicoTarefa = {};
+      posicaoUltimaEscala = -1;
+      gerarEscala();
+      return;
+    }
+    const nome2 = nomes[index2];
+
+    const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
+    const tarefa1 = alternarTarefa(tarefa1Anterior);
+    const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
+
+    historicoTarefa[nome1] = tarefa1;
+    historicoTarefa[nome2] = tarefa2;
+
+    escalaAtual = [
+      { nome: nome1, tarefa: tarefa1, index: index1 },
+      { nome: nome2, tarefa: tarefa2, index: index2 }
+    ];
+
+    posicaoUltimaEscala = index2;
+    salvarTudo();
     atualizarResultadoEFormulario();
   }
+
+  function atualizarResultadoEFormulario() {
+    if (escalaAtual.length === 0) {
+      document.getElementById('resultado').innerHTML = '';
+      document.getElementById('pergunta').style.display = 'none';
+      return;
+    }
+
+    const listaHtml = escalaAtual.map(t => `<li>${t.nome} ➔ <strong>${t.tarefa}</strong></li>`).join('');
+    document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
+
+    const container = document.getElementById('checkboxContainer');
+    container.innerHTML = '';
+    escalaAtual.forEach(pessoa => {
+      const wrapper = document.createElement('div');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = pessoa.nome;
+      checkbox.name = "limpou";
+      checkbox.value = pessoa.nome;
+      const label = document.createElement('label');
+      label.htmlFor = pessoa.nome;
+      label.textContent = pessoa.nome;
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(label);
+      container.appendChild(wrapper);
+    });
+
+    document.getElementById('pergunta').style.display = 'block';
+  }
+
+  if (escalaAtual.length === 2) atualizarResultadoEFormulario();
+
+  document.getElementById('btnGerar').onclick = gerarEscala;
+
+  document.getElementById('formQuemLimpou').onsubmit = function(e) {
+    e.preventDefault();
+
+    const marcouQuemLimpou = escalaAtual.filter(p => document.getElementById(p.nome).checked).map(p => p.nome);
+
+    jaConfirmouLimpeza = marcouQuemLimpou;
+    salvarTudo();
+
+    let nomesIgnorados = escalaAtual.filter(p => !marcouQuemLimpou.includes(p.nome)).map(p => p.nome);
+
+    escalaAtual = escalaAtual.map(pessoa => {
+      if (marcouQuemLimpou.includes(pessoa.nome)) {
+        const novoIndex = proximoIndice(pessoa.index, nomesIgnorados);
+        if (novoIndex === -1) {
+          return pessoa;
+        }
+        const novoNome = nomes[novoIndex];
+        nomesIgnorados.push(novoNome);
+        historicoTarefa[novoNome] = pessoa.tarefa;
+        return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
+      } else {
+        return pessoa;
+      }
+    });
+
+    salvarTudo();
+    atualizarResultadoEFormulario();
+  };
+
+  document.getElementById('btnReset').onclick = function() {
+    if (confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
+      localStorage.clear();
+      jaConfirmouLimpeza = [];
+      historicoTarefa = {};
+      posicaoUltimaEscala = -1;
+      escalaAtual = [];
+      atualizarResultadoEFormulario();
+    }
+  };
 };
 </script>
 
