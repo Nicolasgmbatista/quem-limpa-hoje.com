@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quem limpa a sala hoje?</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    max-width: 700px;
   }
   h1 {
     color: #2c3e50;
@@ -59,7 +57,6 @@
   #formQuemLimpou button[type="submit"] {
     margin-top: 20px;
   }
-  /* Estilo especial para o botão reset dentro do form */
   #btnReset {
     margin-top: 10px;
     background-color: #c0392b;
@@ -67,7 +64,6 @@
   #btnReset:hover {
     background-color: #e74c3c;
   }
-  /* Mensagem de aviso */
   #avisoReset {
     margin-top: 30px;
     color: #e74c3c;
@@ -110,39 +106,16 @@
 
 <script>
 const nomes = [
-  "Ana",
-  "Beatriz",
-  "Bernardo",
-  "Emanuelly",
-  "Gabriel",
-  "Gabrielle",
-  "Greicy",
-  "Henzo",
-  "Igor",
-  "Isadora",
-  "Jennifer",
-  "Joedna",
-  "Kemilly Silva",
-  "Kemilly Puff",
-  "Luiz",
-  "Mateus Yuri",
-  "Mateus Chagas",
-  "Nayara",
-  "Nicolas",
-  "Norehangeles",
-  "Pedro",
-  "Samuel",
-  "Sebastião",
-  "Zaira"
+  "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle",
+  "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna",
+  "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas",
+  "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
 ].sort((a, b) => a.localeCompare(b));
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
-
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
-if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) {
-  posicaoUltimaEscala = -1;
-}
+if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
 
 let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
 
@@ -169,10 +142,13 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
-  if (jaLimpouHoje.length >= nomes.length - 1) {
+  const pessoasQueJaLimpou = new Set(jaLimpouHoje);
+
+  if (pessoasQueJaLimpou.size >= nomes.length) {
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
+    alert("Todos já participaram da limpeza. A escala será reiniciada.");
   }
 
   const nomesIgnorados = escalaAtual.map(p => p.nome);
@@ -185,6 +161,7 @@ function gerarEscala() {
 
   const index2 = proximoIndice(index1, [...nomesIgnorados, nome1]);
   if (index2 === -1) {
+    alert("Não há pessoas suficientes. A escala será reiniciada.");
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
@@ -211,12 +188,12 @@ function gerarEscala() {
 }
 
 function atualizarResultadoEFormulario() {
-  if(escalaAtual.length === 0) {
+  if (escalaAtual.length === 0) {
     document.getElementById('resultado').innerHTML = '';
     document.getElementById('pergunta').style.display = 'none';
     return;
   }
-  
+
   const listaHtml = escalaAtual.map(t => `<li>${t.nome} ➔ <strong>${t.tarefa}</strong></li>`).join('');
   document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
 
@@ -241,9 +218,7 @@ function atualizarResultadoEFormulario() {
 }
 
 window.onload = function() {
-  if (escalaAtual.length === 2) {
-    atualizarResultadoEFormulario();
-  }
+  if (escalaAtual.length === 2) atualizarResultadoEFormulario();
 };
 
 document.getElementById('btnGerar').onclick = gerarEscala;
@@ -264,7 +239,6 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
       const novoIndex = proximoIndice(pessoa.index, nomesUsados);
       if (novoIndex === -1) {
-        // Nenhum novo disponível, mantém a pessoa atual
         return pessoa;
       }
       const novoNome = nomes[novoIndex];
@@ -284,7 +258,7 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 };
 
 document.getElementById('btnReset').onclick = function() {
-  if(confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
+  if (confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
     localStorage.clear();
     jaLimpouHoje = [];
     historicoTarefa = {};
