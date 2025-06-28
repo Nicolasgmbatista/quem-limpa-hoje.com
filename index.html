@@ -96,12 +96,14 @@ let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}'
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
 if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
 
-let escalaAtual = [];
+let ultimaEscalaOriginal = JSON.parse(localStorage.getItem('ultimaEscalaOriginal') || '[]');
+let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || []);
 
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('ultimaEscalaOriginal', JSON.stringify(ultimaEscalaOriginal));
   localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
 }
 
@@ -121,7 +123,7 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
-  jaLimpouHoje = []; // Limpa lista para novo ciclo/dia
+  jaLimpouHoje = [];
 
   if (posicaoUltimaEscala >= nomes.length - 1) {
     historicoTarefa = {};
@@ -158,7 +160,9 @@ function gerarEscala() {
     { nome: nome2, tarefa: tarefa2, index: index2 }
   ];
 
-  posicaoUltimaEscala = index2; // Só atualiza aqui!
+  // Salva os índices originais da escala, para controlar o ciclo correto
+  ultimaEscalaOriginal = [index1, index2];
+  posicaoUltimaEscala = index2;
   salvarTudo();
   atualizarResultadoEFormulario();
 }
@@ -215,7 +219,7 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
       historicoTarefa[novoNome] = pessoa.tarefa;
 
-      // NÃO atualizar posicaoUltimaEscala aqui!
+      // Não alterar posicaoUltimaEscala ou ultimaEscalaOriginal aqui
       return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
       return pessoa;
@@ -232,7 +236,15 @@ document.getElementById('btnReset').onclick = function() {
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
+    ultimaEscalaOriginal = [];
     escalaAtual = [];
+    atualizarResultadoEFormulario();
+  }
+};
+
+window.onload = function() {
+  // Se tiver escala salva, mostra ela
+  if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
   }
 };
