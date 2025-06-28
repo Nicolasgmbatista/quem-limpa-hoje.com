@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Quem limpa a sala hoje?</title>
 <style>
   body {
@@ -86,7 +86,32 @@
 </footer>
 
 <script>
-const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a, b) => a.localeCompare(b));
+const nomes = [
+  "Ana",
+  "Beatriz",
+  "Bernardo",
+  "Chagas",
+  "Emanuelly",
+  "Gabriel",
+  "Gabrielle",
+  "Greicy",
+  "Henzo",
+  "Igor",
+  "Isadora",
+  "Jennifer",
+  "Joedna",
+  "Kemilly",
+  "Luiz",
+  "Nayara",
+  "Nicolas",
+  "Norehangeles",
+  "Pedro",
+  "Puff",
+  "Samuel",
+  "Sebastião",
+  "Yuri",
+  "Zaira"
+].sort((a, b) => a.localeCompare(b));
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
@@ -219,4 +244,3 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
 </body>
 </html>
-
