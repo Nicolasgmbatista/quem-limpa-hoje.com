@@ -96,14 +96,12 @@ let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}'
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
 if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
 
-let ultimaEscalaOriginal = JSON.parse(localStorage.getItem('ultimaEscalaOriginal') || '[]');
 let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || []);
 
 function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
-  localStorage.setItem('ultimaEscalaOriginal', JSON.stringify(ultimaEscalaOriginal));
   localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
 }
 
@@ -111,6 +109,7 @@ function alternarTarefa(tarefa) {
   return tarefa === 'mesa' ? 'chão' : 'mesa';
 }
 
+// Função para encontrar o próximo índice disponível, ignorando os já limparam hoje e nomes ignorados
 function proximoIndice(atual, nomesIgnorados = []) {
   let i = atual;
   for (let count = 0; count < nomes.length; count++) {
@@ -123,30 +122,35 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
+  // Se quase todos limparam hoje, resetar lista pra novo ciclo
   if (jaLimpouHoje.length >= nomes.length - 1) {
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
   }
 
-  escalaAtual = [];
-  const nomesIgnorados = [];
+  const nomesIgnorados = escalaAtual.map(p => p.nome);
 
-  const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
+  // Encontrar dois próximos nomes que ainda não limparam hoje nem estão na escala atual
+  let index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
   if (index1 === -1) {
-    alert('Não há pessoas disponíveis para a escala.');
+    alert("Não há pessoas disponíveis para a escala.");
     return;
   }
   const nome1 = nomes[index1];
 
-  const index2 = proximoIndice(index1, [nome1, ...nomesIgnorados]);
+  let index2 = proximoIndice(index1, [...nomesIgnorados, nome1]);
   if (index2 === -1) {
+    // Se não encontrar segundo, reinicia tudo e tenta de novo
+    jaLimpouHoje = [];
+    historicoTarefa = {};
     posicaoUltimaEscala = -1;
     gerarEscala();
     return;
   }
   const nome2 = nomes[index2];
 
+  // Alterna tarefa com base no histórico
   const tarefa1Anterior = historicoTarefa[nome1] || 'mesa';
   const tarefa1 = alternarTarefa(tarefa1Anterior);
   const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
@@ -159,11 +163,9 @@ function gerarEscala() {
     { nome: nome2, tarefa: tarefa2, index: index2 }
   ];
 
-  ultimaEscalaOriginal = [index1, index2];
   posicaoUltimaEscala = index2;
 
   salvarTudo();
-
   atualizarResultadoEFormulario();
 }
 
@@ -195,18 +197,9 @@ function atualizarResultadoEFormulario() {
   });
 
   document.getElementById('pergunta').style.display = 'block';
-  document.getElementById('resultado').style.display = 'block';
 }
 
 document.getElementById('btnGerar').onclick = gerarEscala;
-
-window.onload = function() {
-  if (escalaAtual.length === 2) {
-    atualizarResultadoEFormulario();
-  } else {
-    gerarEscala();
-  }
-};
 
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
@@ -244,9 +237,17 @@ document.getElementById('btnReset').onclick = function() {
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
-    ultimaEscalaOriginal = [];
     escalaAtual = [];
     atualizarResultadoEFormulario();
+  }
+};
+
+// Ao carregar a página, se tiver escala salva, mostra; senão gera nova
+window.onload = function() {
+  if (escalaAtual.length === 2) {
+    atualizarResultadoEFormulario();
+  } else {
+    gerarEscala();
   }
 };
 </script>
