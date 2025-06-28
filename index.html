@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Quem limpa a sala hoje?</title>
 <style>
-  body { font-family: Arial, sans-serif; }
-  h1 { color: #2c3e50; }
+  h1 {
+    color: #2c3e50;
+  }
   button, input, select {
     padding: 10px 15px;
     cursor: pointer;
@@ -18,10 +19,20 @@
     font-weight: bold;
     transition: background-color 0.3s ease;
   }
-  button:hover { background-color: #34495e; }
-  #btnGerar { margin-bottom: 20px; }
-  #resultado { margin-top: 20px; font-size: 18px; }
-  #resultado ul { list-style: none; padding: 0; }
+  button:hover {
+    background-color: #34495e;
+  }
+  #btnGerar {
+    margin-bottom: 20px;
+  }
+  #resultado {
+    margin-top: 20px;
+    font-size: 18px;
+  }
+  #resultado ul {
+    list-style: none;
+    padding: 0;
+  }
   #resultado li {
     background: #ecf0f1;
     margin-bottom: 10px;
@@ -40,12 +51,16 @@
     align-items: center;
     gap: 6px;
   }
-  #formQuemLimpou button[type="submit"] { margin-top: 20px; }
+  #formQuemLimpou button[type="submit"] {
+    margin-top: 20px;
+  }
   #btnReset {
     margin-top: 10px;
     background-color: #c0392b;
   }
-  #btnReset:hover { background-color: #e74c3c; }
+  #btnReset:hover {
+    background-color: #e74c3c;
+  }
   #avisoReset {
     margin-top: 30px;
     color: #e74c3c;
@@ -72,10 +87,13 @@
   <form id="formQuemLimpou">
     <div id="checkboxContainer"></div>
     <button type="submit">Confirmar</button>
+
     <div id="avisoReset">
       ⚠️ Cuidado: o botão resetar apaga <u>TODOS</u> os dados!
     </div>
-    <button id="btnReset" type="button">Resetar Escala</button>
+    <button id="btnReset" type="button">
+      Resetar Escala
+    </button>
   </form>
 </div>
 
@@ -85,62 +103,83 @@
 
 <script>
 const nomes = [
-  "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle",
-  "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna",
-  "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas",
-  "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
-].sort((a,b) => a.localeCompare(b));
+  "Ana",
+  "Beatriz",
+  "Bernardo",
+  "Emanuelly",
+  "Gabriel",
+  "Gabrielle",
+  "Greicy",
+  "Henzo",
+  "Igor",
+  "Isadora",
+  "Jennifer",
+  "Joedna",
+  "Kemilly Silva",
+  "Kemilly Puff",
+  "Luiz",
+  "Mateus Yuri",
+  "Mateus Chagas",
+  "Nayara",
+  "Nicolas",
+  "Norehangeles",
+  "Pedro",
+  "Samuel",
+  "Sebastião",
+  "Zaira"
+].sort((a, b) => a.localeCompare(b));
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
+
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
-if(typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
+if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) {
+  posicaoUltimaEscala = -1;
+}
 
-let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || []);
+let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
 
-function salvarTudo(){
+function salvarTudo() {
   localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
   localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
 }
 
-function alternarTarefa(tarefa){
+function alternarTarefa(tarefa) {
   return tarefa === 'mesa' ? 'chão' : 'mesa';
 }
 
-function proximoIndice(atual, ignorados = []){
+function proximoIndice(atual, nomesIgnorados = []) {
   let i = atual;
-  for(let count = 0; count < nomes.length; count++){
+  for (let count = 0; count < nomes.length; count++) {
     i = (i + 1) % nomes.length;
-    if(!jaLimpouHoje.includes(nomes[i]) && !ignorados.includes(nomes[i])){
+    if (!jaLimpouHoje.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
       return i;
     }
   }
   return -1;
 }
 
-function gerarEscala(){
-  // Se todos ou quase todos limparam, reinicia lista de quem limpou
-  if(jaLimpouHoje.length >= nomes.length - 1){
-    jaLimpouHoje = [];
-    historicoTarefa = {};
+function gerarEscala() {
+  // Limpa o registro de quem limpou para nova escala
+  jaLimpouHoje = [];
+  salvarTudo();
+
+  if (escalaAtual.length === 0) {
     posicaoUltimaEscala = -1;
   }
 
   const nomesIgnorados = escalaAtual.map(p => p.nome);
-
   const index1 = proximoIndice(posicaoUltimaEscala, nomesIgnorados);
-  if(index1 === -1){
-    alert('Não há pessoas disponíveis para a escala.');
+  if (index1 === -1) {
+    alert("Não há pessoas disponíveis para a escala.");
     return;
   }
   const nome1 = nomes[index1];
 
   const index2 = proximoIndice(index1, [...nomesIgnorados, nome1]);
-  if(index2 === -1){
-    jaLimpouHoje = [];
-    historicoTarefa = {};
+  if (index2 === -1) {
     posicaoUltimaEscala = -1;
     gerarEscala();
     return;
@@ -155,23 +194,22 @@ function gerarEscala(){
   historicoTarefa[nome2] = tarefa2;
 
   escalaAtual = [
-    {nome: nome1, tarefa: tarefa1, index: index1},
-    {nome: nome2, tarefa: tarefa2, index: index2}
+    { nome: nome1, tarefa: tarefa1, index: index1 },
+    { nome: nome2, tarefa: tarefa2, index: index2 }
   ];
 
   posicaoUltimaEscala = index2;
-
   salvarTudo();
   atualizarResultadoEFormulario();
 }
 
-function atualizarResultadoEFormulario(){
-  if(escalaAtual.length === 0){
+function atualizarResultadoEFormulario() {
+  if(escalaAtual.length === 0) {
     document.getElementById('resultado').innerHTML = '';
     document.getElementById('pergunta').style.display = 'none';
     return;
   }
-
+  
   const listaHtml = escalaAtual.map(t => `<li>${t.nome} ➔ <strong>${t.tarefa}</strong></li>`).join('');
   document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
 
@@ -195,33 +233,40 @@ function atualizarResultadoEFormulario(){
   document.getElementById('pergunta').style.display = 'block';
 }
 
-document.getElementById('btnGerar').onclick = function(){
-  // Ao clicar continuar, gerar nova escala e resetar lista de quem limpou HOJE
-  // para que ninguém "suma" no próximo dia
-  jaLimpouHoje = [];
-  salvarTudo();
-  gerarEscala();
+window.onload = function() {
+  if (escalaAtual.length === 2) {
+    atualizarResultadoEFormulario();
+  }
 };
 
-document.getElementById('formQuemLimpou').onsubmit = function(e){
+document.getElementById('btnGerar').onclick = gerarEscala;
+
+document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  const selecionados = escalaAtual.filter(p => document.getElementById(p.nome).checked).map(p => p.nome);
-  const naoSelecionados = escalaAtual.filter(p => !selecionados.includes(p.nome)).map(p => p.nome);
+  const naoMarcados = escalaAtual.filter(p => !document.getElementById(p.nome).checked).map(p => p.nome);
+  let nomesUsados = [...naoMarcados];
 
   escalaAtual = escalaAtual.map(pessoa => {
-    if(selecionados.includes(pessoa.nome)){
-      if(!jaLimpouHoje.includes(pessoa.nome)){
+    const marcou = document.getElementById(pessoa.nome).checked;
+
+    if (marcou) {
+      if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
-      const novoIndex = proximoIndice(pessoa.index, naoSelecionados);
-      if(novoIndex === -1) return pessoa;
+
+      const novoIndex = proximoIndice(pessoa.index, nomesUsados);
+      if (novoIndex === -1) {
+        return pessoa;
+      }
       const novoNome = nomes[novoIndex];
-      naoSelecionados.push(novoNome);
-      historicoTarefa[novoNome] = pessoa.tarefa;
-      return {nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex};
-    }
-    else{
+      nomesUsados.push(novoNome);
+
+      const tarefaAntiga = pessoa.tarefa;
+      historicoTarefa[novoNome] = tarefaAntiga;
+
+      return { nome: novoNome, tarefa: tarefaAntiga, index: novoIndex };
+    } else {
       return pessoa;
     }
   });
@@ -230,23 +275,14 @@ document.getElementById('formQuemLimpou').onsubmit = function(e){
   atualizarResultadoEFormulario();
 };
 
-document.getElementById('btnReset').onclick = function(){
-  if(confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')){
+document.getElementById('btnReset').onclick = function() {
+  if(confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
     localStorage.clear();
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
     escalaAtual = [];
     atualizarResultadoEFormulario();
-  }
-};
-
-window.onload = function(){
-  if(escalaAtual.length === 2){
-    atualizarResultadoEFormulario();
-  }
-  else{
-    gerarEscala();
   }
 };
 </script>
