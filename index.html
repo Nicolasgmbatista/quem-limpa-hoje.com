@@ -123,12 +123,8 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
-  alert('Botão Continuar clicado!');
-  console.log("Gerando escala...");
-
-  jaLimpouHoje = [];
-
-  if (posicaoUltimaEscala >= nomes.length - 1) {
+  if (jaLimpouHoje.length >= nomes.length - 1) {
+    jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
   }
@@ -168,14 +164,10 @@ function gerarEscala() {
 
   salvarTudo();
 
-  console.log('Escala gerada:', escalaAtual);
-
   atualizarResultadoEFormulario();
 }
 
 function atualizarResultadoEFormulario() {
-  console.log("Atualizando resultado e formulário");
-
   if (escalaAtual.length === 0) {
     document.getElementById('resultado').innerHTML = '';
     document.getElementById('pergunta').style.display = 'none';
@@ -207,6 +199,14 @@ function atualizarResultadoEFormulario() {
 }
 
 document.getElementById('btnGerar').onclick = gerarEscala;
+
+window.onload = function() {
+  if (escalaAtual.length === 2) {
+    atualizarResultadoEFormulario();
+  } else {
+    gerarEscala();
+  }
+};
 
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
@@ -246,12 +246,6 @@ document.getElementById('btnReset').onclick = function() {
     posicaoUltimaEscala = -1;
     ultimaEscalaOriginal = [];
     escalaAtual = [];
-    atualizarResultadoEFormulario();
-  }
-};
-
-window.onload = function() {
-  if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
   }
 };
