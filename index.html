@@ -27,9 +27,6 @@
   button:hover {
     background-color: #34495e;
   }
-  button + button {
-    margin-left: 10px;
-  }
   #btnGerar {
     margin-bottom: 20px;
   }
@@ -62,6 +59,20 @@
   #formQuemLimpou button[type="submit"] {
     margin-top: 20px;
   }
+  /* Estilo especial para o botão reset dentro do form */
+  #btnReset {
+    margin-top: 10px;
+    background-color: #c0392b;
+  }
+  #btnReset:hover {
+    background-color: #e74c3c;
+  }
+  /* Mensagem de aviso */
+  #avisoReset {
+    margin-top: 30px;
+    color: #e74c3c;
+    font-weight: bold;
+  }
   footer {
     margin-top: 40px;
     font-size: 14px;
@@ -74,9 +85,7 @@
 <h1>Quem limpa a sala hoje?</h1>
 <p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
 
-<!-- Botões no topo -->
 <button id="btnGerar">Continuar</button>
-<button id="btnReset">Resetar Escala</button>
 
 <div id="resultado"></div>
 
@@ -85,6 +94,13 @@
   <form id="formQuemLimpou">
     <div id="checkboxContainer"></div>
     <button type="submit">Confirmar</button>
+
+    <div id="avisoReset">
+      ⚠️ Cuidado: o botão resetar apaga <u>TODOS</u> os dados!
+    </div>
+    <button id="btnReset" type="button">
+      Resetar Escala
+    </button>
   </form>
 </div>
 
