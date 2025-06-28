@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Quem limpa a sala hoje?</title>
 <style>
   body { font-family: Arial, sans-serif; }
@@ -120,11 +120,12 @@ function proximoIndice(atual, nomesIgnorados = []) {
 }
 
 function gerarEscala() {
-  if (jaLimpouHoje.length >= nomes.length) {
-    jaLimpouHoje = [];
+  // Limpa quem já limpou ao gerar nova escala (novo dia)
+  jaLimpouHoje = [];
+
+  if (posicaoUltimaEscala >= nomes.length - 1) {
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
-    alert('Todos já participaram da limpeza. A escala foi reiniciada.');
   }
 
   escalaAtual = [];
@@ -139,8 +140,6 @@ function gerarEscala() {
 
   const index2 = proximoIndice(index1, [nome1, ...nomesIgnorados]);
   if (index2 === -1) {
-    jaLimpouHoje = [];
-    historicoTarefa = {};
     posicaoUltimaEscala = -1;
     gerarEscala();
     return;
@@ -241,4 +240,5 @@ document.getElementById('btnReset').onclick = function() {
 
 </body>
 </html>
+
 
