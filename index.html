@@ -1,4 +1,121 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quem limpa a sala hoje?</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    max-width: 700px;
+  }
+  h1 {
+    color: #2c3e50;
+  }
+  button, input, select {
+    padding: 10px 15px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  #resultado {
+    margin-top: 30px;
+    font-size: 18px;
+  }
+  #resultado ul {
+    list-style: none;
+    padding: 0;
+  }
+  #resultado li {
+    background: #ecf0f1;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 6px;
+  }
+  #checkboxContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px 30px;
+    margin-top: 10px;
+  }
+  #checkboxContainer div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #formQuemLimpou button[type="submit"] {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  #formQuemLimpou button[type="submit"]:hover {
+    background-color: #34495e;
+  }
+  footer {
+    margin-top: 40px;
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+</style>
+</head>
+<body>
 
+<h1>Quem limpa a sala hoje?</h1>
+<p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
+
+<button id="btnGerar">Gerar Escala de Limpeza</button>
+
+<div id="resultado"></div>
+
+<div id="pergunta" style="display:none;">
+  <p>Informe quem da escala limpou o laboratório ou faltou (se nada, não selecione):</p>
+  <form id="formQuemLimpou">
+    <div id="checkboxContainer"></div>
+    <button type="submit">Confirmar</button>
+  </form>
+</div>
+
+<footer>
+  © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
+</footer>
+
+<script>
+const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gustavo", "Helena", "Igor", "João", "Karen", "Lucas", "Mariana", "Natália", "Otávio", "Paula", "Ricardo", "Sofia", "Thiago", "Úrsula", "Vinícius", "Wesley", "Xênia", "Yara", "Zé"].sort((a, b) => a.localeCompare(b));
+
+let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
+let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
+let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala') || '-1');
+let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
+
+function salvarTudo() {
+  localStorage.setItem('jaLimpouHoje', JSON.stringify(jaLimpouHoje));
+  localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
+  localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
+}
+
+function alternarTarefa(tarefa) {
+  return tarefa === 'mesa' ? 'chão' : 'mesa';
+}
+
+function proximoIndice(atual, nomesIgnorados = []) {
+  let i = atual;
+  for (let count = 0; count < nomes.length; count++) {
+    i = (i + 1) % nomes.length;
+    if (!jaLimpouHoje.includes(nomes[i]) && !nomesIgnorados.includes(nomes[i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function gerarEscala() {
   if (jaLimpouHoje.length >= nomes.length - 1) {
     jaLimpouHoje = [];
     historicoTarefa = {};
@@ -39,8 +156,8 @@
 }
 
 function atualizarResultadoEFormulario() {
-  const listaHtml = escalaAtual.map(t => `<li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>`).join('');
-  document.getElementById('resultado').innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
+  const listaHtml = escalaAtual.map(t => <li>${t.nome} — limpar <strong>${t.tarefa}</strong></li>).join('');
+  document.getElementById('resultado').innerHTML = <h2>Escala de hoje:</h2><ul>${listaHtml}</ul>;
 
   const container = document.getElementById('checkboxContainer');
   container.innerHTML = '';
