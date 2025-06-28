@@ -201,21 +201,26 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
 
   const marcouQuemLimpou = escalaAtual.filter(p => document.getElementById(p.nome).checked).map(p => p.nome);
 
-  marcouQuemLimpou.forEach(nome => {
-    if (!jaLimpouHoje.includes(nome)) {
-      jaLimpouHoje.push(nome);
-    }
-  });
-
   const nomesIgnorados = escalaAtual.filter(p => !marcouQuemLimpou.includes(p.nome)).map(p => p.nome);
 
   escalaAtual = escalaAtual.map(pessoa => {
     if (marcouQuemLimpou.includes(pessoa.nome)) {
+      if (!jaLimpouHoje.includes(pessoa.nome)) {
+        jaLimpouHoje.push(pessoa.nome);
+      }
+
       const novoIndex = proximoIndice(pessoa.index, nomesIgnorados);
       if (novoIndex === -1) return pessoa;
+
       const novoNome = nomes[novoIndex];
       nomesIgnorados.push(novoNome);
+
       historicoTarefa[novoNome] = pessoa.tarefa;
+
+      if (!jaLimpouHoje.includes(novoNome)) {
+        jaLimpouHoje.push(novoNome);
+      }
+
       return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
     } else {
       return pessoa;
