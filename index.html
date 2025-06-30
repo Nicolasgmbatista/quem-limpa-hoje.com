@@ -101,7 +101,6 @@ const nomes = [
 
 let jaLimpouHoje = JSON.parse(localStorage.getItem('jaLimpouHoje') || '[]');
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
-let faltantesComTarefa = JSON.parse(localStorage.getItem('faltantesComTarefa') || '[]');
 
 let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
 if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) {
@@ -115,7 +114,6 @@ function salvarTudo() {
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
   localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
-  localStorage.setItem('faltantesComTarefa', JSON.stringify(faltantesComTarefa));
 }
 
 function alternarTarefa(tarefa) {
@@ -136,28 +134,96 @@ function proximoIndice(atual, nomesIgnorados = []) {
 function gerarEscala() {
   jaLimpouHoje = [];
 
-  // Começa incluindo faltantes que ficaram para o próximo dia
-  escalaAtual = [...faltantesComTarefa];
-  // Limpa a lista de faltantes para não repetir eles
-  faltantesComTarefa = [];
+  if (escalaAtual.length === 0) {
+    // primeira escala, pega as duas primeiras pessoas
+    const index1 = proximoIndice(posicaoUltimaEscala, []);
+    if (index1 === -1) {
+      alert("Não há pessoas disponíveis para a escala.");
+      return;
+    }
+    const nome1 = nomes[index1];
+    const tarefa1 = historicoTarefa[nome1] || 'mesa';
 
-  const nomesIgnorados = escalaAtual.map(p => p.nome);
-  let ultimoIndex = posicaoUltimaEscala;
+    const index2 = proximoIndice(index1, [nome1]);
+    if (index2 === -1) {
+      alert("Não há pessoas suficientes para a escala.");
+      return;
+    }
+    const nome2 = nomes[index2];
+    const tarefa2 = historicoTarefa[nome2] || alternarTarefa(tarefa1);
 
-  // Completa até 2 pessoas
-  while (escalaAtual.length < 2) {
-    const index = proximoIndice(ultimoIndex, nomesIgnorados);
-    if (index === -1) break;
+    historicoTarefa[nome1] = tarefa1;
+    historicoTarefa[nome2] = tarefa2;
 
-    const nome = nomes[index];
-    const tarefaAnterior = historicoTarefa[nome] || 'mesa';
-    const novaTarefa = alternarTarefa(tarefaAnterior);
+    escalaAtual = [
+      { nome: nome1, tarefa: tarefa1, index: index1 },
+      { nome: nome2, tarefa: tarefa2, index: index2 }
+    ];
 
-    historicoTarefa[nome] = novaTarefa;
-    escalaAtual.push({ nome, tarefa: novaTarefa, index });
-    nomesIgnorados.push(nome);
-    ultimoIndex = index;
+    posicaoUltimaEscala = index2;
+    salvarTudo();
+    atualizarResultadoEFormulario();
+    return;
   }
+
+  // A escala atual existe e vamos atualizar considerando faltantes
+  // Vamos montar nova escala:
+  // - quem NÃO faltou permanece e alterna tarefa para a do próximo dia
+  // - quem faltou é substituído por nova pessoa (nova do índice seguinte)
+
+  const nomesQueNaoFaltaram = [];
+  const novosSubstitutos = [];
+  const nomesUsados = [];
+
+  // Primeiro separamos quem faltou e quem não faltou
+  const faltantes = [];
+
+  // Usuário marcou checkbox de quem faltou
+  // checkbox.checked == true => faltou
+  // checkbox.checked == false => não faltou (presente)
+
+  escalaAtual.forEach(pessoa => {
+    const checkbox = document.getElementById(pessoa.nome);
+    const faltou = checkbox && checkbox.checked;
+
+    if (faltou) {
+      // essa pessoa faltou, vai sair da escala e ser substituída
+      faltantes.push(pessoa);
+    } else {
+      // pessoa presente mantém na escala e alterna tarefa para a do próximo dia
+      nomesQueNaoFaltaram.push({
+        nome: pessoa.nome,
+        tarefa: alternarTarefa(pessoa.tarefa),
+        index: pessoa.index
+      });
+      nomesUsados.push(pessoa.nome);
+    }
+  });
+
+  // Agora vamos buscar substitutos para os faltantes
+  let ultimoIndex = posicaoUltimaEscala;
+  faltantes.forEach(() => {
+    const novoIndex = proximoIndice(ultimoIndex, nomesUsados);
+    if (novoIndex !== -1) {
+      const novoNome = nomes[novoIndex];
+      const tarefaAnterior = historicoTarefa[novoNome] || 'mesa';
+      // O substituto assume a tarefa da pessoa que faltou (mesma tarefa dela)
+      // Para isso, pegamos a tarefa da pessoa faltante correspondente
+      // Vamos assumir que o substituto herda a tarefa da pessoa faltante, para isso precisamos do índice
+      // Como faltantes e substitutos andam na mesma ordem, usaremos o índice do faltante para pegar tarefa
+      const tarefaSubstituta = faltantes.length > 0 ? faltantes[0].tarefa : 'mesa';
+
+      // Mas como iteramos um por um, usamos a tarefa da faltante que estamos substituindo
+      const tarefaFaltante = faltantes.shift().tarefa;
+
+      historicoTarefa[novoNome] = tarefaFaltante;
+      novosSubstitutos.push({ nome: novoNome, tarefa: tarefaFaltante, index: novoIndex });
+      nomesUsados.push(novoNome);
+      ultimoIndex = novoIndex;
+    }
+  });
+
+  escalaAtual = [...nomesQueNaoFaltaram, ...novosSubstitutos].slice(0, 2);
 
   if (escalaAtual.length === 2) {
     posicaoUltimaEscala = escalaAtual[1].index;
@@ -168,7 +234,7 @@ function gerarEscala() {
 }
 
 function atualizarResultadoEFormulario() {
-  if(escalaAtual.length === 0) {
+  if (escalaAtual.length === 0) {
     document.getElementById('resultado').innerHTML = '';
     document.getElementById('pergunta').style.display = 'none';
     return;
@@ -197,7 +263,7 @@ function atualizarResultadoEFormulario() {
   document.getElementById('pergunta').style.display = 'block';
 }
 
-window.onload = function() {
+window.onload = function () {
   if (escalaAtual.length === 2) {
     atualizarResultadoEFormulario();
   }
@@ -205,68 +271,19 @@ window.onload = function() {
 
 document.getElementById('btnGerar').onclick = gerarEscala;
 
-document.getElementById('formQuemLimpou').onsubmit = function(e) {
+document.getElementById('formQuemLimpou').onsubmit = function (e) {
   e.preventDefault();
-
-  const faltantesHoje = [];
-  const nomesQueJaEstao = [];
-  const substituidos = [];
-
-  escalaAtual.forEach(pessoa => {
-    const marcou = document.getElementById(pessoa.nome).checked;
-
-    if (marcou) {
-      // Pessoa faltou hoje: permanece no próximo dia com a mesma tarefa
-      faltantesHoje.push({ nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index });
-      nomesQueJaEstao.push(pessoa.nome);
-    } else {
-      // Pessoa limpou hoje: será substituída por novo integrante
-      if (!jaLimpouHoje.includes(pessoa.nome)) {
-        jaLimpouHoje.push(pessoa.nome);
-      }
-    }
-  });
-
-  // Agora vamos buscar substitutos para quem limpou (não marcou)
-  const nomesIgnorados = [...faltantesHoje.map(p => p.nome), ...jaLimpouHoje];
-  let ultimoIndex = posicaoUltimaEscala;
-
-  // Precisamos de um total de 2 pessoas na escala:
-  // Já temos os faltantes hoje, vamos preencher o resto com substitutos
-  while (faltantesHoje.length + substituidos.length < 2) {
-    const index = proximoIndice(ultimoIndex, nomesIgnorados.concat(substituidos.map(p => p.nome)));
-    if (index === -1) break;
-
-    const nome = nomes[index];
-    const tarefaAnterior = historicoTarefa[nome] || 'mesa';
-    const novaTarefa = alternarTarefa(tarefaAnterior);
-
-    historicoTarefa[nome] = novaTarefa;
-    substituidos.push({ nome, tarefa: novaTarefa, index });
-    nomesIgnorados.push(nome);
-    ultimoIndex = index;
-  }
-
-  escalaAtual = [...faltantesHoje, ...substituidos].slice(0, 2);
-
-  if (escalaAtual.length === 2) {
-    posicaoUltimaEscala = escalaAtual[1].index;
-  }
-
-  faltantesComTarefa = [...faltantesHoje]; // Guardamos para o próximo dia os faltantes
-
-  salvarTudo();
-  atualizarResultadoEFormulario();
+  gerarEscala();
 };
 
-document.getElementById('btnReset').onclick = function() {
-  if(confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
+document.getElementById('btnReset').onclick = function () {
+  if (confirm('Tem certeza que quer resetar a escala? Todos os dados serão apagados.')) {
     localStorage.clear();
     jaLimpouHoje = [];
     historicoTarefa = {};
     posicaoUltimaEscala = -1;
     escalaAtual = [];
-    faltantesComTarefa = [];
+    salvarTudo();
     atualizarResultadoEFormulario();
   }
 };
