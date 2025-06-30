@@ -65,14 +65,10 @@
   </style>
 </head>
 <body>
-
 <h1>Quem limpa a sala hoje?</h1>
 <p>Site para gerenciar automaticamente a limpeza de chão e mesas da sala.</p>
-
 <button id="btnGerar">Continuar</button>
-
 <div id="resultado"></div>
-
 <div id="pergunta" style="display:none;">
   <p>Selecione quem <strong>faltou</strong> no laboratório e "CONFIRMAR" para atualizar:</p>
   <form id="formQuemLimpou">
@@ -84,11 +80,9 @@
     <button id="btnReset" type="button">Resetar Escala</button>
   </form>
 </div>
-
 <footer>
   © 2025 Nicolas GBM. E-mail: nicolasgmbatista15@gmail.com
 </footer>
-
 <script>
 const nomes = [
   "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy",
@@ -131,16 +125,13 @@ function gerarEscala() {
 
   if(escalaAtual.length === 0){
     const idx1 = proximoIndice(posicaoUltimaEscala, []);
-    if(idx1 === -1) { alert("Não há pessoas disponíveis"); return; }
     const nome1 = nomes[idx1];
-    const tarefa1 = historicoTarefa[nome1] || 'mesa';
+    const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
+    historicoTarefa[nome1] = tarefa1;
 
     const idx2 = proximoIndice(idx1, [nome1]);
-    if(idx2 === -1) { alert("Não há pessoas suficientes"); return; }
     const nome2 = nomes[idx2];
-    const tarefa2 = alternarTarefa(tarefa1);
-
-    historicoTarefa[nome1] = tarefa1;
+    const tarefa2 = alternarTarefa(historicoTarefa[nome2] || (tarefa1 === 'mesa' ? 'chão' : 'mesa'));
     historicoTarefa[nome2] = tarefa2;
 
     escalaAtual = [
@@ -155,28 +146,26 @@ function gerarEscala() {
   }
 
   escalaAtual.forEach(pessoa => {
-    const estaRetornando = retornantes.some(f => f.nome === pessoa.nome);
-    if(!estaRetornando) presentes.push(pessoa);
+    if (!retornantes.some(f => f.nome === pessoa.nome)) {
+      presentes.push(pessoa);
+    }
   });
 
   let nomesUsados = retornantes.map(f => f.nome);
   let ultimoIdx = posicaoUltimaEscala;
 
-  const substitutos = [];
-  for(let i=0; i<presentes.length; i++){
+  const substitutos = presentes.map(pessoa => {
     const idx = proximoIndice(ultimoIdx, nomesUsados);
-    if(idx === -1) break;
-    const novoNome = nomes[idx];
-    const tarefaAntiga = presentes[i].tarefa;
-    historicoTarefa[novoNome] = tarefaAntiga;
-    substitutos.push({nome: novoNome, tarefa: tarefaAntiga, index: idx});
-    nomesUsados.push(novoNome);
+    const nome = nomes[idx];
+    const tarefa = alternarTarefa(historicoTarefa[nome] || 'mesa');
+    historicoTarefa[nome] = tarefa;
+    nomesUsados.push(nome);
     ultimoIdx = idx;
-  }
+    return {nome, tarefa, index: idx};
+  });
 
   escalaAtual = [...retornantes, ...substitutos].slice(0,2);
   if(escalaAtual.length === 2) posicaoUltimaEscala = escalaAtual[1].index;
-
   salvarTudo();
   atualizarResultadoEFormulario();
 }
@@ -184,7 +173,6 @@ function gerarEscala() {
 function confirmarFaltas() {
   const faltaramHoje = [];
   const presentesHoje = [];
-
   escalaAtual.forEach(pessoa => {
     const checkbox = document.getElementById(pessoa.nome);
     if(checkbox && checkbox.checked) {
@@ -193,27 +181,19 @@ function confirmarFaltas() {
       presentesHoje.push(pessoa);
     }
   });
-
   faltantesPendentes = faltantesPendentes.concat(faltaramHoje);
 
-  const nomesUsados = presentesHoje.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
-  let ultimoIdx = posicaoUltimaEscala;
+  const novosSubstitutos = faltaramHoje.map(pessoa => {
+    const nomesUsados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+    let idx = proximoIndice(posicaoUltimaEscala, nomesUsados);
+    const nome = nomes[idx];
+    const tarefa = pessoa.tarefa;
+    historicoTarefa[nome] = tarefa;
+    posicaoUltimaEscala = idx;
+    return {nome, tarefa, index: idx};
+  });
 
-  const novosSubstitutos = [];
-  for(let i=0; i < faltaramHoje.length; i++){
-    const idx = proximoIndice(ultimoIdx, nomesUsados);
-    if(idx === -1) break;
-    const novoNome = nomes[idx];
-    const tarefaSubstituto = faltaramHoje[i].tarefa; // CORRIGIDO AQUI
-    historicoTarefa[novoNome] = tarefaSubstituto;
-    novosSubstitutos.push({nome: novoNome, tarefa: tarefaSubstituto, index: idx});
-    nomesUsados.push(novoNome);
-    ultimoIdx = idx;
-  }
-
-  escalaAtual = [...presentesHoje, ...novosSubstitutos].slice(0, 2);
-  if(escalaAtual.length === 2) posicaoUltimaEscala = escalaAtual[1].index;
-
+  escalaAtual = [...presentesHoje, ...novosSubstitutos].slice(0,2);
   salvarTudo();
   atualizarResultadoEFormulario();
 }
@@ -251,7 +231,6 @@ function atualizarResultadoEFormulario() {
 window.onload = () => {
   if(escalaAtual.length === 2) atualizarResultadoEFormulario();
 }
-
 document.getElementById('btnGerar').onclick = () => gerarEscala();
 document.getElementById('formQuemLimpou').onsubmit = e => {
   e.preventDefault();
@@ -269,6 +248,5 @@ document.getElementById('btnReset').onclick = () => {
   }
 };
 </script>
-
 </body>
 </html>
