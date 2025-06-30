@@ -70,7 +70,7 @@
 <button id="btnGerar">Continuar</button>
 <div id="resultado"></div>
 <div id="pergunta" style="display:none;">
-  <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório<strong>, e "CONFIRMAR" para atualizar:</p>
+  <p>Selecione quem <strong>faltou</strong> no laboratório e "CONFIRMAR" para atualizar:</p>
   <form id="formQuemLimpou">
     <div id="checkboxContainer"></div>
     <button type="submit">Confirmar</button>
@@ -161,8 +161,7 @@ function gerarEscala() {
     const idx = proximoIndice(ultimoIdx, nomesUsados);
     const nome = nomes[idx];
     const tarefaAnterior = historicoTarefa[nome] || (i === 0 ? 'mesa' : 'chão');
-    // Para os substitutos alternar tarefa mantendo que as duas sejam diferentes
-    const novaTarefa = i === 0 ? alternarTarefa(tarefaAnterior) : (i === 1 ? (substitutos[0]?.tarefa === 'mesa' ? 'chão' : 'mesa') : tarefaAnterior);
+    const novaTarefa = i === 0 ? alternarTarefa(tarefaAnterior) : (substitutos[0]?.tarefa === 'mesa' ? 'chão' : 'mesa');
     historicoTarefa[nome] = novaTarefa;
     substitutos.push({nome, tarefa: novaTarefa, index: idx});
     nomesUsados.push(nome);
@@ -187,10 +186,10 @@ function confirmarFaltas() {
     }
   });
 
-  // Quem faltou, adiciona à fila de pendentes (voltarão no próximo dia com a mesma tarefa do dia que faltaram)
+  // Pessoas que faltaram são adicionadas para voltar no próximo dia
   faltantesPendentes = faltantesPendentes.concat(faltaramHoje);
 
-  // Novos substitutos para quem faltou hoje
+  // Novos substitutos que entram no lugar dos faltantes
   const novosSubstitutos = [];
   let nomesUsados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
   let ultimoIdx = posicaoUltimaEscala;
@@ -199,18 +198,18 @@ function confirmarFaltas() {
     let pessoa = faltaramHoje[i];
     let idx = proximoIndice(ultimoIdx, nomesUsados);
     const nome = nomes[idx];
-
-    // A pessoa que entrou no lugar do faltante **não atualiza o histórico de tarefa**
-    // para não quebrar a alternância do substituído que voltou depois
-    // Apenas mantém a tarefa que o faltante teria naquele dia
     const tarefaBase = pessoa.tarefa;
+
+    // Atualiza o histórico da pessoa que retornará no próximo dia, 
+    // assumindo que ao retornar ela cumprirá essa tarefa pendente
+    historicoTarefa[pessoa.nome] = tarefaBase;
 
     novosSubstitutos.push({nome, tarefa: tarefaBase, index: idx});
     nomesUsados.push(nome);
     ultimoIdx = idx;
   }
 
-  // Quem realmente limpou atualiza o histórico (presentes)
+  // Atualiza o histórico de quem realmente limpou hoje (presentes)
   presentesHoje.forEach(p => {
     historicoTarefa[p.nome] = p.tarefa;
   });
