@@ -136,15 +136,15 @@ function proximoIndice(atual, nomesIgnorados = []) {
 function gerarEscala() {
   jaLimpouHoje = [];
 
-  // Começa a escala incluindo faltantes que ficaram para o próximo dia
+  // Começa incluindo faltantes que ficaram para o próximo dia
   escalaAtual = [...faltantesComTarefa];
-  // Limpa a lista de faltantes para não repetir eles novamente na mesma escala
+  // Limpa a lista de faltantes para não repetir eles
   faltantesComTarefa = [];
 
   const nomesIgnorados = escalaAtual.map(p => p.nome);
   let ultimoIndex = posicaoUltimaEscala;
 
-  // Completa a escala até ter 2 pessoas
+  // Completa até 2 pessoas
   while (escalaAtual.length < 2) {
     const index = proximoIndice(ultimoIndex, nomesIgnorados);
     if (index === -1) break;
@@ -208,44 +208,52 @@ document.getElementById('btnGerar').onclick = gerarEscala;
 document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
-  const novosFaltantes = [];
-  const nomesUsados = escalaAtual.map(p => p.nome);
-  const novaEscala = [];
+  const faltantesHoje = [];
+  const nomesQueJaEstao = [];
+  const substituidos = [];
 
   escalaAtual.forEach(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
 
     if (marcou) {
-      // Pessoa marcou = faltou, então mantemos ela para o próximo dia com a mesma tarefa
-      novosFaltantes.push({ nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index });
+      // Pessoa faltou hoje: permanece no próximo dia com a mesma tarefa
+      faltantesHoje.push({ nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index });
+      nomesQueJaEstao.push(pessoa.nome);
     } else {
-      // Pessoa não marcou = limpou, então substituímos por alguém novo na próxima escala
+      // Pessoa limpou hoje: será substituída por novo integrante
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
-      }
-
-      const novoIndex = proximoIndice(pessoa.index, [...nomesUsados, ...novaEscala.map(p => p.nome)]);
-      if (novoIndex !== -1) {
-        const novoNome = nomes[novoIndex];
-        historicoTarefa[novoNome] = pessoa.tarefa;
-        novaEscala.push({ nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex });
-        nomesUsados.push(novoNome);
       }
     }
   });
 
-  // Atualiza lista global de faltantes para o próximo dia
-  faltantesComTarefa = [...novosFaltantes];
+  // Agora vamos buscar substitutos para quem limpou (não marcou)
+  const nomesIgnorados = [...faltantesHoje.map(p => p.nome), ...jaLimpouHoje];
+  let ultimoIndex = posicaoUltimaEscala;
 
-  // Atualiza a escala atual combinando quem substituiu e quem faltou
-  escalaAtual = [...novaEscala, ...novosFaltantes];
+  // Precisamos de um total de 2 pessoas na escala:
+  // Já temos os faltantes hoje, vamos preencher o resto com substitutos
+  while (faltantesHoje.length + substituidos.length < 2) {
+    const index = proximoIndice(ultimoIndex, nomesIgnorados.concat(substituidos.map(p => p.nome)));
+    if (index === -1) break;
 
-  // Garantir no máximo 2 pessoas na escala
-  escalaAtual = escalaAtual.slice(0, 2);
+    const nome = nomes[index];
+    const tarefaAnterior = historicoTarefa[nome] || 'mesa';
+    const novaTarefa = alternarTarefa(tarefaAnterior);
+
+    historicoTarefa[nome] = novaTarefa;
+    substituidos.push({ nome, tarefa: novaTarefa, index });
+    nomesIgnorados.push(nome);
+    ultimoIndex = index;
+  }
+
+  escalaAtual = [...faltantesHoje, ...substituidos].slice(0, 2);
 
   if (escalaAtual.length === 2) {
     posicaoUltimaEscala = escalaAtual[1].index;
   }
+
+  faltantesComTarefa = [...faltantesHoje]; // Guardamos para o próximo dia os faltantes
 
   salvarTudo();
   atualizarResultadoEFormulario();
