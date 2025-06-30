@@ -206,30 +206,43 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
   e.preventDefault();
 
   const novosFaltantes = [];
+  const nomesUsados = escalaAtual.map(p => p.nome);
+  const novaEscala = [];
 
-  escalaAtual = escalaAtual.map(pessoa => {
+  escalaAtual.forEach(pessoa => {
     const marcou = document.getElementById(pessoa.nome).checked;
 
     if (marcou) {
+      // Pessoa limpou: substituir por alguém novo na próxima escala
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
 
-      const novoIndex = proximoIndice(pessoa.index);
-      if (novoIndex === -1) return pessoa;
-
-      const novoNome = nomes[novoIndex];
-      jaLimpouHoje.push(novoNome);
-      historicoTarefa[novoNome] = pessoa.tarefa;
-
-      return { nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex };
+      const novoIndex = proximoIndice(pessoa.index, [...nomesUsados, ...novaEscala.map(p => p.nome)]);
+      if (novoIndex !== -1) {
+        const novoNome = nomes[novoIndex];
+        historicoTarefa[novoNome] = pessoa.tarefa;
+        novaEscala.push({ nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex });
+        nomesUsados.push(novoNome);
+      }
     } else {
+      // Pessoa faltou: manter mesma tarefa para o próximo dia
       novosFaltantes.push({ nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index });
-      return null;
     }
-  }).filter(Boolean);
+  });
 
+  // Repassa faltantes para o próximo dia
   faltantesComTarefa = [...faltantesComTarefa, ...novosFaltantes];
+
+  // Atualiza a nova escala com os faltantes e quem substitui os presentes
+  escalaAtual = [...novaEscala, ...novosFaltantes];
+
+  // Garante que só haja no máximo 2 pessoas
+  escalaAtual = escalaAtual.slice(0, 2);
+
+  if (escalaAtual.length === 2) {
+    posicaoUltimaEscala = escalaAtual[1].index;
+  }
 
   salvarTudo();
   atualizarResultadoEFormulario();
