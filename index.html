@@ -135,7 +135,7 @@ function proximoIndice(atual, nomesIgnorados = []) {
 function gerarEscala() {
   jaLimpouHoje = [];
 
-  escalaAtual = [...pendentes]; // comece pelos pendentes
+  escalaAtual = [...pendentes]; // Começa com os pendentes
 
   let nomesUsados = escalaAtual.map(p => p.nome);
 
@@ -185,6 +185,9 @@ function atualizarResultadoEFormulario() {
   });
 
   document.getElementById('pergunta').style.display = 'block';
+
+  // ⬇️ Scroll automático para o final da página após atualizar
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 
 document.getElementById('btnGerar').onclick = gerarEscala;
@@ -225,7 +228,7 @@ document.getElementById('btnReset').onclick = function() {
 
 window.onload = function() {
   if (pendentes.length > 0) {
-    gerarEscala(); // se há pendentes, reaproveita eles
+    gerarEscala(); // Se há pendentes, reaproveita eles
   }
 };
 </script>
