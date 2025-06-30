@@ -136,12 +136,15 @@ function proximoIndice(atual, nomesIgnorados = []) {
 function gerarEscala() {
   jaLimpouHoje = [];
 
+  // Começa a escala incluindo faltantes que ficaram para o próximo dia
   escalaAtual = [...faltantesComTarefa];
+  // Limpa a lista de faltantes para não repetir eles novamente na mesma escala
   faltantesComTarefa = [];
 
   const nomesIgnorados = escalaAtual.map(p => p.nome);
   let ultimoIndex = posicaoUltimaEscala;
 
+  // Completa a escala até ter 2 pessoas
   while (escalaAtual.length < 2) {
     const index = proximoIndice(ultimoIndex, nomesIgnorados);
     if (index === -1) break;
@@ -231,13 +234,13 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
     }
   });
 
-  // Repassa faltantes para o próximo dia
-  faltantesComTarefa = [...faltantesComTarefa, ...novosFaltantes];
+  // Atualiza lista global de faltantes para o próximo dia
+  faltantesComTarefa = [...novosFaltantes];
 
-  // Atualiza a nova escala com os faltantes e quem substitui os presentes
+  // Atualiza a escala atual combinando quem substituiu e quem faltou
   escalaAtual = [...novaEscala, ...novosFaltantes];
 
-  // Garante que só haja no máximo 2 pessoas
+  // Garantir no máximo 2 pessoas na escala
   escalaAtual = escalaAtual.slice(0, 2);
 
   if (escalaAtual.length === 2) {
