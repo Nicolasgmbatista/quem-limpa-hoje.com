@@ -135,7 +135,7 @@ function gerarEscala() {
 
     const idx2 = proximoIndice(idx1, nomesUsados);
     const nome2 = nomes[idx2];
-    const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa';
+    const tarefa2 = tarefa1 === 'mesa' ? 'chão' : 'mesa'; // Garante tarefas diferentes
     historicoTarefa[nome2] = tarefa2;
     nomesUsados.push(nome2);
 
@@ -160,8 +160,8 @@ function gerarEscala() {
   for (let i = 0; i < presentes.length; i++) {
     const idx = proximoIndice(ultimoIdx, nomesUsados);
     const nome = nomes[idx];
-    const ultimaTarefa = historicoTarefa[nome] || (i === 0 ? 'mesa' : 'chão');
-    const novaTarefa = alternarTarefa(ultimaTarefa);
+    const tarefaAnterior = historicoTarefa[nome] || (i === 0 ? 'mesa' : 'chão');
+    const novaTarefa = i === 0 ? alternarTarefa(tarefaAnterior) : tarefaAnterior === 'mesa' ? 'chão' : 'mesa';
     historicoTarefa[nome] = novaTarefa;
     substitutos.push({nome, tarefa: novaTarefa, index: idx});
     nomesUsados.push(nome);
@@ -191,13 +191,13 @@ function confirmarFaltas() {
   let nomesUsados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
   let ultimoIdx = posicaoUltimaEscala;
 
-  for(let pessoa of faltaramHoje){
+  for(let i = 0; i < faltaramHoje.length; i++){
+    let pessoa = faltaramHoje[i];
     let idx = proximoIndice(ultimoIdx, nomesUsados);
     const nome = nomes[idx];
-    const ultimaTarefa = historicoTarefa[nome] || pessoa.tarefa;
-    const novaTarefa = alternarTarefa(ultimaTarefa);
-    historicoTarefa[nome] = novaTarefa;
-    novosSubstitutos.push({nome, tarefa: novaTarefa, index: idx});
+    const tarefaBase = pessoa.tarefa;
+    historicoTarefa[nome] = tarefaBase;
+    novosSubstitutos.push({nome, tarefa: tarefaBase, index: idx});
     nomesUsados.push(nome);
     ultimoIdx = idx;
   }
