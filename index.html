@@ -74,7 +74,7 @@
 <div id="resultado"></div>
 
 <div id="pergunta" style="display:none;">
-  <p>Selecione quem faltou ou limpou o laboratório e "CONFIRMAR" para trocar:</p>
+  <p>Selecione quem <strong>faltou</strong> no laboratório e "CONFIRMAR" para atualizar:</p>
   <form id="formQuemLimpou">
     <div id="checkboxContainer"></div>
     <button type="submit">Confirmar</button>
@@ -184,7 +184,7 @@ function atualizarResultadoEFormulario() {
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = pessoa.nome;
-    checkbox.name = "limpou";
+    checkbox.name = "faltou";
     checkbox.value = pessoa.nome;
     const label = document.createElement('label');
     label.htmlFor = pessoa.nome;
@@ -216,7 +216,10 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
     const marcou = document.getElementById(pessoa.nome).checked;
 
     if (marcou) {
-      // Pessoa limpou: substituir por alguém novo na próxima escala
+      // Pessoa marcou = faltou, então mantemos ela para o próximo dia com a mesma tarefa
+      novosFaltantes.push({ nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index });
+    } else {
+      // Pessoa não marcou = limpou, então substituímos por alguém novo na próxima escala
       if (!jaLimpouHoje.includes(pessoa.nome)) {
         jaLimpouHoje.push(pessoa.nome);
       }
@@ -228,9 +231,6 @@ document.getElementById('formQuemLimpou').onsubmit = function(e) {
         novaEscala.push({ nome: novoNome, tarefa: pessoa.tarefa, index: novoIndex });
         nomesUsados.push(novoNome);
       }
-    } else {
-      // Pessoa faltou: manter mesma tarefa para o próximo dia
-      novosFaltantes.push({ nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index });
     }
   });
 
