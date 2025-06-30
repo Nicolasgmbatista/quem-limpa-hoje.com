@@ -1,68 +1,68 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Quem limpa a sala hoje?</title>
-<style>
-  h1 { color: #2c3e50; }
-  button, input, select {
-    padding: 10px 15px;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 6px;
-    border: none;
-    background-color: #2c3e50;
-    color: white;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-  }
-  button:hover { background-color: #34495e; }
-  #btnGerar { margin-bottom: 20px; }
-  #resultado { margin-top: 20px; font-size: 18px; }
-  #resultado ul {
-    list-style: none;
-    padding: 0;
-  }
-  #resultado li {
-    background: #ecf0f1;
-    margin-bottom: 10px;
-    padding: 12px;
-    border-radius: 6px;
-    color: #2c3e50;
-  }
-  #checkboxContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px 30px;
-    margin-top: 10px;
-  }
-  #checkboxContainer div {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  #formQuemLimpou button[type="submit"] {
-    margin-top: 20px;
-  }
-  #btnReset {
-    margin-top: 10px;
-    background-color: #c0392b;
-  }
-  #btnReset:hover {
-    background-color: #e74c3c;
-  }
-  #avisoReset {
-    margin-top: 30px;
-    color: #e74c3c;
-    font-weight: bold;
-  }
-  footer {
-    margin-top: 40px;
-    font-size: 14px;
-    color: #7f8c8d;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quem limpa a sala hoje?</title>
+  <style>
+    h1 { color: #2c3e50; }
+    button, input, select {
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #2c3e50;
+      color: white;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    button:hover { background-color: #34495e; }
+    #btnGerar { margin-bottom: 20px; }
+    #resultado { margin-top: 20px; font-size: 18px; }
+    #resultado ul {
+      list-style: none;
+      padding: 0;
+    }
+    #resultado li {
+      background: #ecf0f1;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 6px;
+      color: #2c3e50;
+    }
+    #checkboxContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px 30px;
+      margin-top: 10px;
+    }
+    #checkboxContainer div {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #formQuemLimpou button[type="submit"] {
+      margin-top: 20px;
+    }
+    #btnReset {
+      margin-top: 10px;
+      background-color: #c0392b;
+    }
+    #btnReset:hover {
+      background-color: #e74c3c;
+    }
+    #avisoReset {
+      margin-top: 30px;
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #7f8c8d;
+    }
+  </style>
 </head>
 <body>
 
@@ -81,9 +81,7 @@
     <div id="avisoReset">
       ⚠️ Cuidado: o botão resetar apaga <u>TODOS</u> os dados!
     </div>
-    <button id="btnReset" type="button">
-      Resetar Escala
-    </button>
+    <button id="btnReset" type="button">Resetar Escala</button>
   </form>
 </div>
 
@@ -104,8 +102,6 @@ if(typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posica
 
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
-
-// Aqui guardamos faltantes que foram substituídos neste dia para retornar amanhã com a tarefa do dia faltado
 let faltantesPendentes = JSON.parse(localStorage.getItem('faltantesPendentes') || '[]');
 
 function salvarTudo() {
@@ -128,16 +124,11 @@ function proximoIndice(atual, nomesIgnorados = []) {
   return -1;
 }
 
-// Gera a escala do dia: inclui faltantes pendentes (que faltaram ontem) + substitui quem ficou presente no dia anterior
 function gerarEscala() {
-  // Primeiro, se houver faltantes pendentes, eles voltam na escala, com a tarefa que tinham no dia que faltaram
-  // Eles "tomam" lugar de quem ficou no dia anterior, que será substituído
+  const presentes = [];
+  const retornantes = [...faltantesPendentes];
+  faltantesPendentes = [];
 
-  const presentes = []; // quem ficou presente ontem, e será substituído
-  const retornantes = [...faltantesPendentes]; // faltantes que retornam hoje
-  faltantesPendentes = []; // limpa para novo registro no dia de hoje
-
-  // Se escalaAtual vazia, é a primeira escala, então só pega duas pessoas da lista sequencialmente
   if(escalaAtual.length === 0){
     const idx1 = proximoIndice(posicaoUltimaEscala, []);
     if(idx1 === -1) { alert("Não há pessoas disponíveis"); return; }
@@ -147,7 +138,7 @@ function gerarEscala() {
     const idx2 = proximoIndice(idx1, [nome1]);
     if(idx2 === -1) { alert("Não há pessoas suficientes"); return; }
     const nome2 = nomes[idx2];
-    const tarefa2 = historicoTarefa[nome2] || alternarTarefa(tarefa1);
+    const tarefa2 = alternarTarefa(tarefa1);
 
     historicoTarefa[nome1] = tarefa1;
     historicoTarefa[nome2] = tarefa2;
@@ -163,19 +154,11 @@ function gerarEscala() {
     return;
   }
 
-  // Agora, se não for a primeira escala, temos que montar a nova escala:
-
-  // Quem ficou presente ontem (escalaAtual - faltantesPendentes) vai ser substituído, guardamos esses para remover
-
-  // Para isso, quem está retornando é retornantes (faltantesPendentes do dia anterior)
-  // Quem ficou presente ontem é quem está na escalaAtual mas NÃO está em retornantes
-
   escalaAtual.forEach(pessoa => {
     const estaRetornando = retornantes.some(f => f.nome === pessoa.nome);
     if(!estaRetornando) presentes.push(pessoa);
   });
 
-  // Agora substituímos presentes por novas pessoas da lista (sem nomes já na escala, nem na lista de retornantes)
   let nomesUsados = retornantes.map(f => f.nome);
   let ultimoIdx = posicaoUltimaEscala;
 
@@ -184,16 +167,13 @@ function gerarEscala() {
     const idx = proximoIndice(ultimoIdx, nomesUsados);
     if(idx === -1) break;
     const novoNome = nomes[idx];
-    // A tarefa do substituto será alternar a tarefa da pessoa que substitui
-    const tarefaAntiga = historicoTarefa[presentes[i].nome] || 'mesa';
-    const tarefaSubstituto = alternarTarefa(tarefaAntiga);
-    historicoTarefa[novoNome] = tarefaSubstituto;
-    substitutos.push({nome: novoNome, tarefa: tarefaSubstituto, index: idx});
+    const tarefaAntiga = presentes[i].tarefa;
+    historicoTarefa[novoNome] = tarefaAntiga;
+    substitutos.push({nome: novoNome, tarefa: tarefaAntiga, index: idx});
     nomesUsados.push(novoNome);
     ultimoIdx = idx;
   }
 
-  // Finalmente a nova escala do dia é: retornantes (faltantes do dia anterior) + substitutos (novos para substituir presentes)
   escalaAtual = [...retornantes, ...substitutos].slice(0,2);
   if(escalaAtual.length === 2) posicaoUltimaEscala = escalaAtual[1].index;
 
@@ -201,12 +181,7 @@ function gerarEscala() {
   atualizarResultadoEFormulario();
 }
 
-// Função chamada ao confirmar o formulário
 function confirmarFaltas() {
-  // Quem marcou checkbox faltou nesse dia
-  // Essa pessoa é substituída imediatamente pela próxima disponível (na escala do dia atual)
-  // E fica registrada para voltar no próximo dia com a tarefa do dia que faltou
-
   const faltaramHoje = [];
   const presentesHoje = [];
 
@@ -219,10 +194,8 @@ function confirmarFaltas() {
     }
   });
 
-  // Guardar faltantes para voltar amanhã com mesma tarefa
   faltantesPendentes = faltantesPendentes.concat(faltaramHoje);
 
-  // Quem faltou é substituído imediatamente por próximo disponível
   const nomesUsados = presentesHoje.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
   let ultimoIdx = posicaoUltimaEscala;
 
@@ -231,9 +204,7 @@ function confirmarFaltas() {
     const idx = proximoIndice(ultimoIdx, nomesUsados);
     if(idx === -1) break;
     const novoNome = nomes[idx];
-    // Substituto herda tarefa alternada da pessoa que está substituindo
-    const tarefaAntiga = historicoTarefa[faltaramHoje[i].nome] || 'mesa';
-    const tarefaSubstituto = alternarTarefa(tarefaAntiga);
+    const tarefaSubstituto = faltaramHoje[i].tarefa; // CORRIGIDO AQUI
     historicoTarefa[novoNome] = tarefaSubstituto;
     novosSubstitutos.push({nome: novoNome, tarefa: tarefaSubstituto, index: idx});
     nomesUsados.push(novoNome);
@@ -241,7 +212,6 @@ function confirmarFaltas() {
   }
 
   escalaAtual = [...presentesHoje, ...novosSubstitutos].slice(0, 2);
-
   if(escalaAtual.length === 2) posicaoUltimaEscala = escalaAtual[1].index;
 
   salvarTudo();
@@ -283,12 +253,10 @@ window.onload = () => {
 }
 
 document.getElementById('btnGerar').onclick = () => gerarEscala();
-
 document.getElementById('formQuemLimpou').onsubmit = e => {
   e.preventDefault();
   confirmarFaltas();
 }
-
 document.getElementById('btnReset').onclick = () => {
   if(confirm("Tem certeza que quer resetar a escala? Todos os dados serão apagados.")) {
     localStorage.clear();
