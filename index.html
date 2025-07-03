@@ -7,421 +7,274 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 0 15px;
-      background: #f5f7fa;
+      background: #ecf0f1;
       color: #2c3e50;
-      text-align: center;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
-    h1 { margin-bottom: 30px; }
-    button {
-      padding: 12px 20px;
-      font-size: 18px;
-      margin: 10px;
-      border-radius: 8px;
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    button, input {
+      padding: 10px 15px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 6px;
       border: none;
       background-color: #2c3e50;
       color: white;
-      cursor: pointer;
       font-weight: bold;
+      cursor: pointer;
+      width: 100%;
       transition: background-color 0.3s ease;
     }
-    button:hover { background-color: #34495e; }
-    input {
-      width: 100%;
-      max-width: 350px;
-      margin: 8px 0;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+    button:hover {
+      background-color: #34495e;
     }
-    section {
+    input {
+      background: #ecf0f1;
+      color: #2c3e50;
+      border: 1px solid #bdc3c7;
+      margin-top: 5px;
+    }
+    #menuBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      color: #2c3e50;
+      font-size: 24px;
+      cursor: pointer;
+      border: none;
+    }
+    #menuOpcoes {
       display: none;
-      margin-top: 20px;
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background: white;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #menuOpcoes button {
+      background: none;
+      color: #2c3e50;
+      width: 100%;
       text-align: left;
+      padding: 10px;
+      border: none;
+    }
+    #menuOpcoes button:hover {
+      background: #ecf0f1;
     }
     #resultado ul {
       list-style: none;
-      padding-left: 0;
+      padding: 0;
+      margin: 20px 0;
     }
     #resultado li {
-      background: #ecf0f1;
+      background: #dff9fb;
       margin-bottom: 10px;
-      padding: 12px;
+      padding: 10px;
       border-radius: 6px;
-      font-weight: bold;
-    }
-    #checkboxContainer div {
-      margin-bottom: 8px;
     }
     footer {
-      margin-top: 40px;
-      font-size: 14px;
+      margin-top: 20px;
+      font-size: 12px;
       color: #7f8c8d;
-      text-align: center;
     }
   </style>
 </head>
 <body>
 
-<h1>Quem limpa a sala hoje?</h1>
+<div class="container" id="telaInicial">
+  <h1>Quem limpa a sala hoje?</h1>
+  <p>Selecione como deseja acessar:</p>
+  <button id="btnEstudante">Sou Estudante</button>
+  <button id="btnAdm">Professor/Representante</button>
+</div>
 
-<!-- Tela Inicial -->
-<section id="telaInicial" style="display: block;">
-  <button id="btnProfessor">Professor / Representante</button>
-  <button id="btnEstudante">Estudante</button>
-</section>
+<div class="container" id="telaLogin" style="display:none;">
+  <h1>Login</h1>
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="senha" placeholder="Senha" />
+  <button id="btnEntrar">Entrar</button>
+</div>
 
-<!-- Login -->
-<section id="telaLogin">
-  <h2>Login Professor / Representante</h2>
-  <input id="emailLogin" type="email" placeholder="Email" autocomplete="username" />
-  <input id="senhaLogin" type="password" placeholder="Senha" autocomplete="current-password" />
-  <button id="btnLogin">Entrar</button>
-  <p id="msgLogin" style="color:red;"></p>
-  <button id="btnVoltarLogin" style="background-color:#7f8c8d; margin-top: 20px;">Voltar</button>
-</section>
-
-<!-- Painel Professor/Admin -->
-<section id="painelAdmin">
-  <div style="margin-bottom: 15px;">
-    <button id="btnGerar">Gerar / Continuar Escala</button>
-    <button id="btnReset" style="background-color:#c0392b;">Resetar Escala</button>
-    <button id="btnLogout" style="background-color:#7f8c8d;">Sair</button>
-  </div>
-
+<div class="container" id="telaEscala" style="display:none;">
+  <button id="menuBtn">☰</button>
+  <h1>Escala de hoje:</h1>
   <div id="resultado"></div>
-
-  <div id="pergunta" style="margin-top: 20px;">
-    <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
-    <form id="formQuemLimpou">
-      <div id="checkboxContainer"></div>
-      <button type="submit">Confirmar</button>
-    </form>
+  <div id="formulario" style="display:none;">
+    <p>Selecione quem <strong>faltou</strong> ou <strong>limpou</strong>:</p>
+    <div id="checkboxContainer"></div>
+    <button id="btnConfirmar">Confirmar</button>
   </div>
-</section>
+</div>
 
-<!-- Visualização Estudante -->
-<section id="telaEstudante">
-  <h2>Escala Atual</h2>
-  <div id="resultadoEstudante"></div>
-  <button id="btnVoltarEstudante" style="background-color:#7f8c8d; margin-top: 20px;">Voltar</button>
-</section>
+<div id="menuOpcoes">
+  <button id="btnConfigAdm">Configurar Administradores</button>
+  <button id="btnReset">Resetar Escala</button>
+  <button id="btnSair">Sair</button>
+</div>
 
 <footer>
   <p>© 2025 Nicolas GBM | Criador do projeto.</p>
-  <p>Contato: <a href="mailto:nicolasgmbatista15@gmail.com">nicolasgmbatista15@gmail.com</a></p>
 </footer>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
-  authDomain: "quem-limpa-hoje.firebaseapp.com",
-  projectId: "quem-limpa-hoje",
-  storageBucket: "quem-limpa-hoje.firebasestorage.app",
-  messagingSenderId: "44929275404",
-  appId: "1:44929275404:web:971258e864925cb3684029"
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID",
+  storageBucket: "SEU_STORAGE_BUCKET",
+  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+  appId: "SEU_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-// Elementos da interface
-const telaInicial = document.getElementById('telaInicial');
-const telaLogin = document.getElementById('telaLogin');
-const painelAdmin = document.getElementById('painelAdmin');
-const telaEstudante = document.getElementById('telaEstudante');
-const msgLogin = document.getElementById('msgLogin');
-
-const resultado = document.getElementById('resultado');
-const resultadoEstudante = document.getElementById('resultadoEstudante');
-const pergunta = document.getElementById('pergunta');
-const checkboxContainer = document.getElementById('checkboxContainer');
-const formQuemLimpou = document.getElementById('formQuemLimpou');
-
-// Botões
-document.getElementById('btnProfessor').onclick = () => {
-  telaInicial.style.display = 'none';
-  telaLogin.style.display = 'block';
-};
-document.getElementById('btnEstudante').onclick = () => {
-  telaInicial.style.display = 'none';
-  telaEstudante.style.display = 'block';
-  mostrarEscalaEstudante();
-};
-document.getElementById('btnVoltarLogin').onclick = () => {
-  telaLogin.style.display = 'none';
-  telaInicial.style.display = 'block';
-};
-document.getElementById('btnVoltarEstudante').onclick = () => {
-  telaEstudante.style.display = 'none';
-  telaInicial.style.display = 'block';
-};
-document.getElementById('btnLogout').onclick = () => {
-  signOut(auth);
-  painelAdmin.style.display = 'none';
-  telaInicial.style.display = 'block';
-};
-
-// Login professor/representante
-document.getElementById('btnLogin').onclick = async () => {
-  const email = document.getElementById('emailLogin').value.trim();
-  const senha = document.getElementById('senhaLogin').value.trim();
-
-  if (!email || !senha) {
-    msgLogin.textContent = "Preencha email e senha.";
-    return;
-  }
-
-  try {
-    await signInWithEmailAndPassword(auth, email, senha);
-    msgLogin.textContent = "";
-
-    // Verifica se é admin
-    const docAdmin = await getDoc(doc(db, "administradores", email));
-    if (docAdmin.exists() && docAdmin.data().ativo === true) {
-      telaLogin.style.display = 'none';
-      painelAdmin.style.display = 'block';
-      atualizarResultadoEFormulario();
-    } else {
-      msgLogin.textContent = "Você não tem permissão de professor/representante.";
-      await signOut(auth);
-    }
-  } catch (error) {
-    msgLogin.textContent = "Erro no login: " + error.message;
-  }
-};
-
-// Variáveis escala (igual ao seu código)
 const nomes = [
-  "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy",
-  "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff",
-  "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles",
-  "Pedro", "Samuel", "Sebastião", "Zaira"
-].sort((a, b) => a.localeCompare(b));
+  "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle",
+  "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna",
+  "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas",
+  "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"
+].sort();
 
-let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
-if (typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
-
+let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala')) ?? -1;
 let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
 let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
-let faltantesPendentes = JSON.parse(localStorage.getItem('faltantesPendentes') || '[]');
 
 function salvarTudo() {
   localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
   localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
   localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
-  localStorage.setItem('faltantesPendentes', JSON.stringify(faltantesPendentes));
 }
 
-function alternarTarefa(tarefa) {
-  return tarefa === 'mesa' ? 'chão' : 'mesa';
+function alternarTarefa(t) {
+  return t === 'mesa' ? 'chão' : 'mesa';
 }
 
-function proximoIndice(atual, nomesIgnorados = []) {
-  let i = atual;
-  for (let count = 0; count < nomes.length; count++) {
-    i = (i + 1) % nomes.length;
-    if (!nomesIgnorados.includes(nomes[i])) return i;
-  }
-  return -1;
+function proximoIndice(atual) {
+  return (atual + 1) % nomes.length;
 }
 
 function gerarEscala() {
-  const retornantes = [...faltantesPendentes];
-  faltantesPendentes = [];
+  const idx1 = proximoIndice(posicaoUltimaEscala);
+  const nome1 = nomes[idx1];
+  const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
 
-  let nomesUsados = retornantes.map(f => f.nome);
-  let ultimoIdx = posicaoUltimaEscala;
+  const idx2 = proximoIndice(idx1);
+  const nome2 = nomes[idx2];
+  const tarefa2 = alternarTarefa(tarefa1);
 
-  if (escalaAtual.length === 0) {
-    const idx1 = proximoIndice(ultimoIdx, nomesUsados);
-    const nome1 = nomes[idx1];
-    const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
-    historicoTarefa[nome1] = tarefa1;
-    nomesUsados.push(nome1);
+  escalaAtual = [
+    { nome: nome1, tarefa: tarefa1, index: idx1 },
+    { nome: nome2, tarefa: tarefa2, index: idx2 }
+  ];
 
-    const idx2 = proximoIndice(idx1, nomesUsados);
-    const nome2 = nomes[idx2];
-    const tarefa2 = alternarTarefa(tarefa1);
-    historicoTarefa[nome2] = tarefa2;
-    nomesUsados.push(nome2);
-
-    escalaAtual = [
-      { nome: nome1, tarefa: tarefa1, index: idx1 },
-      { nome: nome2, tarefa: tarefa2, index: idx2 }
-    ];
-
-    posicaoUltimaEscala = idx2;
-    salvarTudo();
-    atualizarResultadoEFormulario();
-    return;
-  }
-
-  const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
-  const substitutos = [];
-  for (let i = 0; i < presentes.length; i++) {
-    const idx = proximoIndice(ultimoIdx, nomesUsados);
-    const nome = nomes[idx];
-
-    const tarefaAnterior = historicoTarefa[nome] || (i === 0 ? 'mesa' : 'chão');
-    let novaTarefa;
-    if (i === 0) {
-      novaTarefa = alternarTarefa(tarefaAnterior);
-    } else {
-      novaTarefa = substitutos[0].tarefa === 'mesa' ? 'chão' : 'mesa';
-    }
-
-    historicoTarefa[nome] = novaTarefa;
-    substitutos.push({ nome, tarefa: novaTarefa, index: idx });
-    nomesUsados.push(nome);
-    ultimoIdx = idx;
-  }
-
-  escalaAtual = [...retornantes, ...substitutos].slice(0, 2);
-
-  if (escalaAtual.length === 2) {
-    if (escalaAtual[0].tarefa === escalaAtual[1].tarefa) {
-      escalaAtual[1].tarefa = alternarTarefa(escalaAtual[0].tarefa);
-      historicoTarefa[escalaAtual[1].nome] = escalaAtual[1].tarefa;
-    }
-    posicaoUltimaEscala = escalaAtual[1].index;
-  }
-
+  historicoTarefa[nome1] = tarefa1;
+  historicoTarefa[nome2] = tarefa2;
+  posicaoUltimaEscala = idx2;
   salvarTudo();
-  atualizarResultadoEFormulario();
+  atualizarEscala();
+}
+
+function atualizarEscala() {
+  const lista = escalaAtual.map(p => `<li>${p.nome} ➔ <strong>${p.tarefa}</strong></li>`).join('');
+  document.getElementById('resultado').innerHTML = `<ul>${lista}</ul>`;
+  const container = document.getElementById('checkboxContainer');
+  container.innerHTML = '';
+  escalaAtual.forEach(p => {
+    const div = document.createElement('div');
+    div.innerHTML = `<input type="checkbox" id="${p.nome}"><label for="${p.nome}">${p.nome}</label>`;
+    container.appendChild(div);
+  });
 }
 
 function confirmarFaltas() {
-  const faltaramHoje = [];
-  const presentesHoje = [];
-  escalaAtual.forEach(pessoa => {
-    const checkbox = document.getElementById(pessoa.nome);
-    if (checkbox && checkbox.checked) {
-      faltaramHoje.push(pessoa);
+  escalaAtual.forEach((p, i) => {
+    if (document.getElementById(p.nome).checked) {
+      const idx = proximoIndice(posicaoUltimaEscala);
+      const novoNome = nomes[idx];
+      const tarefa = p.tarefa;
+      escalaAtual[i] = { nome: novoNome, tarefa, index: idx };
+      historicoTarefa[novoNome] = tarefa;
+      posicaoUltimaEscala = idx;
     } else {
-      presentesHoje.push(pessoa);
+      historicoTarefa[p.nome] = p.tarefa;
     }
   });
-
-  faltantesPendentes = faltantesPendentes.concat(faltaramHoje);
-
-  const novosSubstitutos = [];
-  let nomesUsados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
-  let ultimoIdx = posicaoUltimaEscala;
-
-  for (let i = 0; i < faltaramHoje.length; i++) {
-    let pessoa = faltaramHoje[i];
-    let idx = proximoIndice(ultimoIdx, nomesUsados);
-    const nome = nomes[idx];
-    const tarefaBase = pessoa.tarefa;
-
-    historicoTarefa[pessoa.nome] = tarefaBase;
-
-    novosSubstitutos.push({ nome, tarefa: tarefaBase, index: idx });
-    nomesUsados.push(nome);
-    ultimoIdx = idx;
-  }
-
-  presentesHoje.forEach(p => {
-    historicoTarefa[p.nome] = p.tarefa;
-  });
-
-  escalaAtual = [...presentesHoje, ...novosSubstitutos].slice(0, 2);
-
-  if (escalaAtual.length === 2 && escalaAtual[0].tarefa === escalaAtual[1].tarefa) {
-    escalaAtual[1].tarefa = alternarTarefa(escalaAtual[0].tarefa);
-    historicoTarefa[escalaAtual[1].nome] = escalaAtual[1].tarefa;
-  }
-
-  if (escalaAtual.length === 2) posicaoUltimaEscala = escalaAtual[1].index;
-
   salvarTudo();
-  atualizarResultadoEFormulario();
+  atualizarEscala();
 }
 
-function atualizarResultadoEFormulario() {
-  if (escalaAtual.length === 0) {
-    resultado.innerHTML = '';
-    pergunta.style.display = 'none';
-    return;
-  }
-
-  const listaHtml = escalaAtual.map(p => `<li>${p.nome} ➔ <strong>${p.tarefa}</strong></li>`).join('');
-  resultado.innerHTML = `<h3>Escala de hoje:</h3><ul>${listaHtml}</ul>`;
-
-  checkboxContainer.innerHTML = '';
-  escalaAtual.forEach(pessoa => {
-    const wrapper = document.createElement('div');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = pessoa.nome;
-    checkbox.name = "faltou";
-    checkbox.value = pessoa.nome;
-    const label = document.createElement('label');
-    label.htmlFor = pessoa.nome;
-    label.textContent = pessoa.nome;
-    wrapper.appendChild(checkbox);
-    wrapper.appendChild(label);
-    checkboxContainer.appendChild(wrapper);
-  });
-
-  pergunta.style.display = 'block';
-}
-
-function mostrarEscalaEstudante() {
-  if (escalaAtual.length === 0) {
-    resultadoEstudante.innerHTML = '<p>A escala ainda não foi gerada.</p>';
-    return;
-  }
-  const listaHtml = escalaAtual.map(p => `<li>${p.nome} ➔ <strong>${p.tarefa}</strong></li>`).join('');
-  resultadoEstudante.innerHTML = `<ul>${listaHtml}</ul>`;
-}
-
-// Inicialização ao carregar a página
-window.onload = () => {
-  // Mostra escala se já existe para estudante (antes de gerar)
-  if (escalaAtual.length === 2) {
-    atualizarResultadoEFormulario();
-  }
+document.getElementById('btnEstudante').onclick = () => {
+  document.getElementById('telaInicial').style.display = 'none';
+  document.getElementById('telaEscala').style.display = 'block';
+  document.getElementById('formulario').style.display = 'none';
+  atualizarEscala();
 };
 
-formQuemLimpou.onsubmit = e => {
-  e.preventDefault();
-  confirmarFaltas();
+document.getElementById('btnAdm').onclick = () => {
+  document.getElementById('telaInicial').style.display = 'none';
+  document.getElementById('telaLogin').style.display = 'block';
 };
 
-document.getElementById('btnGerar').onclick = () => gerarEscala();
+document.getElementById('btnEntrar').onclick = () => {
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  signInWithEmailAndPassword(auth, email, senha)
+    .then(() => {
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('telaEscala').style.display = 'block';
+      document.getElementById('formulario').style.display = 'block';
+      atualizarEscala();
+    })
+    .catch(() => alert("Login inválido"));
+};
 
+document.getElementById('btnConfirmar').onclick = confirmarFaltas;
+document.getElementById('menuBtn').onclick = () => {
+  const menu = document.getElementById('menuOpcoes');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+};
 document.getElementById('btnReset').onclick = () => {
-  if (confirm("Tem certeza que quer resetar a escala? Todos os dados serão apagados.")) {
+  if (confirm("Tem certeza que deseja resetar a escala?")) {
     localStorage.clear();
     posicaoUltimaEscala = -1;
     historicoTarefa = {};
     escalaAtual = [];
-    faltantesPendentes = [];
-    salvarTudo();
-    atualizarResultadoEFormulario();
+    atualizarEscala();
   }
 };
-
+document.getElementById('btnSair').onclick = () => {
+  signOut(auth).then(() => location.reload());
+};
+document.getElementById('btnConfigAdm').onclick = () => {
+  alert("Aqui futuramente abrirá o painel de configuração de administradores.");
+};
 </script>
+
 </body>
 </html>
