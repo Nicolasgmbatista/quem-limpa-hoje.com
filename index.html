@@ -1,267 +1,217 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Quem limpa a sala hoje?</title>
-<style>
-  /* Reset básico e centralização */
-  body, html {
-    margin: 0; padding: 0; height: 100%;
-    font-family: Arial, sans-serif;
-    background: #f0f3f4;
-    display: flex; justify-content: center; align-items: center;
-    flex-direction: column;
-    color: #2c3e50;
-  }
-  h1 {
-    margin-bottom: 10px;
-  }
-  button, input[type="submit"] {
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    border: none;
-    border-radius: 6px;
-    background-color: #2c3e50;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  button:hover, input[type="submit"]:hover {
-    background-color: #34495e;
-  }
-  /* Layout geral */
-  #telaInicial {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-  #telaInicial button {
-    width: 220px;
-  }
-  #loginForm {
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    width: 300px;
-  }
-  #loginForm input {
-    padding: 8px;
-    font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-  #app, #viewEstudante {
-    display: none;
-    max-width: 480px;
-    width: 100%;
-    background: white;
-    padding: 20px 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
-    position: relative;
-  }
-  #btnGerar {
-    margin-bottom: 20px;
-  }
-  #resultado ul {
-    list-style: none;
-    padding: 0;
-  }
-  #resultado li {
-    background: #ecf0f1;
-    margin-bottom: 10px;
-    padding: 12px;
-    border-radius: 6px;
-    color: #2c3e50;
-  }
-  #checkboxContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px 25px;
-    margin-top: 10px;
-  }
-  #checkboxContainer > div {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  #formQuemLimpou button[type="submit"] {
-    margin-top: 20px;
-  }
-  #btnReset {
-    margin-top: 10px;
-    background-color: #c0392b;
-  }
-  #btnReset:hover {
-    background-color: #e74c3c;
-  }
-  #avisoReset {
-    margin-top: 30px;
-    color: #e74c3c;
-    font-weight: bold;
-  }
-  footer {
-    margin-top: 20px;
-    font-size: 13px;
-    color: #7f8c8d;
-    text-align: center;
-  }
-  /* Painel lateral (menu de 3 pontinhos) */
-  #btnMenu {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #2c3e50;
-  }
-  #painelLateral {
-    position: fixed;
-    top: 0;
-    right: -280px;
-    width: 280px;
-    height: 100vh;
-    background: white;
-    box-shadow: -2px 0 6px rgb(0 0 0 / 0.15);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    transition: right 0.3s ease;
-    z-index: 1000;
-  }
-  #painelLateral.aberto {
-    right: 0;
-  }
-  #painelLateral h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-weight: bold;
-    font-size: 20px;
-  }
-  #painelLateral label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
-  #painelLateral input[type="text"], #painelLateral input[type="email"] {
-    width: 100%;
-    padding: 8px 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-  }
-  #painelLateral button {
-    background-color: #2c3e50;
-    color: white;
-    font-weight: bold;
-    padding: 10px 15px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: auto;
-  }
-  #painelLateral button:hover {
-    background-color: #34495e;
-  }
-  #painelLateral .btnSair {
-    background-color: #c0392b;
-    margin-top: 10px;
-  }
-  #painelLateral .btnSair:hover {
-    background-color: #e74c3c;
-  }
-  /* Mensagem de erro de login */
-  #msgErroLogin {
-    color: red;
-    margin-top: 10px;
-    font-weight: bold;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quem limpa a sala hoje?</title>
+  <style>
+    /* Reset básico e centralização */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f3f5;
+      color: #2c3e50;
+      margin: 0;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-top: 30px;
+      font-weight: 700;
+    }
+    #loginContainer, #escalaContainer {
+      max-width: 450px;
+      width: 100%;
+      background: white;
+      border-radius: 10px;
+      padding: 25px 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 40px;
+    }
+    /* Botões */
+    button {
+      background-color: #2c3e50;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #34495e;
+    }
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 12px 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    input[type="email"]:focus, input[type="password"]:focus {
+      border-color: #2c3e50;
+      outline: none;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: block;
+    }
+    #msgErro {
+      color: #c0392b;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: none;
+    }
+    /* Escala lista */
+    #resultado {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+    #resultado ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #resultado li {
+      background: #ecf0f1;
+      margin-bottom: 12px;
+      padding: 12px 15px;
+      border-radius: 6px;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+    /* Botão continuar */
+    #btnContinuar {
+      margin-top: 15px;
+      display: inline-block;
+    }
+    /* Menu três pontinhos */
+    #menuTresPontos {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 30px;
+      user-select: none;
+      color: #2c3e50;
+    }
+    #menuDropdown {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      z-index: 100;
+      min-width: 180px;
+      font-weight: 600;
+    }
+    #menuDropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px 15px;
+      border-radius: 0;
+      border: none;
+      background: none;
+      color: #2c3e50;
+      font-size: 16px;
+    }
+    #menuDropdown button:hover {
+      background-color: #ecf0f1;
+    }
+    /* Modal Liberar acesso */
+    #modalLiberarAcesso {
+      position: fixed;
+      top: 0; left: 0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+    }
+    #modalConteudo {
+      background: white;
+      padding: 25px 30px;
+      border-radius: 10px;
+      width: 320px;
+      max-width: 90%;
+      box-sizing: border-box;
+    }
+    #modalConteudo h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    #modalConteudo input[type="email"] {
+      margin-bottom: 20px;
+    }
+    #modalConteudo button {
+      width: 100%;
+    }
+    #modalLiberarAcesso .fecharBtn {
+      background: #c0392b;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 
-<div id="telaInicial">
-  <h1>Quem limpa a sala hoje?</h1>
-  <button id="btnProfessor">Professor / Representante</button>
-  <button id="btnEstudante">Estudante</button>
+<h1>Quem limpa a sala hoje?</h1>
+
+<div id="loginContainer">
+  <h2>Login</h2>
+  <div id="msgErro"></div>
+  <label for="emailInput">Email</label>
+  <input type="email" id="emailInput" placeholder="Digite seu email" autocomplete="username" />
+  <label for="senhaInput">Senha</label>
+  <input type="password" id="senhaInput" placeholder="Digite sua senha" autocomplete="current-password" />
+  <button id="btnLogin">Entrar</button>
 </div>
 
-<form id="loginForm">
-  <h2>Login Professor / Representante</h2>
-  <input type="email" id="email" placeholder="Email" required autocomplete="username" />
-  <input type="password" id="senha" placeholder="Senha" required autocomplete="current-password" />
-  <input type="submit" value="Entrar" />
-  <div id="msgErroLogin"></div>
-  <button type="button" id="btnVoltarTelaInicial" style="margin-top:10px; background:#7f8c8d;">Voltar</button>
-</form>
-
-<!-- Tela professor com edição -->
-<div id="app" role="main" aria-label="Painel do professor">
-  <button id="btnMenu" aria-label="Abrir menu">⋮</button>
-  <button id="btnGerar">Continuar</button>
+<div id="escalaContainer" style="display:none;">
+  <h2>Escala de hoje:</h2>
   <div id="resultado"></div>
-  <div id="pergunta" style="display:none;">
-    <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
-    <form id="formQuemLimpou">
-      <div id="checkboxContainer"></div>
-      <button type="submit">Confirmar</button>
-      <div id="avisoReset">
-        ⚠️ Cuidado: o botão resetar apaga <u>TODOS</u> os dados!
-      </div>
-      <button id="btnReset" type="button">Resetar Escala</button>
-    </form>
+  <button id="btnContinuar">Continuar</button>
+</div>
+
+<!-- Ícone três pontinhos -->
+<div id="menuTresPontos" style="display:none;">&#8942;</div>
+
+<!-- Dropdown menu -->
+<div id="menuDropdown">
+  <button id="btnLiberarAcesso">Liberar acesso</button>
+  <button id="btnResetar">Resetar escala</button>
+  <button id="btnSair">Sair</button>
+</div>
+
+<!-- Modal liberar acesso -->
+<div id="modalLiberarAcesso">
+  <div id="modalConteudo">
+    <h3>Adicionar email administrador</h3>
+    <input type="email" id="emailNovoAdmin" placeholder="Email do novo administrador" />
+    <button id="btnAdicionarAdmin">Adicionar</button>
+    <button class="fecharBtn" id="btnFecharModal">Fechar</button>
+    <div id="msgModal" style="color:#c0392b; margin-top:10px; font-weight:bold;"></div>
   </div>
 </div>
 
-<!-- Tela estudante só para ver -->
-<div id="viewEstudante" role="main" aria-label="Visualização para estudante">
-  <h2>Escala de hoje</h2>
-  <div id="resultadoEstudante"></div>
-  <button id="btnSairEstudante">Sair</button>
-</div>
-
-<!-- Painel lateral -->
-<div id="painelLateral" aria-hidden="true" role="complementary" aria-label="Menu lateral">
-  <h3>Configurações</h3>
-  <label for="inputNovoAdmin">Adicionar novo administrador (email):</label>
-  <input type="email" id="inputNovoAdmin" placeholder="email@exemplo.com" />
-  <button id="btnAdicionarAdmin">Adicionar Admin</button>
-  <button class="btnSair" id="btnSair">Sair</button>
-</div>
-
-<footer>
-  <p>© 2025 Nicolas GBM | Criador do projeto.</p>
-  <p>Contato: <a href="mailto:nicolasgmbatista15@gmail.com">nicolasgmbatista15@gmail.com</a></p>
-</footer>
-
-<!-- Firebase SDK -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    setDoc,
-    updateDoc,
-    arrayUnion,
-    arrayRemove
-  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+// Importações Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
- const firebaseConfig = {
+// Config Firebase (coloque suas configs aqui)
+const firebaseConfig = {
   apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
   authDomain: "quem-limpa-hoje.firebaseapp.com",
   projectId: "quem-limpa-hoje",
@@ -270,407 +220,276 @@
   appId: "1:44929275404:web:971258e864925cb3684029"
 };
 
-  const appFirebase = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getFirestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  // Referências a elementos do DOM
-  const telaInicial = document.getElementById("telaInicial");
-  const btnProfessor = document.getElementById("btnProfessor");
-  const btnEstudante = document.getElementById("btnEstudante");
-  const loginForm = document.getElementById("loginForm");
-  const emailInput = document.getElementById("email");
-  const senhaInput = document.getElementById("senha");
-  const msgErroLogin = document.getElementById("msgErroLogin");
+const loginContainer = document.getElementById('loginContainer');
+const escalaContainer = document.getElementById('escalaContainer');
+const menuTresPontos = document.getElementById('menuTresPontos');
+const menuDropdown = document.getElementById('menuDropdown');
+const btnLiberarAcesso = document.getElementById('btnLiberarAcesso');
+const btnResetar = document.getElementById('btnResetar');
+const btnSair = document.getElementById('btnSair');
+const modalLiberarAcesso = document.getElementById('modalLiberarAcesso');
+const btnFecharModal = document.getElementById('btnFecharModal');
+const btnAdicionarAdmin = document.getElementById('btnAdicionarAdmin');
+const msgErro = document.getElementById('msgErro');
+const msgModal = document.getElementById('msgModal');
 
-  const app = document.getElementById("app");
-  const btnGerar = document.getElementById("btnGerar");
-  const resultado = document.getElementById("resultado");
-  const pergunta = document.getElementById("pergunta");
-  const formQuemLimpou = document.getElementById("formQuemLimpou");
-  const checkboxContainer = document.getElementById("checkboxContainer");
-  const btnReset = document.getElementById("btnReset");
+const emailInput = document.getElementById('emailInput');
+const senhaInput = document.getElementById('senhaInput');
+const resultado = document.getElementById('resultado');
+const btnContinuar = document.getElementById('btnContinuar');
 
-  const viewEstudante = document.getElementById("viewEstudante");
-  const resultadoEstudante = document.getElementById("resultadoEstudante");
-  const btnSairEstudante = document.getElementById("btnSairEstudante");
+// Lista dos nomes - fixa
+const nomes = [
+  "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy",
+  "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff",
+  "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles",
+  "Pedro", "Samuel", "Sebastião", "Zaira"
+].sort((a,b) => a.localeCompare(b));
 
-  const btnMenu = document.getElementById("btnMenu");
-  const painelLateral = document.getElementById("painelLateral");
-  const inputNovoAdmin = document.getElementById("inputNovoAdmin");
-  const btnAdicionarAdmin = document.getElementById("btnAdicionarAdmin");
-  const btnSair = document.getElementById("btnSair");
-  const btnVoltarTelaInicial = document.getElementById("btnVoltarTelaInicial");
+// Variáveis do sistema
+let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
+if(typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
 
-  // Dados fixos dos nomes (pode futuramente salvar no firestore)
-  const nomes = [
-    "Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy",
-    "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff",
-    "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles",
-    "Pedro", "Samuel", "Sebastião", "Zaira"
-  ].sort((a,b) => a.localeCompare(b));
+let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
+let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
+let faltantesPendentes = JSON.parse(localStorage.getItem('faltantesPendentes') || '[]');
 
-  // Variáveis de controle local
-  let posicaoUltimaEscala = JSON.parse(localStorage.getItem('posicaoUltimaEscala'));
-  if(typeof posicaoUltimaEscala !== 'number' || isNaN(posicaoUltimaEscala)) posicaoUltimaEscala = -1;
-  let historicoTarefa = JSON.parse(localStorage.getItem('historicoTarefa') || '{}');
-  let escalaAtual = JSON.parse(localStorage.getItem('escalaAtual') || '[]');
-  let faltantesPendentes = JSON.parse(localStorage.getItem('faltantesPendentes') || '[]');
+let usuarioAtual = null;
+let isAdmin = false;
 
-  // Funções para salvar localStorage
-  function salvarTudo() {
-    localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
-    localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
-    localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
-    localStorage.setItem('faltantesPendentes', JSON.stringify(faltantesPendentes));
+function salvarTudo() {
+  localStorage.setItem('posicaoUltimaEscala', JSON.stringify(posicaoUltimaEscala));
+  localStorage.setItem('historicoTarefa', JSON.stringify(historicoTarefa));
+  localStorage.setItem('escalaAtual', JSON.stringify(escalaAtual));
+  localStorage.setItem('faltantesPendentes', JSON.stringify(faltantesPendentes));
+}
+
+function alternarTarefa(tarefa) {
+  return tarefa === 'mesa' ? 'chão' : 'mesa';
+}
+
+function proximoIndice(atual, nomesIgnorados = []) {
+  let i = atual;
+  for(let count=0; count<nomes.length; count++) {
+    i = (i + 1) % nomes.length;
+    if(!nomesIgnorados.includes(nomes[i])) return i;
   }
+  return -1;
+}
 
-  // Alterna tarefa entre mesa e chão
-  function alternarTarefa(tarefa) {
-    return tarefa === 'mesa' ? 'chão' : 'mesa';
-  }
+function gerarEscala() {
+  const retornantes = [...faltantesPendentes];
+  faltantesPendentes = [];
 
-  // Próximo índice para escala, ignorando nomes já usados
-  function proximoIndice(atual, nomesIgnorados = []) {
-    let i = atual;
-    for(let count=0; count<nomes.length; count++) {
-      i = (i + 1) % nomes.length;
-      if(!nomesIgnorados.includes(nomes[i])) return i;
-    }
-    return -1;
-  }
+  let nomesUsados = retornantes.map(f => f.nome);
+  let ultimoIdx = posicaoUltimaEscala;
 
-  // Gera escala inicial ou nova escala
-  function gerarEscala() {
-    const retornantes = [...faltantesPendentes];
-    faltantesPendentes = [];
+  if(escalaAtual.length === 0) {
+    const idx1 = proximoIndice(ultimoIdx, nomesUsados);
+    const nome1 = nomes[idx1];
+    const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
+    historicoTarefa[nome1] = tarefa1;
+    nomesUsados.push(nome1);
 
-    let nomesUsados = retornantes.map(f => f.nome);
-    let ultimoIdx = posicaoUltimaEscala;
+    const idx2 = proximoIndice(idx1, nomesUsados);
+    const nome2 = nomes[idx2];
+    const tarefa2 = alternarTarefa(tarefa1);
+    historicoTarefa[nome2] = tarefa2;
+    nomesUsados.push(nome2);
 
-    if(escalaAtual.length === 0) {
-      const idx1 = proximoIndice(ultimoIdx, nomesUsados);
-      const nome1 = nomes[idx1];
-      const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
-      historicoTarefa[nome1] = tarefa1;
-      nomesUsados.push(nome1);
+    escalaAtual = [
+      { nome: nome1, tarefa: tarefa1, index: idx1 },
+      { nome: nome2, tarefa: tarefa2, index: idx2 }
+    ];
 
-      const idx2 = proximoIndice(idx1, nomesUsados);
-      const nome2 = nomes[idx2];
-      const tarefa2 = alternarTarefa(tarefa1);
-      historicoTarefa[nome2] = tarefa2;
-      nomesUsados.push(nome2);
-
-      escalaAtual = [
-        { nome: nome1, tarefa: tarefa1, index: idx1 },
-        { nome: nome2, tarefa: tarefa2, index: idx2 }
-      ];
-
-      posicaoUltimaEscala = idx2;
-      salvarTudo();
-      atualizarResultadoEFormulario();
-      return;
-    }
-
-    // Gera substitutos para faltantes mantendo alternância de tarefas
-    const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
-    const substitutos = [];
-    for(let i=0; i<presentes.length; i++) {
-      const idx = proximoIndice(ultimoIdx, nomesUsados);
-      const nome = nomes[idx];
-
-      const tarefaAnterior = historicoTarefa[nome] || (i === 0 ? 'mesa' : 'chão');
-      let novaTarefa;
-      if (i === 0) {
-        novaTarefa = alternarTarefa(tarefaAnterior);
-      } else {
-        novaTarefa = substitutos[0].tarefa === 'mesa' ? 'chão' : 'mesa';
-      }
-
-      historicoTarefa[nome] = novaTarefa;
-      substitutos.push({ nome, tarefa: novaTarefa, index: idx });
-      nomesUsados.push(nome);
-      ultimoIdx = idx;
-    }
-
-    escalaAtual = [...retornantes, ...substitutos].slice(0,2);
-
-    // Ajuste para garantir tarefas diferentes
-    if(escalaAtual.length === 2) {
-      if(escalaAtual[0].tarefa === escalaAtual[1].tarefa) {
-        escalaAtual[1].tarefa = alternarTarefa(escalaAtual[0].tarefa);
-        historicoTarefa[escalaAtual[1].nome] = escalaAtual[1].tarefa;
-      }
-      posicaoUltimaEscala = escalaAtual[1].index;
-    }
-
+    posicaoUltimaEscala = idx2;
     salvarTudo();
-    atualizarResultadoEFormulario();
+    mostrarEscala();
+    return;
   }
 
-  // Confirma faltas e atualiza escala
-  function confirmarFaltas() {
-    const faltaramHoje = [];
-    const presentesHoje = [];
-    escalaAtual.forEach(pessoa => {
-      const checkbox = document.getElementById(pessoa.nome);
-      if(checkbox && checkbox.checked) {
-        faltaramHoje.push(pessoa);
-      } else {
-        presentesHoje.push(pessoa);
-      }
-    });
+  const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
 
-    faltantesPendentes = faltantesPendentes.concat(faltaramHoje);
+  const substitutos = [];
+  for(let i=0; i<presentes.length; i++) {
+    const idx = proximoIndice(ultimoIdx, nomesUsados);
+    const nome = nomes[idx];
 
-    const novosSubstitutos = [];
-    let nomesUsados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
-    let ultimoIdx = posicaoUltimaEscala;
-
-    for(let i=0; i<faltaramHoje.length; i++) {
-      let pessoa = faltaramHoje[i];
-      let idx = proximoIndice(ultimoIdx, nomesUsados);
-      const nome = nomes[idx];
-      const tarefaBase = pessoa.tarefa;
-
-      historicoTarefa[pessoa.nome] = tarefaBase;
-
-      novosSubstitutos.push({ nome, tarefa: tarefaBase, index: idx });
-      nomesUsados.push(nome);
-      ultimoIdx = idx;
+    const tarefaAnterior = historicoTarefa[nome] || (i === 0 ? 'mesa' : 'chão');
+    let novaTarefa;
+    if (i === 0) {
+      novaTarefa = alternarTarefa(tarefaAnterior);
+    } else {
+      novaTarefa = substitutos[0].tarefa === 'mesa' ? 'chão' : 'mesa';
     }
 
-    presentesHoje.forEach(p => {
-      historicoTarefa[p.nome] = p.tarefa;
-    });
+    historicoTarefa[nome] = novaTarefa;
+    substitutos.push({ nome, tarefa: novaTarefa, index: idx });
+    nomesUsados.push(nome);
+    ultimoIdx = idx;
+  }
 
-    escalaAtual = [...presentesHoje, ...novosSubstitutos].slice(0,2);
+  escalaAtual = [...retornantes, ...substitutos].slice(0,2);
 
-    if(escalaAtual.length === 2 && escalaAtual[0].tarefa === escalaAtual[1].tarefa) {
+  if(escalaAtual.length === 2) {
+    if(escalaAtual[0].tarefa === escalaAtual[1].tarefa) {
       escalaAtual[1].tarefa = alternarTarefa(escalaAtual[0].tarefa);
       historicoTarefa[escalaAtual[1].nome] = escalaAtual[1].tarefa;
     }
+    posicaoUltimaEscala = escalaAtual[1].index;
+  }
 
-    if(escalaAtual.length === 2) posicaoUltimaEscala = escalaAtual[1].index;
+  salvarTudo();
+  mostrarEscala();
+}
 
+function mostrarEscala() {
+  if(escalaAtual.length === 0) {
+    resultado.innerHTML = '<p>Escala não gerada ainda.</p>';
+    btnContinuar.style.display = 'none';
+    return;
+  }
+
+  const listaHtml = escalaAtual.map(p => `<li>${p.nome} ➔ <strong>${p.tarefa}</strong></li>`).join('');
+  resultado.innerHTML = `<ul>${listaHtml}</ul>`;
+
+  if(isAdmin) {
+    btnContinuar.style.display = 'inline-block';
+  } else {
+    btnContinuar.style.display = 'none';
+  }
+}
+
+function confirmarFaltas() {
+  // Só admins podem usar, mas deixamos fora pois não tem UI para isso aqui
+}
+
+btnContinuar.onclick = () => {
+  gerarEscala();
+};
+
+menuTresPontos.onclick = () => {
+  if(menuDropdown.style.display === 'block') {
+    menuDropdown.style.display = 'none';
+  } else {
+    menuDropdown.style.display = 'block';
+  }
+};
+
+btnSair.onclick = () => {
+  signOut(auth);
+};
+
+btnResetar.onclick = () => {
+  if(confirm("Tem certeza que quer resetar a escala? Todos os dados serão apagados.")) {
+    localStorage.clear();
+    posicaoUltimaEscala = -1;
+    historicoTarefa = {};
+    escalaAtual = [];
+    faltantesPendentes = [];
     salvarTudo();
-    atualizarResultadoEFormulario();
+    mostrarEscala();
   }
+  menuDropdown.style.display = 'none';
+};
 
-  // Atualiza a visualização da escala para professores
-  function atualizarResultadoEFormulario() {
-    if(escalaAtual.length === 0) {
-      resultado.innerHTML = '';
-      pergunta.style.display = 'none';
-      return;
-    }
+btnLiberarAcesso.onclick = () => {
+  modalLiberarAcesso.style.display = 'flex';
+  menuDropdown.style.display = 'none';
+};
 
-    const listaHtml = escalaAtual.map(p => `<li>${p.nome} ➔ <strong>${p.tarefa}</strong></li>`).join('');
-    resultado.innerHTML = `<h2>Escala de hoje:</h2><ul>${listaHtml}</ul>`;
+btnFecharModal.onclick = () => {
+  modalLiberarAcesso.style.display = 'none';
+  msgModal.textContent = '';
+  document.getElementById('emailNovoAdmin').value = '';
+};
 
-    checkboxContainer.innerHTML = '';
-    escalaAtual.forEach(pessoa => {
-      const wrapper = document.createElement('div');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = pessoa.nome;
-      checkbox.name = "faltou";
-      checkbox.value = pessoa.nome;
-      const label = document.createElement('label');
-      label.htmlFor = pessoa.nome;
-      label.textContent = pessoa.nome;
-      wrapper.appendChild(checkbox);
-      wrapper.appendChild(label);
-      checkboxContainer.appendChild(wrapper);
+btnAdicionarAdmin.onclick = async () => {
+  const novoEmail = document.getElementById('emailNovoAdmin').value.trim().toLowerCase();
+  if(!novoEmail) {
+    msgModal.textContent = 'Digite um email válido.';
+    return;
+  }
+  try {
+    const docRef = doc(db, 'acessos', 'listaAdmins');
+    await updateDoc(docRef, {
+      emails: arrayUnion(novoEmail)
     });
-
-    pergunta.style.display = 'block';
+    msgModal.style.color = 'green';
+    msgModal.textContent = `Email ${novoEmail} adicionado com sucesso!`;
+    document.getElementById('emailNovoAdmin').value = '';
+  } catch(e) {
+    msgModal.style.color = '#c0392b';
+    msgModal.textContent = 'Erro ao adicionar email.';
   }
+};
 
-  // Atualiza visualização para estudantes (somente leitura)
-  function atualizarResultadoEstudante() {
-    if(escalaAtual.length === 0) {
-      resultadoEstudante.innerHTML = '<p>Escala não gerada ainda.</p>';
-      return;
-    }
-    const listaHtml = escalaAtual.map(p => `<li>${p.nome} ➔ <strong>${p.tarefa}</strong></li>`).join('');
-    resultadoEstudante.innerHTML = `<ul style="list-style:none; padding:0;">${listaHtml}</ul>`;
+// Login
+document.getElementById('btnLogin').onclick = () => {
+  const email = emailInput.value.trim().toLowerCase();
+  const senha = senhaInput.value;
+
+  msgErro.style.display = 'none';
+  if(!email || !senha) {
+    msgErro.textContent = "Preencha email e senha.";
+    msgErro.style.display = 'block';
+    return;
   }
-
-  // Controle do painel lateral (menu de 3 pontinhos)
-  btnMenu.addEventListener('click', () => {
-    if(painelLateral.classList.contains('aberto')) {
-      painelLateral.classList.remove('aberto');
-      painelLateral.setAttribute('aria-hidden', 'true');
-    } else {
-      painelLateral.classList.add('aberto');
-      painelLateral.setAttribute('aria-hidden', 'false');
-    }
-  });
-
-  // Adiciona administrador no Firestore
-  async function adicionarAdmin() {
-    const emailNovo = inputNovoAdmin.value.trim().toLowerCase();
-    if(!emailNovo) return alert('Digite um email válido.');
-
-    const docRef = doc(db, "administradores", "listaAdmins");
-    const docSnap = await getDoc(docRef);
-
-    if(docSnap.exists()) {
-      const data = docSnap.data();
-      if(data.emails.includes(emailNovo)) {
-        alert('Este email já é administrador.');
-        return;
-      }
-      await updateDoc(docRef, { emails: arrayUnion(emailNovo) });
-    } else {
-      await setDoc(docRef, { emails: [emailNovo] });
-    }
-
-    alert(`Administrador ${emailNovo} adicionado!`);
-    inputNovoAdmin.value = '';
-  }
-
-  btnAdicionarAdmin.addEventListener('click', adicionarAdmin);
-
-  // Verifica se o usuário atual é admin
-  async function verificarAdmin(email) {
-    if(!email) return false;
-    try {
-      const docRef = doc(db, "administradores", "listaAdmins");
+  signInWithEmailAndPassword(auth, email, senha)
+    .then(async (userCredential) => {
+      usuarioAtual = userCredential.user;
+      // Verificar se é admin
+      const docRef = doc(db, 'acessos', 'listaAdmins');
       const docSnap = await getDoc(docRef);
       if(docSnap.exists()) {
         const data = docSnap.data();
-        return data.emails.includes(email.toLowerCase());
+        if(data.emails && data.emails.includes(email)) {
+          isAdmin = true;
+          loginContainer.style.display = 'none';
+          escalaContainer.style.display = 'block';
+          menuTresPontos.style.display = 'block';
+          gerarEscala();
+          mostrarEscala();
+        } else {
+          isAdmin = false;
+          loginContainer.style.display = 'none';
+          escalaContainer.style.display = 'block';
+          menuTresPontos.style.display = 'none';
+          gerarEscala();
+          mostrarEscala();
+        }
+      } else {
+        msgErro.textContent = "Lista de admins não encontrada no banco.";
+        msgErro.style.display = 'block';
       }
-      return false;
-    } catch {
-      return false;
-    }
+    })
+    .catch(() => {
+      msgErro.textContent = "Login inválido!";
+      msgErro.style.display = 'block';
+    });
+};
+
+// Detecta logout
+onAuthStateChanged(auth, (user) => {
+  if(!user) {
+    usuarioAtual = null;
+    isAdmin = false;
+    escalaContainer.style.display = 'none';
+    loginContainer.style.display = 'block';
+    menuTresPontos.style.display = 'none';
+    menuDropdown.style.display = 'none';
   }
-
-  // Mostrar telas
-
-  function mostrarTelaInicial() {
-    telaInicial.style.display = "flex";
-    loginForm.style.display = "none";
-    app.style.display = "none";
-    viewEstudante.style.display = "none";
-    btnMenu.style.display = "none";
-    painelLateral.classList.remove('aberto');
-    painelLateral.setAttribute('aria-hidden', 'true');
-    msgErroLogin.textContent = '';
-    // Limpa campos
-    emailInput.value = '';
-    senhaInput.value = '';
-    inputNovoAdmin.value = '';
-  }
-
-  function mostrarLogin() {
-    telaInicial.style.display = "none";
-    loginForm.style.display = "flex";
-    app.style.display = "none";
-    viewEstudante.style.display = "none";
-    btnMenu.style.display = "none";
-    painelLateral.classList.remove('aberto');
-    painelLateral.setAttribute('aria-hidden', 'true');
-    msgErroLogin.textContent = '';
-  }
-
-  async function mostrarApp(email) {
-    telaInicial.style.display = "none";
-    loginForm.style.display = "none";
-    viewEstudante.style.display = "none";
-
-    // Verifica admin
-    const isAdmin = await verificarAdmin(email);
-    if(!isAdmin) {
-      alert('Você não tem permissão para acessar esta área.');
-      await auth.signOut();
-      mostrarTelaInicial();
-      return;
-    }
-
-    app.style.display = "block";
-    btnMenu.style.display = "block";
-    atualizarResultadoEFormulario();
-  }
-
-  function mostrarEstudante() {
-    telaInicial.style.display = "none";
-    loginForm.style.display = "none";
-    app.style.display = "none";
-    viewEstudante.style.display = "block";
-    atualizarResultadoEstudante();
-  }
-
-  // Eventos da tela inicial
-  btnProfessor.addEventListener('click', () => mostrarLogin());
-  btnEstudante.addEventListener('click', () => mostrarEstudante());
-  btnVoltarTelaInicial.addEventListener('click', () => {
-    auth.signOut();
-    mostrarTelaInicial();
-  });
-
-  // Login professor
-  loginForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const email = emailInput.value.trim();
-    const senha = senhaInput.value;
-
-    signInWithEmailAndPassword(auth, email, senha)
-      .then(() => {
-        msgErroLogin.textContent = '';
-      })
-      .catch(error => {
-        msgErroLogin.textContent = 'Login inválido. Verifique email e senha.';
-      });
-  });
-
-  // Observa estado de autenticação
-  onAuthStateChanged(auth, user => {
-    if(user) {
-      mostrarApp(user.email);
-    } else {
-      // Se não está logado, mostra tela inicial
-      mostrarTelaInicial();
-    }
-  });
-
-  // Botões do app professor
-  btnGerar.addEventListener('click', gerarEscala);
-
-  formQuemLimpou.addEventListener('submit', e => {
-    e.preventDefault();
-    confirmarFaltas();
-  });
-
-  btnReset.addEventListener('click', () => {
-    if(confirm("Tem certeza que quer resetar a escala? Todos os dados serão apagados.")) {
-      localStorage.clear();
-      posicaoUltimaEscala = -1;
-      historicoTarefa = {};
-      escalaAtual = [];
-      faltantesPendentes = [];
-      salvarTudo();
-      atualizarResultadoEFormulario();
-    }
-  });
-
-  btnSair.addEventListener('click', async () => {
-    await auth.signOut();
-    mostrarTelaInicial();
-  });
-
-  btnSairEstudante.addEventListener('click', () => {
-    mostrarTelaInicial();
-  });
-
-  // Ao carregar a página, tenta mostrar escala se estiver logado
-  window.onload = () => {
-    // Nada a fazer aqui, onAuthStateChanged já controla a tela
-  };
+});
 </script>
+
+<footer style="margin-top: auto; padding: 20px; color: #7f8c8d; text-align: center;">
+  <p>© 2025 Nicolas GBM | Criador do projeto.</p>
+  <p>Contato: <a href="mailto:nicolasgmbatista15@gmail.com">nicolasgmbatista15@gmail.com</a></p>
+</footer>
 
 </body>
 </html>
