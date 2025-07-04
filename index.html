@@ -172,6 +172,17 @@
     #telaInicial button {
       width: 180px;
     }
+
+    /* Ajuste para formulário confirmação faltas proporcional à escala */
+    #formQuemLimpou {
+      margin-top: 20px;
+      max-width: 320px; /* largura proporcional */
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #checkboxContainer div label {
+      font-size: 16px; /* tamanho proporcional */
+    }
   </style>
 </head>
 <body>
@@ -347,9 +358,7 @@
     atualizarResultadoEFormulario();
   }
 
-  function confirmarFaltas(event) {
-    event.preventDefault();
-
+  function confirmarFaltas() {
     const faltaramHoje = [];
     const presentesHoje = [];
     escalaAtual.forEach(pessoa => {
@@ -431,74 +440,41 @@
         container.appendChild(wrapper);
       });
     } else {
+      // Para estudantes esconder formulário
       document.getElementById('pergunta').style.display = 'none';
     }
   }
 
+  // Função para mostrar/ocultar telas
   function mostrarTela(tela) {
     document.getElementById('telaInicial').style.display = 'none';
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('conteudoEscala').style.display = 'none';
 
     document.getElementById(tela).style.display = 'block';
-  }
 
-  function loginProfessor() {
-    const email = document.getElementById('emailLogin').value.trim().toLowerCase();
-    const senha = document.getElementById('senhaLogin').value;
-
-    if(!email || !senha) {
-      document.getElementById('mensagemErro').textContent = 'Preencha email e senha!';
-      return;
-    }
-
-    if(admins.includes(email)) {
-      // Simula login correto (sem senha real)
-      usuarioLogado = email;
-      isAdmin = true;
-      gerarEscala();
-      mostrarTela('conteudoEscala');
-      document.getElementById('mensagemErro').textContent = '';
-    } else {
-      document.getElementById('mensagemErro').textContent = 'Acesso negado: usuário não autorizado.';
+    if(tela === 'conteudoEscala') {
+      if(isAdmin) {
+        // Mostrar menu e botão continuar e aviso reset
+        document.getElementById('menuBtn').style.display = 'block';
+        document.getElementById('menuLateral').style.display = 'flex';
+        document.getElementById('btnContinuar').style.display = 'block';
+        document.getElementById('avisoReset').style.display = 'block';
+        document.getElementById('pergunta').style.display = 'block';
+      } else {
+        // Estudante: esconder menu, botão continuar e aviso reset e formulário
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').style.display = 'none';
+        document.getElementById('btnContinuar').style.display = 'none';
+        document.getElementById('avisoReset').style.display = 'none';
+        document.getElementById('pergunta').style.display = 'none';
+      }
     }
   }
 
-  function abrirMenu() {
-    document.getElementById('menuLateral').classList.add('aberto');
-  }
+  // Eventos
 
-  function fecharMenu() {
-    document.getElementById('menuLateral').classList.remove('aberto');
-  }
-
-  function resetarEscala() {
-    if(confirm('Tem certeza que deseja resetar TODA a escala? Isso apagará todos os dados!')) {
-      posicaoUltimaEscala = -1;
-      historicoTarefa = {};
-      escalaAtual = [];
-      faltantesPendentes = [];
-      salvarTudo();
-      alert('Escala resetada com sucesso.');
-      location.reload();
-    }
-  }
-
-  function sair() {
-    usuarioLogado = null;
-   
-    isAdmin = false;
-    mostrarTela('telaInicial');
-    escalaAtual = JSON.parse(localStorage.getItem('escalaAtual')) || [];
-    atualizarResultadoEFormulario();
-  }
-
-  // Evento: clicar botão Professor para abrir tela login
-  document.getElementById('btnProfessor').addEventListener('click', () => {
-    mostrarTela('telaLogin');
-  });
-
-  // Evento: clicar botão Estudante para abrir escala direto
+  // Botão Estudante: pula direto para escala, sem login
   document.getElementById('btnEstudante').addEventListener('click', () => {
     usuarioLogado = null;
     isAdmin = false;
@@ -506,35 +482,78 @@
     mostrarTela('conteudoEscala');
   });
 
-  // Evento: clicar botão Voltar no login para voltar para tela inicial
+  // Botão Professor: vai para tela login
+  document.getElementById('btnProfessor').addEventListener('click', () => {
+    mostrarTela('telaLogin');
+  });
+
+  // Voltar do login para tela inicial
   document.getElementById('btnVoltarLogin').addEventListener('click', () => {
     mostrarTela('telaInicial');
   });
 
-  // Evento: clicar botão Entrar no login
-  document.getElementById('btnEntrar').addEventListener('click', loginProfessor);
+  // Botão entrar no login professor
+  document.getElementById('btnEntrar').addEventListener('click', () => {
+    const email = document.getElementById('emailLogin').value.trim().toLowerCase();
+    const senha = document.getElementById('senhaLogin').value;
 
-  // Evento: abrir menu lateral
-  document.getElementById('menuBtn').addEventListener('click', abrirMenu);
+    if(admins.includes(email) && senha.length >= 4) { // Exemplo simples, não seguro para produção
+      usuarioLogado = email;
+      isAdmin = true;
+      gerarEscala();
+      mostrarTela('conteudoEscala');
+      document.getElementById('mensagemErro').textContent = '';
+    } else {
+      document.getElementById('mensagemErro').textContent = 'Email ou senha inválidos.';
+    }
+  });
 
-  // Evento: fechar menu lateral
-  document.getElementById('fecharMenu').addEventListener('click', fecharMenu);
+  // Botão menu abrir
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    document.getElementById('menuLateral').classList.add('aberto');
+  });
 
-  // Evento: resetar escala
-  document.getElementById('btnResetar').addEventListener('click', resetarEscala);
+  // Botão fechar menu
+  document.getElementById('fecharMenu').addEventListener('click', () => {
+    document.getElementById('menuLateral').classList.remove('aberto');
+  });
 
-  // Evento: sair do sistema
-  document.getElementById('btnSair').addEventListener('click', sair);
+  // Botão resetar escala
+  document.getElementById('btnResetar').addEventListener('click', () => {
+    if(confirm('Tem certeza que deseja resetar TODA a escala e dados?')) {
+      posicaoUltimaEscala = -1;
+      historicoTarefa = {};
+      escalaAtual = [];
+      faltantesPendentes = [];
+      salvarTudo();
+      gerarEscala();
+    }
+  });
 
-  // Evento: confirmar faltas/limpeza no formulário
-  document.getElementById('formQuemLimpou').addEventListener('submit', confirmarFaltas);
+  // Botão liberar acesso (pode implementar depois)
+  document.getElementById('btnLiberarAcesso').addEventListener('click', () => {
+    alert('Funcionalidade de liberar acesso ainda não implementada.');
+  });
 
-  // Evento: continuar para gerar nova escala (sem seleção)
+  // Botão sair
+  document.getElementById('btnSair').addEventListener('click', () => {
+    usuarioLogado = null;
+    isAdmin = false;
+    mostrarTela('telaInicial');
+  });
+
+  // Formulário confirmação faltas (somente admins)
+  document.getElementById('formQuemLimpou').addEventListener('submit', e => {
+    e.preventDefault();
+    confirmarFaltas();
+  });
+
+  // Botão continuar (somente admins)
   document.getElementById('btnContinuar').addEventListener('click', () => {
     gerarEscala();
   });
 
-  // Inicializa sempre na tela inicial
+  // Inicializa na tela inicial
   mostrarTela('telaInicial');
 </script>
 </body>
