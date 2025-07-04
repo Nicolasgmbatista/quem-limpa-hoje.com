@@ -174,6 +174,25 @@
       font-size: 16px;
     }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Configuração Firebase - substitua pelas suas credenciais
+    const firebaseConfig = {
+      apiKey: "SUA-API-KEY",
+      authDomain: "SEU-AUTH-DOMAIN",
+      projectId: "SEU-PROJECT-ID",
+      storageBucket: "SEU-STORAGE-BUCKET",
+      messagingSenderId: "SEU-MESSAGING-SENDER-ID",
+      appId: "SEU-APP-ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
   <div id="app">
@@ -256,7 +275,34 @@ function proximoIndice(atual, ignorados=[]) {
   return -1;
 }
 
-function gerarEscala() {
+async function salvarEscalaFirestore() {
+  try {
+    await db.collection("escalaAtual").doc("dia").set({
+      escala: escalaAtual
+    });
+  } catch (erro) {
+    console.error("Erro ao salvar escala no Firestore:", erro);
+  }
+}
+
+async function buscarEscalaDoFirestore(){
+  try {
+    const doc = await db.collection("escalaAtual").doc("dia").get();
+    if(doc.exists){
+      escalaAtual = doc.data().escala || [];
+      atualizarResultadoEFormulario();
+    }else{
+      escalaAtual = [];
+      atualizarResultadoEFormulario();
+    }
+  } catch(erro) {
+    console.error("Erro ao buscar escala no Firestore:", erro);
+    escalaAtual = [];
+    atualizarResultadoEFormulario();
+  }
+}
+
+async function gerarEscala() {
   const retornantes = [...faltantesPendentes];
   faltantesPendentes = [];
   let usados = retornantes.map(f=>f.nome);
@@ -277,6 +323,7 @@ function gerarEscala() {
     escalaAtual=[{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
     posicaoUltimaEscala=idx2;
     salvarTudo();
+    if(isAdmin) await salvarEscalaFirestore();
     atualizarResultadoEFormulario();
     return;
   }
@@ -300,10 +347,11 @@ function gerarEscala() {
   }
   if(escalaAtual.length===2)posicaoUltimaEscala=escalaAtual[1].index;
   salvarTudo();
+  if(isAdmin) await salvarEscalaFirestore();
   atualizarResultadoEFormulario();
 }
 
-function confirmarFaltas(){
+async function confirmarFaltas(){
   const faltaram=[],presentes=[];
   escalaAtual.forEach(p=>{
     const c=document.getElementById(p.nome);
@@ -328,6 +376,7 @@ function confirmarFaltas(){
   }
   if(escalaAtual.length===2)posicaoUltimaEscala=escalaAtual[1].index;
   salvarTudo();
+  if(isAdmin) await salvarEscalaFirestore();
   atualizarResultadoEFormulario();
 }
 
@@ -396,7 +445,10 @@ function mostrarTela(t){
 }
 
 document.getElementById('btnEstudante').onclick=()=>{
-  usuarioLogado=null;isAdmin=false;gerarEscala();mostrarTela('conteudoEscala');
+  usuarioLogado=null;
+  isAdmin=false;
+  buscarEscalaDoFirestore();
+  mostrarTela('conteudoEscala');
 }
 document.getElementById('btnProfessor').onclick=()=>mostrarTela('telaLogin');
 document.getElementById('btnVoltarLogin').onclick=()=>mostrarTela('telaInicial');
@@ -405,7 +457,7 @@ document.getElementById('btnEntrar').onclick=()=>{
   const s=document.getElementById('senhaLogin').value;
   if(admins.includes(e)&&s.length>=4){
     usuarioLogado=e;isAdmin=true;
-    gerarEscala();mostrarTela('conteudoEscala');
+    gerarEscala().then(()=>mostrarTela('conteudoEscala'));
     document.getElementById('mensagemErro').textContent='';
   }else{
     document.getElementById('mensagemErro').textContent='Email ou senha inválidos.';
@@ -416,16 +468,21 @@ document.getElementById('fecharMenu').onclick=()=>document.getElementById('menuL
 document.getElementById('btnResetar').onclick=()=>{
   if(confirm('Tem certeza que deseja resetar toda a escala?')){
     posicaoUltimaEscala=-1;historicoTarefa={};escalaAtual=[];faltantesPendentes=[];
-    salvarTudo();gerarEscala();
+    salvarTudo();
+    if(isAdmin) salvarEscalaFirestore().then(() => gerarEscala());
+    else gerarEscala();
   }
 }
 document.getElementById('btnLiberarAcesso').onclick=()=>alert('Funcionalidade ainda não implementada.');
-document.getElementById('btnSair').onclick=()=>{usuarioLogado=null;isAdmin=false;mostrarTela('telaInicial');}
+document.getElementById('btnSair').onclick=()=>{
+  usuarioLogado=null;isAdmin=false;mostrarTela('telaInicial');
+}
 document.getElementById('formQuemLimpou').onsubmit=e=>{
   e.preventDefault();
   confirmarFaltas();
 }
 document.getElementById('btnContinuar').onclick=()=>gerarEscala();
+
 mostrarTela('telaInicial');
 </script>
 </body>
