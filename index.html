@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quem limpa a sala hoje?</title>
   <style>
-    /* Seu CSS original + ajustes visuais */
+    /* Seu CSS original */
     body {
       font-family: Arial, sans-serif;
       background: #f9f9f9;
@@ -53,9 +53,6 @@
       border: 2px solid #ccc;
       transition: border-color 0.3s ease;
       margin-bottom: 15px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
     input[type="email"]:focus, input[type="password"]:focus {
       border-color: #2c3e50;
@@ -100,17 +97,15 @@
     #menuLateral button:hover {
       background: #3c5a7a;
     }
-    /* Botão fechar menor e colado no canto */
     #fecharMenu {
       align-self: flex-end;
-      font-size: 22px; /* menor que antes */
+      font-size: 28px;
       background: transparent;
       border: none;
       color: white;
       cursor: pointer;
       margin-bottom: 20px;
       padding: 0;
-      margin-right: 0;
     }
     #resultado h2 {
       margin-bottom: 8px;
@@ -167,32 +162,17 @@
     #btnContinuar:hover {
       background-color: #2ecc71;
     }
-    /* Tela inicial: deixa os dois botões do mesmo tamanho */
     #telaInicial button {
       width: 180px;
     }
-    /* Tela login: mantém inputs centralizados */
-    #telaLogin input[type="email"],
-    #telaLogin input[type="password"] {
-      width: 260px;
-      margin: 0 auto 15px auto;
-      display: block;
+    #formQuemLimpou {
+      margin-top: 20px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    /* Botões login lado a lado e alinhados */
-    #botoesLogin {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 10px;
-    }
-    #botoesLogin button {
-      width: 120px;
-      margin: 0;
-      padding: 10px 0;
-    }
-    /* Botão voltar com cor cinza */
-    #btnVoltarLogin {
-      background: #999 !important;
+    #checkboxContainer div label {
+      font-size: 16px;
     }
   </style>
 </head>
@@ -210,10 +190,8 @@
       <div id="mensagemErro"></div>
       <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
       <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
-      <div id="botoesLogin">
-        <button id="btnEntrar">Entrar</button>
-        <button id="btnVoltarLogin">Voltar</button>
-      </div>
+      <button id="btnEntrar">Entrar</button>
+      <button id="btnVoltarLogin" style="background:#999; margin-top:10px;">Voltar</button>
     </div>
 
     <div id="conteudoEscala" style="display:none;">
@@ -452,7 +430,7 @@
         document.getElementById('pergunta').style.display = 'none';
       }
       await lerEscalaDoFirestore();
-      if(escalaAtual.length === 0) {
+      if(!escalaAtual || escalaAtual.length === 0) {
         await gerarEscala();
       } else {
         atualizarResultadoEFormulario();
@@ -460,88 +438,58 @@
     }
   }
 
-  // Login simplificado (só verifica email admins)
-  function login(email, senha) {
-    if(admins.includes(email.toLowerCase()) && senha.trim() !== '') {
-      return true;
-    }
-    return false;
-  }
-
   // Eventos
-  document.getElementById('btnProfessor').addEventListener('click', () => {
-    mostrarTela('telaLogin');
-  });
-
-  document.getElementById('btnEstudante').addEventListener('click', () => {
+  document.getElementById('btnEstudante').onclick = async () => {
     usuarioLogado = null;
     isAdmin = false;
-    mostrarTela('conteudoEscala');
-  });
-
-  document.getElementById('btnVoltarLogin').addEventListener('click', () => {
-    mostrarTela('telaInicial');
-    document.getElementById('mensagemErro').textContent = '';
-    document.getElementById('emailLogin').value = '';
-    document.getElementById('senhaLogin').value = '';
-  });
-
-  document.getElementById('btnEntrar').addEventListener('click', () => {
-    const email = document.getElementById('emailLogin').value.trim();
-    const senha = document.getElementById('senhaLogin').value.trim();
-    if(login(email, senha)){
-      usuarioLogado = email;
+    await mostrarTela('conteudoEscala');
+  };
+  document.getElementById('btnProfessor').onclick = () => mostrarTela('telaLogin');
+  document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('telaInicial');
+  document.getElementById('btnEntrar').onclick = async () => {
+    const e = document.getElementById('emailLogin').value.trim().toLowerCase();
+    const s = document.getElementById('senhaLogin').value;
+    if(admins.includes(e) && s.length >= 4){
+      usuarioLogado = e;
       isAdmin = true;
-      mostrarTela('conteudoEscala');
+      await mostrarTela('conteudoEscala');
       document.getElementById('mensagemErro').textContent = '';
-      document.getElementById('emailLogin').value = '';
-      document.getElementById('senhaLogin').value = '';
     } else {
-      document.getElementById('mensagemErro').textContent = 'Login inválido. Tente novamente.';
+      document.getElementById('mensagemErro').textContent = 'Email ou senha inválidos.';
     }
-  });
-
-  document.getElementById('menuBtn').addEventListener('click', () => {
+  };
+  document.getElementById('menuBtn').onclick = () => {
     document.getElementById('menuLateral').classList.add('aberto');
-  });
-  document.getElementById('fecharMenu').addEventListener('click', () => {
+  };
+  document.getElementById('fecharMenu').onclick = () => {
     document.getElementById('menuLateral').classList.remove('aberto');
-  });
-
-  document.getElementById('btnSair').addEventListener('click', () => {
-    usuarioLogado = null;
-    isAdmin = false;
-    document.getElementById('menuLateral').classList.remove('aberto');
-    mostrarTela('telaInicial');
-  });
-
-  document.getElementById('formQuemLimpou').addEventListener('submit', async e => {
-    e.preventDefault();
-    if(isAdmin){
-      await confirmarFaltas();
-    }
-  });
-
-  document.getElementById('btnResetar').addEventListener('click', async () => {
-    if(confirm('Tem certeza que deseja resetar TODAS as informações da escala?')){
+  };
+  document.getElementById('btnResetar').onclick = async () => {
+    if(confirm('Tem certeza que deseja resetar toda a escala?')) {
       posicaoUltimaEscala = -1;
       historicoTarefa = {};
       escalaAtual = [];
       faltantesPendentes = [];
       await salvarEscalaNoFirestore();
-      atualizarResultadoEFormulario();
-      alert('Escala resetada com sucesso!');
+      await gerarEscala();
     }
-  });
-
-  document.getElementById('btnContinuar').addEventListener('click', async () => {
-    escalaAtual = [];
+  };
+  document.getElementById('btnLiberarAcesso').onclick = () => alert('Funcionalidade ainda não implementada.');
+  document.getElementById('btnSair').onclick = () => {
+    usuarioLogado = null;
+    isAdmin = false;
+    mostrarTela('telaInicial');
+  };
+  document.getElementById('formQuemLimpou').onsubmit = async e => {
+    e.preventDefault();
+    await confirmarFaltas();
+  };
+  document.getElementById('btnContinuar').onclick = async () => {
     await gerarEscala();
-  });
+  };
 
-  // Inicializa com tela inicial
+  // Inicializa app
   mostrarTela('telaInicial');
-
 </script>
 </body>
 </html>
