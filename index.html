@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quem limpa a sala hoje?</title>
   <style>
-    /* Seu CSS original */
+    /* Seu CSS original + ajustes visuais */
     body {
       font-family: Arial, sans-serif;
       background: #f9f9f9;
@@ -100,17 +100,17 @@
     #menuLateral button:hover {
       background: #3c5a7a;
     }
-    /* Botão fechar menor e mais colado ao canto */
+    /* Botão fechar menor e colado no canto */
     #fecharMenu {
       align-self: flex-end;
-      font-size: 22px; /* menor */
+      font-size: 22px; /* menor que antes */
       background: transparent;
       border: none;
       color: white;
       cursor: pointer;
       margin-bottom: 20px;
       padding: 0;
-      margin-right: 0; /* colado na direita */
+      margin-right: 0;
     }
     #resultado h2 {
       margin-bottom: 8px;
@@ -171,14 +171,14 @@
     #telaInicial button {
       width: 180px;
     }
-    /* Tela login: alinhamento input email e senha */
+    /* Tela login: mantém inputs centralizados */
     #telaLogin input[type="email"],
     #telaLogin input[type="password"] {
       width: 260px;
       margin: 0 auto 15px auto;
       display: block;
     }
-    /* Botões login lado a lado */
+    /* Botões login lado a lado e alinhados */
     #botoesLogin {
       display: flex;
       justify-content: center;
@@ -190,9 +190,9 @@
       margin: 0;
       padding: 10px 0;
     }
-    /* Ajuste do botão voltar para o cinza */
+    /* Botão voltar com cor cinza */
     #btnVoltarLogin {
-      background: #999;
+      background: #999 !important;
     }
   </style>
 </head>
@@ -245,7 +245,303 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // TODO: Seu código JS permanece exatamente igual, sem alteração nenhuma
+  // Configuração do Firebase - substitua pelas suas configurações
+  const firebaseConfig = {
+  apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
+  authDomain: "quem-limpa-hoje.firebaseapp.com",
+  projectId: "quem-limpa-hoje",
+  storageBucket: "quem-limpa-hoje.firebasestorage.app",
+  messagingSenderId: "44929275404",
+  appId: "1:44929275404:web:971258e864925cb3684029"
+};
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Variáveis globais
+  let admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
+  const nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
+  
+  let posicaoUltimaEscala = -1;
+  let historicoTarefa = {};
+  let escalaAtual = [];
+  let faltantesPendentes = [];
+
+  let usuarioLogado = null;
+  let isAdmin = false;
+
+  // Salvar escala no Firestore
+  async function salvarEscalaNoFirestore() {
+    await db.collection('escala').doc('dados').set({
+      posicaoUltimaEscala,
+      historicoTarefa,
+      escalaAtual,
+      faltantesPendentes
+    });
+  }
+
+  // Ler escala do Firestore
+  async function lerEscalaDoFirestore() {
+    const doc = await db.collection('escala').doc('dados').get();
+    if(doc.exists) {
+      const data = doc.data();
+      posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
+      historicoTarefa = data.historicoTarefa ?? {};
+      escalaAtual = data.escalaAtual ?? [];
+      faltantesPendentes = data.faltantesPendentes ?? [];
+    } else {
+      posicaoUltimaEscala = -1;
+      historicoTarefa = {};
+      escalaAtual = [];
+      faltantesPendentes = [];
+    }
+  }
+
+  // Alternar tarefa
+  function alternarTarefa(tarefa) {
+    return tarefa === 'mesa' ? 'chão' : 'mesa';
+  }
+
+  // Próximo índice que não está na lista ignorados
+  function proximoIndice(atual, ignorados=[]) {
+    let i = atual;
+    for(let c=0;c<nomes.length;c++) {
+      i = (i+1)%nomes.length;
+      if(!ignorados.includes(nomes[i])) return i;
+    }
+    return -1;
+  }
+
+  // Gerar escala nova
+  async function gerarEscala() {
+    const retornantes = [...faltantesPendentes];
+    faltantesPendentes = [];
+    let usados = retornantes.map(f=>f.nome);
+    let idx = posicaoUltimaEscala;
+
+    if(escalaAtual.length===0){
+      const idx1=proximoIndice(idx,usados);
+      const n1=nomes[idx1];
+      const t1=alternarTarefa(historicoTarefa[n1]||'mesa');
+      historicoTarefa[n1]=t1;
+      usados.push(n1);
+
+      const idx2=proximoIndice(idx1,usados);
+      const n2=nomes[idx2];
+      const t2=alternarTarefa(t1);
+      historicoTarefa[n2]=t2;
+
+      escalaAtual=[{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
+      posicaoUltimaEscala=idx2;
+      await salvarEscalaNoFirestore();
+      atualizarResultadoEFormulario();
+      return;
+    }
+
+    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome===p.nome));
+    const substitutos = [];
+    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
+    for(let i=0;i<presentes.length;i++){
+      idx = proximoIndice(idx,usados);
+      const n=nomes[idx];
+      const t = i===0 ? alternarTarefa(historicoTarefa[n]||'mesa') : substitutos[0].tarefa==='mesa'?'chão':'mesa';
+      historicoTarefa[n]=t;
+      substitutos.push({nome:n,tarefa:t,index:idx});
+      usados.push(n);
+    }
+
+    escalaAtual=[...retornantes,...substitutos].slice(0,2);
+    if(escalaAtual.length===2 && escalaAtual[0].tarefa===escalaAtual[1].tarefa){
+      escalaAtual[1].tarefa=alternarTarefa(escalaAtual[0].tarefa);
+      historicoTarefa[escalaAtual[1].nome]=escalaAtual[1].tarefa;
+    }
+    if(escalaAtual.length===2) posicaoUltimaEscala=escalaAtual[1].index;
+    await salvarEscalaNoFirestore();
+    atualizarResultadoEFormulario();
+  }
+
+  // Confirmar faltas e atualiza escala
+  async function confirmarFaltas(){
+    const faltaram=[], presentes=[];
+    escalaAtual.forEach(p=>{
+      const c=document.getElementById(p.nome);
+      if(c && c.checked) faltaram.push(p); else presentes.push(p);
+    });
+    faltantesPendentes = faltantesPendentes.concat(faltaram);
+    const novosSubstitutos = [];
+    let usados = escalaAtual.map(p=>p.nome).concat(faltantesPendentes.map(f=>f.nome));
+    let idx = posicaoUltimaEscala;
+    for(let f of faltaram){
+      idx = proximoIndice(idx, usados);
+      const n = nomes[idx];
+      historicoTarefa[f.nome] = f.tarefa;
+      novosSubstitutos.push({nome:n,tarefa:f.tarefa,index:idx});
+      usados.push(n);
+    }
+    presentes.forEach(p => historicoTarefa[p.nome] = p.tarefa);
+    escalaAtual = [...presentes, ...novosSubstitutos].slice(0,2);
+    if(escalaAtual.length===2 && escalaAtual[0].tarefa === escalaAtual[1].tarefa){
+      escalaAtual[1].tarefa = alternarTarefa(escalaAtual[0].tarefa);
+      historicoTarefa[escalaAtual[1].nome] = escalaAtual[1].tarefa;
+    }
+    if(escalaAtual.length===2) posicaoUltimaEscala = escalaAtual[1].index;
+    await salvarEscalaNoFirestore();
+    atualizarResultadoEFormulario();
+  }
+
+  // Atualizar UI
+  function atualizarResultadoEFormulario(){
+    const lista = document.getElementById('listaEscala');
+    lista.innerHTML = '';
+    escalaAtual.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = p.nome;
+      const span = document.createElement('span');
+      span.textContent = p.tarefa;
+      span.style.fontWeight = 'bold';
+      li.appendChild(span);
+      lista.appendChild(li);
+    });
+
+    if(isAdmin){
+      document.getElementById('pergunta').style.display = 'block';
+      const c = document.getElementById('checkboxContainer');
+      c.innerHTML = '';
+      escalaAtual.forEach(p => {
+        const d = document.createElement('div');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.id = p.nome; cb.name = 'faltou'; cb.value = p.nome;
+        const l = document.createElement('label');
+        l.htmlFor = p.nome; l.textContent = p.nome;
+        d.appendChild(cb); d.appendChild(l);
+        c.appendChild(d);
+      });
+    } else {
+      document.getElementById('pergunta').style.display = 'none';
+    }
+  }
+
+  // Mostrar telas
+  async function mostrarTela(t){
+    document.getElementById('telaInicial').style.display = 'none';
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('conteudoEscala').style.display = 'none';
+    document.getElementById(t).style.display = 'block';
+
+    if(t === 'conteudoEscala'){
+      if(isAdmin){
+        document.getElementById('menuBtn').style.display = 'block';
+        document.getElementById('menuLateral').style.display = 'flex';
+        document.getElementById('btnContinuar').style.display = 'block';
+        document.getElementById('pergunta').style.display = 'block';
+
+        if(!document.getElementById('avisoReset')){
+          const aviso = document.createElement('div');
+          aviso.id = 'avisoReset';
+          aviso.style.marginTop = '20px';
+          aviso.style.color = '#e74c3c';
+          aviso.style.fontWeight = 'bold';
+          aviso.style.fontSize = '14px';
+          aviso.style.textAlign = 'center';
+          aviso.textContent = '⚠️ Cuidado: o botão resetar apaga TODOS os dados!';
+          document.getElementById('formQuemLimpou').appendChild(aviso);
+        }
+      } else {
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').style.display = 'none';
+        document.getElementById('btnContinuar').style.display = 'none';
+        document.getElementById('pergunta').style.display = 'none';
+      }
+      await lerEscalaDoFirestore();
+      if(escalaAtual.length === 0) {
+        await gerarEscala();
+      } else {
+        atualizarResultadoEFormulario();
+      }
+    }
+  }
+
+  // Login simplificado (só verifica email admins)
+  function login(email, senha) {
+    if(admins.includes(email.toLowerCase()) && senha.trim() !== '') {
+      return true;
+    }
+    return false;
+  }
+
+  // Eventos
+  document.getElementById('btnProfessor').addEventListener('click', () => {
+    mostrarTela('telaLogin');
+  });
+
+  document.getElementById('btnEstudante').addEventListener('click', () => {
+    usuarioLogado = null;
+    isAdmin = false;
+    mostrarTela('conteudoEscala');
+  });
+
+  document.getElementById('btnVoltarLogin').addEventListener('click', () => {
+    mostrarTela('telaInicial');
+    document.getElementById('mensagemErro').textContent = '';
+    document.getElementById('emailLogin').value = '';
+    document.getElementById('senhaLogin').value = '';
+  });
+
+  document.getElementById('btnEntrar').addEventListener('click', () => {
+    const email = document.getElementById('emailLogin').value.trim();
+    const senha = document.getElementById('senhaLogin').value.trim();
+    if(login(email, senha)){
+      usuarioLogado = email;
+      isAdmin = true;
+      mostrarTela('conteudoEscala');
+      document.getElementById('mensagemErro').textContent = '';
+      document.getElementById('emailLogin').value = '';
+      document.getElementById('senhaLogin').value = '';
+    } else {
+      document.getElementById('mensagemErro').textContent = 'Login inválido. Tente novamente.';
+    }
+  });
+
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    document.getElementById('menuLateral').classList.add('aberto');
+  });
+  document.getElementById('fecharMenu').addEventListener('click', () => {
+    document.getElementById('menuLateral').classList.remove('aberto');
+  });
+
+  document.getElementById('btnSair').addEventListener('click', () => {
+    usuarioLogado = null;
+    isAdmin = false;
+    document.getElementById('menuLateral').classList.remove('aberto');
+    mostrarTela('telaInicial');
+  });
+
+  document.getElementById('formQuemLimpou').addEventListener('submit', async e => {
+    e.preventDefault();
+    if(isAdmin){
+      await confirmarFaltas();
+    }
+  });
+
+  document.getElementById('btnResetar').addEventListener('click', async () => {
+    if(confirm('Tem certeza que deseja resetar TODAS as informações da escala?')){
+      posicaoUltimaEscala = -1;
+      historicoTarefa = {};
+      escalaAtual = [];
+      faltantesPendentes = [];
+      await salvarEscalaNoFirestore();
+      atualizarResultadoEFormulario();
+      alert('Escala resetada com sucesso!');
+    }
+  });
+
+  document.getElementById('btnContinuar').addEventListener('click', async () => {
+    escalaAtual = [];
+    await gerarEscala();
+  });
+
+  // Inicializa com tela inicial
+  mostrarTela('telaInicial');
+
 </script>
 </body>
 </html>
