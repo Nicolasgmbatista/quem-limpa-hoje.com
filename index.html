@@ -1,263 +1,275 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quem limpa a sala hoje?</title>
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f0f2f5;
-  color: #2c3e50;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  margin: 0;
-  padding: 20px;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quem limpa a sala hoje?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      color: #2c3e50;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
 
-#app {
-  width: 420px;
-  background: #fff;
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  text-align: center;
-  position: relative;
-  border: 1px solid #dcdcdc;
-}
+    #app {
+      width: 420px;
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      position: relative;
+      border: 1px solid #dcdcdc;
+    }
 
-h1 {
-  margin-bottom: 12px;
-  font-weight: 700;
-}
+    h1 {
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
 
-button, input {
-  font-size: 16px;
-  border-radius: 6px;
-  border: none;
-  padding: 10px 18px;
-  margin: 10px 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-  outline: none;
-}
+    button, input {
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      padding: 10px 18px;
+      margin: 10px 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+      outline: none;
+    }
 
-button {
-  background-color: #2c3e50;
-  color: white;
-}
+    button {
+      background-color: #2c3e50;
+      color: white;
+    }
 
-button:hover {
-  background-color: #34495e;
-}
+    button:hover {
+      background-color: #34495e;
+    }
 
-input[type="email"], input[type="password"] {
-  width: 260px;
-  border: 2px solid #ccc;
-  transition: border-color 0.3s ease;
-  margin-bottom: 15px;
-  padding: 10px;
-}
+    input[type="email"], input[type="password"] {
+      width: 260px;
+      border: 2px solid #ccc;
+      transition: border-color 0.3s ease;
+      margin-bottom: 15px;
+      padding: 10px;
+    }
 
-input[type="email"]:focus, input[type="password"]:focus {
-  border-color: #2c3e50;
-}
+    input[type="email"]:focus, input[type="password"]:focus {
+      border-color: #2c3e50;
+    }
 
-#menuBtn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  background: transparent;
-  font-size: 28px;
-  color: #2c3e50;
-  border: none;
-  cursor: pointer;
-  user-select: none;
-  padding: 0;
-  line-height: 1;
-}
+    #menuBtn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: transparent;
+      font-size: 28px;
+      color: #2c3e50;
+      border: none;
+      cursor: pointer;
+      user-select: none;
+      padding: 0;
+      line-height: 1;
+    }
 
-#menuLateral {
-  position: fixed;
-  top: 0;
-  right: -280px;
-  width: 280px;
-  height: 100vh;
-  background: #2c3e50;
-  color: white;
-  box-shadow: -3px 0 8px rgba(0,0,0,0.15);
-  padding: 30px 20px;
-  flex-direction: column;
-  gap: 20px;
-  transition: right 0.3s ease;
-  z-index: 1000;
-  display: none;
-}
+    #menuLateral {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100vh;
+      background: #2c3e50;
+      color: white;
+      box-shadow: -3px 0 8px rgba(0,0,0,0.15);
+      padding: 30px 20px;
+      flex-direction: column;
+      gap: 20px;
+      transition: right 0.3s ease;
+      z-index: 1000;
+      display: none;
+    }
 
-#menuLateral.aberto {
-  right: 0;
-  display: flex;
-}
+    #menuLateral.aberto {
+      right: 0;
+      display: flex;
+    }
 
-#menuLateral button {
-  background: #34495e;
-  width: 100%;
-  padding: 12px 0;
-}
+    #menuLateral button,
+    #fecharMenu {
+      background: #34495e;
+      width: 100%;
+      padding: 12px 0;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+    }
 
-#menuLateral button:hover {
-  background: #3c5a7a;
-}
+    #menuLateral button:hover,
+    #fecharMenu:hover {
+      background: #3c5a7a;
+    }
 
-#fecharMenu {
-  align-self: flex-end;
-  font-size: 28px;
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  margin-bottom: 20px;
-  padding: 0;
-}
+    #resultado h2 {
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
 
-#resultado h2 {
-  margin-bottom: 8px;
-  font-weight: 700;
-}
+    #resultado ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 15px 0;
+      text-align: left;
+    }
 
-#resultado ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 15px 0;
-  text-align: left;
-}
+    #resultado li {
+      background: #ecf0f1;
+      margin-bottom: 10px;
+      padding: 12px 15px;
+      border-radius: 8px;
+      color: #2c3e50;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+    }
 
-#resultado li {
-  background: #ecf0f1;
-  margin-bottom: 10px;
-  padding: 12px 15px;
-  border-radius: 8px;
-  color: #2c3e50;
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-}
+    #checkboxContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px 30px;
+      justify-content: center;
+      margin-top: 10px;
+    }
 
-#checkboxContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px 30px;
-  justify-content: center;
-  margin-top: 10px;
-}
+    #checkboxContainer div {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-#checkboxContainer div {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+    #formQuemLimpou button[type="submit"] {
+      margin-top: 20px;
+      width: 100%;
+    }
 
-#formQuemLimpou button[type="submit"] {
-  margin-top: 20px;
-  width: 100%;
-}
+    #btnReset {
+      background-color: #c0392b;
+    }
 
-#btnReset {
-  background-color: #c0392b;
-}
+    #btnReset:hover {
+      background-color: #e74c3c;
+    }
 
-#btnReset:hover {
-  background-color: #e74c3c;
-}
+    #mensagemErro {
+      color: #c0392b;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
 
-#mensagemErro {
-  color: #c0392b;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
+    #btnContinuar {
+      margin-top: 10px;
+      background-color: #27ae60;
+      width: 100%;
+    }
 
-#btnContinuar {
-  margin-top: 10px;
-  background-color: #27ae60;
-  width: 100%;
-}
+    #btnContinuar:hover {
+      background-color: #2ecc71;
+    }
 
-#btnContinuar:hover {
-  background-color: #2ecc71;
-}
+    #telaInicial button {
+      width: 180px;
+    }
 
-#telaInicial button {
-  width: 180px;
-}
+    #formQuemLimpou {
+      margin-top: 20px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-#formQuemLimpou {
-  margin-top: 20px;
-  max-width: 320px;
-  margin-left: auto;
-  margin-right: auto;
-}
+    #checkboxContainer div label {
+      font-size: 16px;
+    }
 
-#checkboxContainer div label {
-  font-size: 16px;
-}
-
-#avisoReset {
-  margin-top: 20px;
-  color: #e74c3c;
-  font-weight: bold;
-  font-size: 14px;
-  text-align: center;
-}
-</style>
+    #avisoReset {
+      margin-top: 20px;
+      color: #e74c3c;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-<div id="app">
-  <div id="telaInicial">
-    <h1>Quem limpa a sala hoje?</h1>
-    <p>Escolha seu perfil para continuar:</p>
-    <button id="btnProfessor">Professor / Representante</button>
-    <button id="btnEstudante">Estudante</button>
+  <div id="app">
+    <div id="telaInicial">
+      <h1>Quem limpa a sala hoje?</h1>
+      <p>Escolha seu perfil para continuar:</p>
+      <button id="btnProfessor">Professor / Representante</button>
+      <button id="btnEstudante">Estudante</button>
+    </div>
+
+    <div id="telaLogin" style="display:none;">
+      <h1>Login - Professor / Representante</h1>
+      <div id="mensagemErro"></div>
+      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
+      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
+      <div id="botoesLogin">
+        <button id="btnEntrar">Entrar</button>
+        <button id="btnVoltarLogin">Voltar</button>
+      </div>
+    </div>
+
+    <div id="conteudoEscala" style="display:none;">
+      <button id="menuBtn" title="Abrir menu">☰</button>
+      <h1>Quem limpa a sala hoje?</h1>
+      <div id="resultado">
+        <h2>Escala de hoje:</h2>
+        <ul id="listaEscala"></ul>
+        <button id="btnContinuar">Continuar</button>
+      </div>
+      <div id="pergunta" style="display:none;">
+        <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
+        <form id="formQuemLimpou">
+          <div id="checkboxContainer"></div>
+          <button type="submit">Confirmar</button>
+        </form>
+      </div>
+    </div>
+
+    <nav id="menuLateral">
+      <button id="fecharMenu" title="Voltar">Voltar</button>
+      <button id="btnLiberarAcesso">Liberar Acesso</button>
+      <button id="btnResetar">Resetar Escala</button>
+      <button id="btnSair">Sair</button>
+    </nav>
   </div>
 
-  <div id="telaLogin" style="display:none;">
-    <h1>Login - Professor / Representante</h1>
-    <div id="mensagemErro"></div>
-    <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
-    <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
-    <div id="botoesLogin">
-      <button id="btnEntrar">Entrar</button>
-      <button id="btnVoltarLogin">Voltar</button>
-    </div>
-  </div>
-
-  <div id="conteudoEscala" style="display:none;">
-    <button id="menuBtn" title="Abrir menu">☰</button>
-    <h1>Quem limpa a sala hoje?</h1>
-    <div id="resultado">
-      <h2>Escala de hoje:</h2>
-      <ul id="listaEscala"></ul>
-      <button id="btnContinuar">Continuar</button>
-    </div>
-    <div id="pergunta" style="display:none;">
-      <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
-      <form id="formQuemLimpou">
-        <div id="checkboxContainer"></div>
-        <button type="submit">Confirmar</button>
-      </form>
-    </div>
-  </div>
-
-  <nav id="menuLateral">
-    <button id="fecharMenu" title="Fechar menu">×</button>
-    <button id="btnLiberarAcesso">Liberar Acesso</button>
-    <button id="btnResetar">Resetar Escala</button>
-    <button id="btnSair">Sair</button>
-  </nav>
-
-</div>
+  <script>
+    document.getElementById('fecharMenu').onclick = () => {
+      document.getElementById('menuLateral').classList.remove('aberto');
+    };
+    document.getElementById('menuBtn').onclick = () => {
+      document.getElementById('menuLateral').classList.add('aberto');
+    };
+    document.getElementById('btnVoltarLogin').onclick = () => {
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('telaInicial').style.display = 'block';
+    };
+  </script>
+</body>
+</html>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
