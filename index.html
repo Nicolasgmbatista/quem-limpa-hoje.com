@@ -11,10 +11,11 @@
       color: #2c3e50;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
       min-height: 100vh;
       margin: 0;
       padding: 20px;
+      overflow: hidden;
     }
     #app {
       width: 420px;
@@ -52,9 +53,6 @@
       border: 2px solid #ccc;
       transition: border-color 0.3s ease;
       margin-bottom: 15px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
     input[type="email"]:focus, input[type="password"]:focus {
       border-color: #2c3e50;
@@ -101,14 +99,13 @@
     }
     #fecharMenu {
       align-self: flex-end;
-      font-size: 22px;
+      font-size: 28px;
       background: transparent;
       border: none;
       color: white;
       cursor: pointer;
       margin-bottom: 20px;
       padding: 0;
-      margin-right: 0;
     }
     #resultado h2 {
       margin-bottom: 8px;
@@ -152,6 +149,11 @@
     #btnReset:hover {
       background-color: #e74c3c;
     }
+    #mensagemErro {
+      color: #c0392b;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
     #btnContinuar {
       margin-top: 10px;
       background-color: #27ae60;
@@ -160,32 +162,17 @@
     #btnContinuar:hover {
       background-color: #2ecc71;
     }
-    /* Tela inicial: deixa os dois botões do mesmo tamanho */
     #telaInicial button {
       width: 180px;
     }
-    /* Tela login: mantém inputs centralizados */
-    #telaLogin input[type="email"],
-    #telaLogin input[type="password"] {
-      width: 260px;
-      margin: 0 auto 15px auto;
-      display: block;
+    #formQuemLimpou {
+      margin-top: 20px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    /* Botões login lado a lado e alinhados */
-    #botoesLogin {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 10px;
-    }
-    #botoesLogin button {
-      width: 120px;
-      margin: 0;
-      padding: 10px 0;
-    }
-    /* Botão voltar com cor cinza */
-    #btnVoltarLogin {
-      background: #999 !important;
+    #checkboxContainer div label {
+      font-size: 16px;
     }
   </style>
 </head>
