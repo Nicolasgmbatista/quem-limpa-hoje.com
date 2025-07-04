@@ -11,7 +11,7 @@
       color: #2c3e50;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
       margin: 0;
       padding: 20px;
@@ -23,6 +23,7 @@
       padding: 30px 40px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
       text-align: center;
     }
 
@@ -31,11 +32,7 @@
       font-weight: 700;
     }
 
-    p {
-      margin-bottom: 20px;
-    }
-
-    button {
+    button, input {
       font-size: 16px;
       border-radius: 6px;
       border: none;
@@ -43,13 +40,165 @@
       margin: 10px 6px;
       cursor: pointer;
       font-weight: bold;
+      transition: background-color 0.3s ease;
+      outline: none;
+    }
+
+    button {
       background-color: #2c3e50;
       color: white;
-      transition: background-color 0.3s ease;
     }
 
     button:hover {
       background-color: #34495e;
+    }
+
+    input[type="email"], input[type="password"] {
+      width: 260px;
+      border: 2px solid #ccc;
+      transition: border-color 0.3s ease;
+      margin-bottom: 15px;
+    }
+
+    input[type="email"]:focus, input[type="password"]:focus {
+      border-color: #2c3e50;
+    }
+
+    #menuBtn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: transparent;
+      font-size: 28px;
+      color: #2c3e50;
+      border: none;
+      cursor: pointer;
+      user-select: none;
+      padding: 0;
+      line-height: 1;
+    }
+
+    #menuLateral {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100vh;
+      background: #2c3e50;
+      color: white;
+      box-shadow: -3px 0 8px rgba(0,0,0,0.15);
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: right 0.3s ease;
+      z-index: 1000;
+    }
+
+    #menuLateral.aberto {
+      right: 0;
+    }
+
+    #menuLateral button {
+      background: #34495e;
+      width: 100%;
+      padding: 12px 0;
+    }
+
+    #menuLateral button:hover {
+      background: #3c5a7a;
+    }
+
+    #fecharMenu {
+      align-self: flex-end;
+      font-size: 28px;
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 20px;
+      padding: 0;
+    }
+
+    #resultado h2 {
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    #resultado ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 15px 0;
+      text-align: left;
+    }
+
+    #resultado li {
+      background: #ecf0f1;
+      margin-bottom: 10px;
+      padding: 12px 15px;
+      border-radius: 8px;
+      color: #2c3e50;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #checkboxContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px 30px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    #checkboxContainer div {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #formQuemLimpou button[type="submit"] {
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    #btnReset {
+      background-color: #c0392b;
+    }
+
+    #btnReset:hover {
+      background-color: #e74c3c;
+    }
+
+    #mensagemErro {
+      color: #c0392b;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    #btnContinuar {
+      margin-top: 10px;
+      background-color: #27ae60;
+      width: 100%;
+    }
+
+    #btnContinuar:hover {
+      background-color: #2ecc71;
+    }
+
+    #telaInicial button {
+      width: 180px;
+    }
+
+    #formQuemLimpou {
+      margin-top: 20px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #checkboxContainer div label {
+      font-size: 16px;
     }
   </style>
 </head>
