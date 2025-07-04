@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quem limpa a sala hoje?</title>
   <style>
+    /* SEU CSS ORIGINAL MANTIDO INTACTO */
     body {
       font-family: Arial, sans-serif;
       background: #f9f9f9;
@@ -16,7 +17,6 @@
       margin: 0;
       padding: 20px;
     }
-
     #app {
       width: 420px;
       background: white;
@@ -26,12 +26,7 @@
       position: relative;
       text-align: center;
     }
-
-    h1 {
-      margin-bottom: 12px;
-      font-weight: 700;
-    }
-
+    h1 { margin-bottom: 12px; font-weight: 700; }
     button, input {
       font-size: 16px;
       border-radius: 6px;
@@ -43,27 +38,17 @@
       transition: background-color 0.3s ease;
       outline: none;
     }
-
-    button {
-      background-color: #2c3e50;
-      color: white;
-    }
-
-    button:hover {
-      background-color: #34495e;
-    }
-
+    button { background-color: #2c3e50; color: white; }
+    button:hover { background-color: #34495e; }
     input[type="email"], input[type="password"] {
       width: 260px;
       border: 2px solid #ccc;
       transition: border-color 0.3s ease;
       margin-bottom: 15px;
     }
-
     input[type="email"]:focus, input[type="password"]:focus {
       border-color: #2c3e50;
     }
-
     #menuBtn {
       position: absolute;
       top: 18px;
@@ -77,7 +62,6 @@
       padding: 0;
       line-height: 1;
     }
-
     #menuLateral {
       position: fixed;
       top: 0;
@@ -94,21 +78,13 @@
       transition: right 0.3s ease;
       z-index: 1000;
     }
-
-    #menuLateral.aberto {
-      right: 0;
-    }
-
+    #menuLateral.aberto { right: 0; }
     #menuLateral button {
       background: #34495e;
       width: 100%;
       padding: 12px 0;
     }
-
-    #menuLateral button:hover {
-      background: #3c5a7a;
-    }
-
+    #menuLateral button:hover { background: #3c5a7a; }
     #fecharMenu {
       align-self: flex-end;
       font-size: 28px;
@@ -119,19 +95,13 @@
       margin-bottom: 20px;
       padding: 0;
     }
-
-    #resultado h2 {
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
+    #resultado h2 { margin-bottom: 8px; font-weight: 700; }
     #resultado ul {
       list-style: none;
       padding: 0;
       margin: 0 0 15px 0;
       text-align: left;
     }
-
     #resultado li {
       background: #ecf0f1;
       margin-bottom: 10px;
@@ -142,7 +112,6 @@
       display: flex;
       justify-content: space-between;
     }
-
     #checkboxContainer {
       display: flex;
       flex-wrap: wrap;
@@ -150,157 +119,90 @@
       justify-content: center;
       margin-top: 10px;
     }
-
     #checkboxContainer div {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-
     #formQuemLimpou button[type="submit"] {
       margin-top: 20px;
       width: 100%;
     }
-
-    #btnReset {
-      background-color: #c0392b;
-    }
-
-    #btnReset:hover {
-      background-color: #e74c3c;
-    }
-
+    #btnReset { background-color: #c0392b; }
+    #btnReset:hover { background-color: #e74c3c; }
     #mensagemErro {
       color: #c0392b;
       font-weight: 700;
       margin-bottom: 12px;
     }
-
     #btnContinuar {
       margin-top: 10px;
       background-color: #27ae60;
       width: 100%;
     }
-
-    #btnContinuar:hover {
-      background-color: #2ecc71;
-    }
-
-    #telaInicial button {
-      width: 180px;
-    }
-
+    #btnContinuar:hover { background-color: #2ecc71; }
+    #telaInicial button { width: 180px; }
     #formQuemLimpou {
       margin-top: 20px;
       max-width: 320px;
       margin-left: auto;
       margin-right: auto;
     }
-
-    #checkboxContainer div label {
-      font-size: 16px;
-    }
+    #checkboxContainer div label { font-size: 16px; }
   </style>
 </head>
 <body>
-  <div id="app">
+  
+<div id="app">
+
+  <div id="telaInicial">
     <h1>Quem limpa a sala hoje?</h1>
     <p>Escolha seu perfil para continuar:</p>
-    <button>Professor / Representante</button>
-    <button>Estudante</button>
+    <button id="btnProfessor">Professor / Representante</button>
+    <button id="btnEstudante">Estudante</button>
   </div>
-</body>
-</html>
-  <div id="app">
-    <div id="telaInicial">
-      <h1>Quem limpa a sala hoje?</h1>
-      <p>Escolha seu perfil para continuar:</p>
-      <button id="btnProfessor">Professor / Representante</button>
-      <button id="btnEstudante">Estudante</button>
-    </div>
 
-    <div id="telaLogin" style="display:none;">
-      <h1>Login - Professor / Representante</h1>
-      <div id="mensagemErro"></div>
-      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
-      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
-      <div id="botoesLogin">
-        <button id="btnEntrar">Entrar</button>
-        <button id="btnVoltarLogin">Voltar</button>
-      </div>
-    </div>
-
-    <div id="conteudoEscala" style="display:none;">
-      <button id="menuBtn" title="Abrir menu">☰</button>
-      <h1>Quem limpa a sala hoje?</h1>
-      <div id="resultado">
-        <h2>Escala de hoje:</h2>
-        <ul id="listaEscala"></ul>
-        <button id="btnContinuar">Continuar</button>
-      </div>
-      <div id="pergunta" style="display:none;">
-        <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
-        <form id="formQuemLimpou">
-          <div id="checkboxContainer"></div>
-          <button type="submit">Confirmar</button>
-        </form>
-      </div>
-    </div>
-
-    <nav id="menuLateral">
-      <button id="fecharMenu" title="Fechar menu">×</button>
-      <button id="btnLiberarAcesso">Liberar Acesso</button>
-      <button id="btnResetar">Resetar Escala</button>
-      <button id="btnSair">Sair</button>
-    </nav>
-  </div>
-</body>
-  <div id="app">
-    <div id="telaInicial">
-      <h1>Quem limpa a sala hoje?</h1>
-      <p>Escolha seu perfil para continuar:</p>
-      <button id="btnProfessor">Professor / Representante</button>
-      <button id="btnEstudante">Estudante</button>
-    </div>
-
-    <div id="telaLogin" style="display:none;">
-      <h1>Login - Professor / Representante</h1>
-      <div id="mensagemErro"></div>
-      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
-      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
+  <div id="telaLogin" style="display:none;">
+    <h1>Login - Professor / Representante</h1>
+    <div id="mensagemErro"></div>
+    <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
+    <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
+    <div id="botoesLogin">
       <button id="btnEntrar">Entrar</button>
-      <button id="btnVoltarLogin" style="background:#999; margin-top:10px;">Voltar</button>
+      <button id="btnVoltarLogin">Voltar</button>
     </div>
-
-    <div id="conteudoEscala" style="display:none;">
-      <button id="menuBtn" title="Abrir menu">☰</button>
-      <h1>Quem limpa a sala hoje?</h1>
-      <div id="resultado">
-        <h2>Escala de hoje:</h2>
-        <ul id="listaEscala"></ul>
-        <button id="btnContinuar">Continuar</button>
-      </div>
-      <div id="pergunta" style="display:none;">
-        <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
-        <form id="formQuemLimpou">
-          <div id="checkboxContainer"></div>
-          <button type="submit">Confirmar</button>
-        </form>
-      </div>
-    </div>
-
-    <nav id="menuLateral">
-      <button id="fecharMenu" title="Fechar menu">×</button>
-      <button id="btnLiberarAcesso">Liberar Acesso</button>
-      <button id="btnResetar">Resetar Escala</button>
-      <button id="btnSair">Sair</button>
-    </nav>
   </div>
+
+  <div id="conteudoEscala" style="display:none;">
+    <button id="menuBtn" title="Abrir menu">☰</button>
+    <h1>Quem limpa a sala hoje?</h1>
+    <div id="resultado">
+      <h2>Escala de hoje:</h2>
+      <ul id="listaEscala"></ul>
+      <button id="btnContinuar">Continuar</button>
+    </div>
+    <div id="pergunta" style="display:none;">
+      <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
+      <form id="formQuemLimpou">
+        <div id="checkboxContainer"></div>
+        <button type="submit">Confirmar</button>
+      </form>
+    </div>
+  </div>
+
+  <nav id="menuLateral">
+    <button id="fecharMenu" title="Fechar menu">×</button>
+    <button id="btnLiberarAcesso">Liberar Acesso</button>
+    <button id="btnResetar">Resetar Escala</button>
+    <button id="btnSair">Sair</button>
+  </nav>
+
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
+// Seu script JavaScript todo aqui, mantido igual
   // Configuração do Firebase - substitua pelas suas configurações
   const firebaseConfig = {
   apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
