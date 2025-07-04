@@ -7,259 +7,171 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f7f9fc;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      background: #f9f9f9;
       color: #2c3e50;
-    }
-    h1 {
-      margin-top: 40px;
-      font-size: 2.5rem;
-      font-weight: 700;
-    }
-    #tipoUsuarioSelection {
-      margin-top: 30px;
       display: flex;
-      gap: 40px;
-      font-size: 1.5rem;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
     }
-    #tipoUsuarioSelection button {
-      background-color: #2c3e50;
-      color: white;
-      border: none;
-      padding: 15px 40px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: background-color 0.3s ease;
-    }
-    #tipoUsuarioSelection button:hover {
-      background-color: #34495e;
-    }
-
-    /* Login form */
-    #loginContainer {
-      margin-top: 30px;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      width: 320px;
+    #app {
+      width: 420px;
       background: white;
-      padding: 25px 35px;
+      padding: 30px 40px;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgb(44 62 80 / 0.1);
-    }
-    #loginContainer input {
-      width: 100%;
-      padding: 12px 15px;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      outline: none;
-      transition: border-color 0.3s ease;
-    }
-    #loginContainer input:focus {
-      border-color: #2c3e50;
-    }
-    #loginContainer button {
-      width: 100%;
-      background-color: #2c3e50;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: background-color 0.3s ease;
-    }
-    #loginContainer button:hover {
-      background-color: #34495e;
-    }
-    #loginErro {
-      color: #c0392b;
-      font-weight: 700;
-      margin-top: 5px;
-      display: none;
-    }
-
-    /* Escala container */
-    #escalaContainer {
-      margin-top: 40px;
-      width: 380px;
-      max-width: 95vw;
-      background: white;
-      border-radius: 12px;
-      padding: 25px 30px;
-      box-shadow: 0 6px 18px rgb(44 62 80 / 0.1);
-      display: none;
-      flex-direction: column;
-      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       position: relative;
-    }
-
-    #escalaContainer h2 {
-      font-weight: 700;
-      margin-bottom: 15px;
-      font-size: 1.8rem;
       text-align: center;
     }
-    #escalaLista {
+    h1 {
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    button, input {
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      padding: 10px 18px;
+      margin: 10px 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+      outline: none;
+    }
+    button {
+      background-color: #2c3e50;
+      color: white;
+    }
+    button:hover {
+      background-color: #34495e;
+    }
+    input[type="email"], input[type="password"] {
+      width: 260px;
+      border: 2px solid #ccc;
+      transition: border-color 0.3s ease;
+      margin-bottom: 15px;
+    }
+    input[type="email"]:focus, input[type="password"]:focus {
+      border-color: #2c3e50;
+    }
+    #menuBtn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: transparent;
+      font-size: 28px;
+      color: #2c3e50;
+      border: none;
+      cursor: pointer;
+      user-select: none;
+      padding: 0;
+      line-height: 1;
+    }
+    #menuLateral {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100vh;
+      background: #2c3e50;
+      color: white;
+      box-shadow: -3px 0 8px rgba(0,0,0,0.15);
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: right 0.3s ease;
+      z-index: 1000;
+    }
+    #menuLateral.aberto {
+      right: 0;
+    }
+    #menuLateral button {
+      background: #34495e;
       width: 100%;
+      padding: 12px 0;
+    }
+    #menuLateral button:hover {
+      background: #3c5a7a;
+    }
+    #fecharMenu {
+      align-self: flex-end;
+      font-size: 28px;
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 20px;
+      padding: 0;
+    }
+    #resultado h2 {
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    #resultado ul {
       list-style: none;
       padding: 0;
-      margin: 0 0 20px 0;
+      margin: 0 0 15px 0;
+      text-align: left;
     }
-    #escalaLista li {
+    #resultado li {
       background: #ecf0f1;
       margin-bottom: 10px;
       padding: 12px 15px;
       border-radius: 8px;
-      font-weight: 600;
-      font-size: 1.15rem;
       color: #2c3e50;
+      font-weight: 600;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-    }
-
-    /* Botão continuar */
-    #btnGerar {
-      background-color: #2c3e50;
-      color: white;
-      font-weight: 700;
-      padding: 14px 30px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-size: 1.2rem;
-      transition: background-color 0.3s ease;
-      margin-bottom: 15px;
-      user-select: none;
-    }
-    #btnGerar:hover {
-      background-color: #34495e;
-    }
-
-    /* Form para confirmar faltas */
-    #pergunta {
-      width: 100%;
-      margin-top: 10px;
-      display: none;
-      flex-direction: column;
-      gap: 15px;
-      text-align: center;
-      font-weight: 600;
-      color: #34495e;
     }
     #checkboxContainer {
       display: flex;
       flex-wrap: wrap;
       gap: 15px 30px;
       justify-content: center;
+      margin-top: 10px;
     }
     #checkboxContainer div {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    #checkboxContainer label {
-      cursor: pointer;
-      user-select: none;
-      font-weight: 600;
-    }
     #formQuemLimpou button[type="submit"] {
       margin-top: 20px;
-      background-color: #2c3e50;
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      font-weight: 700;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: background-color 0.3s ease;
-    }
-    #formQuemLimpou button[type="submit"]:hover {
-      background-color: #34495e;
-    }
-
-    /* Aviso Reset */
-    #avisoReset {
-      margin-top: 20px;
-      color: #c0392b;
-      font-weight: 700;
-      font-size: 0.9rem;
-      text-align: center;
-    }
-
-    /* Painel lateral 3 pontinhos */
-    #menuLateral {
-      position: fixed;
-      top: 50px;
-      right: 20px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 6px 16px rgba(44,62,80,0.15);
-      padding: 10px;
-      display: none;
-      flex-direction: column;
-      gap: 12px;
-      user-select: none;
-      z-index: 1000;
-      min-width: 150px;
-    }
-    #menuLateral button {
-      background: none;
-      border: none;
-      padding: 8px 15px;
-      font-weight: 700;
-      font-size: 1rem;
-      color: #2c3e50;
-      border-radius: 8px;
-      cursor: pointer;
-      text-align: left;
-      transition: background-color 0.25s ease;
-    }
-    #menuLateral button:hover {
-      background-color: #ecf0f1;
-    }
-
-    /* Botão 3 pontinhos no topo direito */
-    #btnMenuToggle {
-      position: fixed;
-      top: 15px;
-      right: 20px;
-      background: #2c3e50;
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      border: none;
-      color: white;
-      font-size: 30px;
-      line-height: 0;
-      cursor: pointer;
-      user-select: none;
-      display: none; /* Só aparece para admins */
-      z-index: 1100;
-      box-shadow: 0 2px 8px rgba(44,62,80,0.3);
-    }
-
-    footer {
-      margin-top: auto;
-      padding: 15px 0 40px 0;
-      font-size: 14px;
-      color: #7f8c8d;
-      user-select: none;
-      text-align: center;
       width: 100%;
     }
-
+    #btnReset {
+      background-color: #c0392b;
+    }
+    #btnReset:hover {
+      background-color: #e74c3c;
+    }
+    #avisoReset {
+      margin-top: 20px;
+      color: #e74c3c;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center;
+    }
+    #mensagemErro {
+      color: #c0392b;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    #btnContinuar {
+      margin-top: 10px;
+      background-color: #27ae60;
+      width: 100%;
+    }
+    #btnContinuar:hover {
+      background-color: #2ecc71;
+    }
+    /* Tela inicial */
+    #telaInicial button {
+      width: 180px;
+    }
   </style>
 </head>
 <body>
