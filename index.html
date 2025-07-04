@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quem limpa a sala hoje?</title>
   <style>
-    /* Seu CSS original */
     body {
       font-family: Arial, sans-serif;
       background: #f9f9f9;
@@ -53,6 +52,9 @@
       border: 2px solid #ccc;
       transition: border-color 0.3s ease;
       margin-bottom: 15px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     input[type="email"]:focus, input[type="password"]:focus {
       border-color: #2c3e50;
@@ -99,13 +101,14 @@
     }
     #fecharMenu {
       align-self: flex-end;
-      font-size: 28px;
+      font-size: 22px;
       background: transparent;
       border: none;
       color: white;
       cursor: pointer;
       margin-bottom: 20px;
       padding: 0;
+      margin-right: 0;
     }
     #resultado h2 {
       margin-bottom: 8px;
@@ -149,11 +152,6 @@
     #btnReset:hover {
       background-color: #e74c3c;
     }
-    #mensagemErro {
-      color: #c0392b;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
     #btnContinuar {
       margin-top: 10px;
       background-color: #27ae60;
@@ -162,21 +160,80 @@
     #btnContinuar:hover {
       background-color: #2ecc71;
     }
+    /* Tela inicial: deixa os dois botões do mesmo tamanho */
     #telaInicial button {
       width: 180px;
     }
-    #formQuemLimpou {
-      margin-top: 20px;
-      max-width: 320px;
-      margin-left: auto;
-      margin-right: auto;
+    /* Tela login: mantém inputs centralizados */
+    #telaLogin input[type="email"],
+    #telaLogin input[type="password"] {
+      width: 260px;
+      margin: 0 auto 15px auto;
+      display: block;
     }
-    #checkboxContainer div label {
-      font-size: 16px;
+    /* Botões login lado a lado e alinhados */
+    #botoesLogin {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    #botoesLogin button {
+      width: 120px;
+      margin: 0;
+      padding: 10px 0;
+    }
+    /* Botão voltar com cor cinza */
+    #btnVoltarLogin {
+      background: #999 !important;
     }
   </style>
 </head>
 <body>
+  <div id="app">
+    <div id="telaInicial">
+      <h1>Quem limpa a sala hoje?</h1>
+      <p>Escolha seu perfil para continuar:</p>
+      <button id="btnProfessor">Professor / Representante</button>
+      <button id="btnEstudante">Estudante</button>
+    </div>
+
+    <div id="telaLogin" style="display:none;">
+      <h1>Login - Professor / Representante</h1>
+      <div id="mensagemErro"></div>
+      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
+      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
+      <div id="botoesLogin">
+        <button id="btnEntrar">Entrar</button>
+        <button id="btnVoltarLogin">Voltar</button>
+      </div>
+    </div>
+
+    <div id="conteudoEscala" style="display:none;">
+      <button id="menuBtn" title="Abrir menu">☰</button>
+      <h1>Quem limpa a sala hoje?</h1>
+      <div id="resultado">
+        <h2>Escala de hoje:</h2>
+        <ul id="listaEscala"></ul>
+        <button id="btnContinuar">Continuar</button>
+      </div>
+      <div id="pergunta" style="display:none;">
+        <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
+        <form id="formQuemLimpou">
+          <div id="checkboxContainer"></div>
+          <button type="submit">Confirmar</button>
+        </form>
+      </div>
+    </div>
+
+    <nav id="menuLateral">
+      <button id="fecharMenu" title="Fechar menu">×</button>
+      <button id="btnLiberarAcesso">Liberar Acesso</button>
+      <button id="btnResetar">Resetar Escala</button>
+      <button id="btnSair">Sair</button>
+    </nav>
+  </div>
+</body>
   <div id="app">
     <div id="telaInicial">
       <h1>Quem limpa a sala hoje?</h1>
