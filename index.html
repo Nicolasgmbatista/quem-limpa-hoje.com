@@ -78,6 +78,7 @@
       user-select: none;
       padding: 0;
       line-height: 1;
+      display: none; /* inicialmente escondido, aparece só para admin */
     }
 
     #menuLateral {
@@ -94,12 +95,11 @@
       gap: 20px;
       transition: right 0.3s ease;
       z-index: 1000;
-      display: none;
+      display: flex; /* sempre flex, só a posição muda para esconder */
     }
 
     #menuLateral.aberto {
       right: 0;
-      display: flex;
     }
 
     #menuLateral button,
@@ -231,7 +231,7 @@
       </div>
     </div>
 
-    <div id="conteudoEscala" style="display:none;">
+    <div id="conteudoEscala" style="display:none; position:relative;">
       <button id="menuBtn" title="Abrir menu">☰</button>
       <h1>Quem limpa a sala hoje?</h1>
       <div id="resultado">
@@ -297,12 +297,10 @@
 
     // Funções do app (gerar escala, salvar/ler firestore, atualizar UI, etc.)
 
-    // Alternar tarefa mesa/chão
     function alternarTarefa(tarefa) {
       return tarefa === 'mesa' ? 'chão' : 'mesa';
     }
 
-    // Próximo índice ignorando nomes
     function proximoIndice(atual, ignorados=[]) {
       let i = atual;
       for(let c=0;c<nomes.length;c++) {
@@ -312,7 +310,6 @@
       return -1;
     }
 
-    // Gerar escala nova
     async function gerarEscala() {
       const retornantes = [...faltantesPendentes];
       faltantesPendentes = [];
@@ -360,7 +357,6 @@
       atualizarResultadoEFormulario();
     }
 
-    // Confirmar faltas e atualizar escala
     async function confirmarFaltas(){
       const faltaram=[], presentes=[];
       escalaAtual.forEach(p=>{
@@ -389,7 +385,6 @@
       atualizarResultadoEFormulario();
     }
 
-    // Atualizar UI da escala
     function atualizarResultadoEFormulario(){
       const lista = document.getElementById('listaEscala');
       lista.innerHTML = '';
@@ -421,26 +416,22 @@
       }
     }
 
-    // Mostrar tela
     async function mostrarTela(t){
-      // Esconde todas as telas
       document.getElementById('telaInicial').style.display = 'none';
       document.getElementById('telaLogin').style.display = 'none';
       document.getElementById('conteudoEscala').style.display = 'none';
       document.getElementById('telaEditarNomes').style.display = 'none';
 
-      // Mostra a tela desejada
       document.getElementById(t).style.display = 'block';
       telaAtual = t;
 
       if(t === 'conteudoEscala'){
         if(isAdmin){
           document.getElementById('menuBtn').style.display = 'block';
+          document.getElementById('menuLateral').classList.remove('aberto');
           document.getElementById('menuLateral').style.display = 'flex';
           document.getElementById('btnContinuar').style.display = 'block';
           document.getElementById('pergunta').style.display = 'block';
-
-          // Exibir o resultado da escala imediatamente para admins (essa é a modificação)
           document.getElementById('resultado').style.display = 'block';
 
           if(!document.getElementById('avisoReset')){
@@ -455,10 +446,11 @@
           }
         } else {
           document.getElementById('menuBtn').style.display = 'none';
+          document.getElementById('menuLateral').classList.remove('aberto');
           document.getElementById('menuLateral').style.display = 'none';
           document.getElementById('btnContinuar').style.display = 'none';
           document.getElementById('pergunta').style.display = 'none';
-          document.getElementById('resultado').style.display = 'block'; // para estudantes também mostrar lista da escala
+          document.getElementById('resultado').style.display = 'block';
         }
         await lerEscalaDoFirestore();
         if(!escalaAtual || escalaAtual.length === 0) {
@@ -469,9 +461,22 @@
       }
     }
 
+    // MENU LATERAL: abrir e fechar
+    const menuBtn = document.getElementById('menuBtn');
+    const menuLateral = document.getElementById('menuLateral');
+    const fecharMenu = document.getElementById('fecharMenu');
+
+    menuBtn.addEventListener('click', () => {
+      menuLateral.classList.add('aberto');
+    });
+
+    fecharMenu.addEventListener('click', () => {
+      menuLateral.classList.remove('aberto');
+    });
+
     // Botões do menu lateral
     document.getElementById('btnEditarNomes').onclick = () => {
-      document.getElementById('menuLateral').classList.remove('aberto');
+      menuLateral.classList.remove('aberto');
       mostrarTela('telaEditarNomes');
       carregarListaNomesEdicao();
     };
@@ -513,7 +518,6 @@
     }
 
     document.getElementById('btnSalvarNomes').onclick = async () => {
-      // Salvar nomes no Firebase
       await db.collection('nomes').doc('lista').set({ nomes });
       alert('Nomes salvos com sucesso!');
     };
@@ -525,33 +529,32 @@
       }
     };
 
-    // Correção do bug do botão sair: esconder painel lateral
     document.getElementById('btnSair').onclick = () => {
       usuarioLogado = null;
       isAdmin = false;
-      document.getElementById('menuLateral').classList.remove('aberto');
+      menuLateral.classList.remove('aberto');
       mostrarTela('telaInicial');
     };
 
-    // Evento continuar (para gerar nova escala)
     document.getElementById('btnContinuar').onclick = async () => {
       await gerarEscala();
     };
 
-    // Evento submit formulário faltas
     document.getElementById('formQuemLimpou').onsubmit = async e => {
       e.preventDefault();
       await confirmarFaltas();
     };
 
-    // Eventos para entrar nas telas
     document.getElementById('btnEstudante').onclick = async () => {
       usuarioLogado = null;
       isAdmin = false;
       await mostrarTela('conteudoEscala');
     };
+
     document.getElementById('btnProfessor').onclick = () => mostrarTela('telaLogin');
+
     document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('telaInicial');
+
     document.getElementById('btnEntrar').onclick = async () => {
       const e = document.getElementById('emailLogin').value.trim().toLowerCase();
       const s = document.getElementById('senhaLogin').value;
@@ -565,10 +568,6 @@
       }
     };
 
-    // Inicializa app
-    mostrarTela('telaInicial');
-
-    // Função para salvar escala no Firestore
     async function salvarEscalaNoFirestore() {
       await db.collection('escala').doc('dados').set({
         posicaoUltimaEscala,
@@ -578,7 +577,6 @@
       });
     }
 
-    // Função para ler escala do Firestore
     async function lerEscalaDoFirestore() {
       const doc = await db.collection('escala').doc('dados').get();
       if(doc.exists) {
@@ -594,6 +592,9 @@
         faltantesPendentes = [];
       }
     }
+
+    // Inicializa app
+    mostrarTela('telaInicial');
   </script>
 </body>
 </html>
