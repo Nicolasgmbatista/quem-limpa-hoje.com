@@ -54,7 +54,7 @@
       background-color: #34495e;
     }
 
-    input[type="email"], input[type="password"] {
+    input[type="email"], input[type="password"], input[type="text"] {
       width: 260px;
       border: 2px solid #ccc;
       transition: border-color 0.3s ease;
@@ -62,7 +62,7 @@
       padding: 10px;
     }
 
-    input[type="email"]:focus, input[type="password"]:focus {
+    input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
       border-color: #2c3e50;
     }
 
@@ -209,10 +209,93 @@
       font-size: 14px;
       text-align: center;
     }
+
+    /* Nova tela de edição de nomes */
+    #telaEditarNomes {
+      display: none;
+      text-align: left;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    #telaEditarNomes h2 {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    #listaNomesEdicao {
+      list-style: none;
+      padding: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #f7f7f7;
+    }
+
+    #listaNomesEdicao li {
+      padding: 10px 14px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    #listaNomesEdicao li:last-child {
+      border-bottom: none;
+    }
+
+    #listaNomesEdicao button.removerNomeBtn {
+      background-color: #c0392b;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+
+    #listaNomesEdicao button.removerNomeBtn:hover {
+      background-color: #e74c3c;
+    }
+
+    #novoNomeContainer {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      justify-content: center;
+    }
+
+    #novoNomeInput {
+      flex-grow: 1;
+      padding: 10px 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 2px solid #ccc;
+      transition: border-color 0.3s ease;
+    }
+
+    #novoNomeInput:focus {
+      border-color: #2c3e50;
+      outline: none;
+    }
+
+    #telaEditarNomes button {
+      width: 100%;
+      margin: 6px 0;
+    }
+
   </style>
 </head>
 <body>
   <div id="app">
+
+    <!-- Telas iniciais e login -->
     <div id="telaInicial">
       <h1>Quem limpa a sala hoje?</h1>
       <p>Escolha seu perfil para continuar:</p>
@@ -231,6 +314,7 @@
       </div>
     </div>
 
+    <!-- Tela principal da escala -->
     <div id="conteudoEscala" style="display:none;">
       <button id="menuBtn" title="Abrir menu">☰</button>
       <h1>Quem limpa a sala hoje?</h1>
@@ -248,50 +332,55 @@
       </div>
     </div>
 
+    <!-- Menu lateral -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
+      <!-- Botão Editar Nomes inserido acima dos outros -->
+      <button id="btnEditarNomes">Editar Nomes</button>
       <button id="btnLiberarAcesso">Liberar Acesso</button>
       <button id="btnResetar">Resetar Escala</button>
       <button id="btnSair">Sair</button>
     </nav>
+
+    <!-- Nova tela para edição dos nomes -->
+    <div id="telaEditarNomes">
+      <h2>Editar Nomes</h2>
+      <ul id="listaNomesEdicao"></ul>
+      <div id="novoNomeContainer">
+        <input type="text" id="novoNomeInput" placeholder="Digite novo nome" />
+        <button id="btnAdicionarNome">Adicionar</button>
+      </div>
+      <button id="btnSalvarNomes">Salvar</button>
+      <button id="btnZerarNomes">Zerar</button>
+      <button id="btnVoltarEdicao">Voltar</button>
+    </div>
+
   </div>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  
   <script>
-    document.getElementById('fecharMenu').onclick = () => {
-      document.getElementById('menuLateral').classList.remove('aberto');
-    };
-    document.getElementById('menuBtn').onclick = () => {
-      document.getElementById('menuLateral').classList.add('aberto');
-    };
-    document.getElementById('btnVoltarLogin').onclick = () => {
-      document.getElementById('telaLogin').style.display = 'none';
-      document.getElementById('telaInicial').style.display = 'block';
-    };
-  </script>
-</body>
-</html>
-
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-// Seu script JavaScript todo aqui, mantido igual
-  // Configuração do Firebase - substitua pelas suas configurações
+  // Firebase config
   const firebaseConfig = {
-  apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
-  authDomain: "quem-limpa-hoje.firebaseapp.com",
-  projectId: "quem-limpa-hoje",
-  storageBucket: "quem-limpa-hoje.firebasestorage.app",
-  messagingSenderId: "44929275404",
-  appId: "1:44929275404:web:971258e864925cb3684029"
-};
+    apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
+    authDomain: "quem-limpa-hoje.firebaseapp.com",
+    projectId: "quem-limpa-hoje",
+    storageBucket: "quem-limpa-hoje.firebasestorage.app",
+    messagingSenderId: "44929275404",
+    appId: "1:44929275404:web:971258e864925cb3684029"
+  };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
   // Variáveis globais
   let admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
-  const nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
-  
+
+  // variável nomes será gerida dinamicamente na tela de edição
+  // para manter a compatibilidade com o código existente, vamos criar uma variável local que será atualizada ao salvar:
+  let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
+
   let posicaoUltimaEscala = -1;
   let historicoTarefa = {};
   let escalaAtual = [];
@@ -300,7 +389,56 @@
   let usuarioLogado = null;
   let isAdmin = false;
 
-  // Salvar escala no Firestore
+  // Controle de telas - 'painel' será o conteudoEscala, 'editar-nomes' a telaEditarNomes
+  let telaAtual = 'inicio'; // 'inicio', 'login', 'painel', 'editar-nomes'
+
+  // Funções para mostrar/ocultar telas
+  function mostrarTela(t) {
+    telaAtual = t;
+    // Ocultar todas as telas
+    document.getElementById('telaInicial').style.display = 'none';
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('conteudoEscala').style.display = 'none';
+    document.getElementById('telaEditarNomes').style.display = 'none';
+
+    switch(t) {
+      case 'inicio':
+        document.getElementById('telaInicial').style.display = 'block';
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').classList.remove('aberto');
+        document.getElementById('menuLateral').style.display = 'none';
+        break;
+      case 'login':
+        document.getElementById('telaLogin').style.display = 'block';
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').classList.remove('aberto');
+        document.getElementById('menuLateral').style.display = 'none';
+        break;
+      case 'painel':
+        document.getElementById('conteudoEscala').style.display = 'block';
+        document.getElementById('menuBtn').style.display = isAdmin ? 'block' : 'none';
+        if(isAdmin) {
+          document.getElementById('menuLateral').style.display = 'flex';
+        } else {
+          document.getElementById('menuLateral').classList.remove('aberto');
+          document.getElementById('menuLateral').style.display = 'none';
+        }
+        break;
+      case 'editar-nomes':
+        document.getElementById('telaEditarNomes').style.display = 'block';
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').classList.remove('aberto');
+        document.getElementById('menuLateral').style.display = 'none';
+        carregarNomesDoFirebase();
+        break;
+    }
+  }
+
+  // Inicializa app
+  mostrarTela('inicio');
+
+  // --- Código existente para escala ---
+
   async function salvarEscalaNoFirestore() {
     await db.collection('escala').doc('dados').set({
       posicaoUltimaEscala,
@@ -310,7 +448,6 @@
     });
   }
 
-  // Ler escala do Firestore
   async function lerEscalaDoFirestore() {
     const doc = await db.collection('escala').doc('dados').get();
     if(doc.exists) {
@@ -327,12 +464,10 @@
     }
   }
 
-  // Alternar tarefa
   function alternarTarefa(tarefa) {
     return tarefa === 'mesa' ? 'chão' : 'mesa';
   }
 
-  // Próximo índice que não está na lista ignorados
   function proximoIndice(atual, ignorados=[]) {
     let i = atual;
     for(let c=0;c<nomes.length;c++) {
@@ -342,7 +477,6 @@
     return -1;
   }
 
-  // Gerar escala nova
   async function gerarEscala() {
     const retornantes = [...faltantesPendentes];
     faltantesPendentes = [];
@@ -390,7 +524,6 @@
     atualizarResultadoEFormulario();
   }
 
-  // Confirmar faltas e atualiza escala
   async function confirmarFaltas(){
     const faltaram=[], presentes=[];
     escalaAtual.forEach(p=>{
@@ -419,7 +552,6 @@
     atualizarResultadoEFormulario();
   }
 
-  // Atualizar UI
   function atualizarResultadoEFormulario(){
     const lista = document.getElementById('listaEscala');
     lista.innerHTML = '';
@@ -451,71 +583,126 @@
     }
   }
 
-  // Mostrar telas
-  async function mostrarTela(t){
-    document.getElementById('telaInicial').style.display = 'none';
-    document.getElementById('telaLogin').style.display = 'none';
-    document.getElementById('conteudoEscala').style.display = 'none';
-    document.getElementById(t).style.display = 'block';
+  // --- NOVO: Controle da lista de nomes para edição ---
 
-    if(t === 'conteudoEscala'){
-      if(isAdmin){
-        document.getElementById('menuBtn').style.display = 'block';
-        document.getElementById('menuLateral').style.display = 'flex';
-        document.getElementById('btnContinuar').style.display = 'block';
-        document.getElementById('pergunta').style.display = 'block';
-
-        if(!document.getElementById('avisoReset')){
-          const aviso = document.createElement('div');
-          aviso.id = 'avisoReset';
-          aviso.style.marginTop = '20px';
-          aviso.style.color = '#e74c3c';
-          aviso.style.fontWeight = 'bold';
-          aviso.style.fontSize = '14px';
-          aviso.style.textAlign = 'center';
-          document.getElementById('formQuemLimpou').appendChild(aviso);
-        }
-      } else {
-        document.getElementById('menuBtn').style.display = 'none';
-        document.getElementById('menuLateral').style.display = 'none';
-        document.getElementById('btnContinuar').style.display = 'none';
-        document.getElementById('pergunta').style.display = 'none';
-      }
-      await lerEscalaDoFirestore();
-      if(!escalaAtual || escalaAtual.length === 0) {
-        await gerarEscala();
-      } else {
-        atualizarResultadoEFormulario();
-      }
+  // Carregar nomes do Firestore para edição
+  async function carregarNomesDoFirebase() {
+    const doc = await db.collection('config').doc('nomes').get();
+    if(doc.exists) {
+      nomes = doc.data().listaNomes || nomes;
+      nomes.sort((a,b) => a.localeCompare(b));
     }
+    renderizarListaNomes();
   }
 
-  // Eventos
+  // Renderiza a lista de nomes na tela de edição
+  function renderizarListaNomes() {
+    const ul = document.getElementById('listaNomesEdicao');
+    ul.innerHTML = '';
+    nomes.forEach((nome, i) => {
+      const li = document.createElement('li');
+      li.textContent = nome;
+      const btnRemover = document.createElement('button');
+      btnRemover.textContent = 'Remover';
+      btnRemover.className = 'removerNomeBtn';
+      btnRemover.onclick = () => {
+        nomes.splice(i, 1);
+        renderizarListaNomes();
+      };
+      li.appendChild(btnRemover);
+      ul.appendChild(li);
+    });
+  }
+
+  // Adicionar novo nome
+  document.getElementById('btnAdicionarNome').onclick = () => {
+    const input = document.getElementById('novoNomeInput');
+    const novoNome = input.value.trim();
+    if(novoNome && !nomes.includes(novoNome)) {
+      nomes.push(novoNome);
+      nomes.sort((a,b) => a.localeCompare(b));
+      input.value = '';
+      renderizarListaNomes();
+    } else if(nomes.includes(novoNome)){
+      alert('Nome já está na lista.');
+    }
+  };
+
+  // Salvar nomes no Firestore
+  document.getElementById('btnSalvarNomes').onclick = async () => {
+    if(nomes.length === 0) {
+      alert('A lista de nomes está vazia. Adicione pelo menos um nome.');
+      return;
+    }
+    await db.collection('config').doc('nomes').set({
+      listaNomes: nomes
+    });
+    alert('Nomes salvos com sucesso!');
+    // Atualizar nomes globais e reordenar lista
+    nomes.sort((a,b) => a.localeCompare(b));
+    // Voltar para painel e recarregar escala
+    await lerEscalaDoFirestore();
+    atualizarResultadoEFormulario();
+    mostrarTela('painel');
+  };
+
+  // Zerar nomes localmente e na interface
+  document.getElementById('btnZerarNomes').onclick = () => {
+    if(confirm('Tem certeza que deseja apagar todos os nomes?')) {
+      nomes = [];
+      renderizarListaNomes();
+    }
+  };
+
+  // Voltar da tela de edição para o painel principal, sem perder dados
+  document.getElementById('btnVoltarEdicao').onclick = () => {
+    mostrarTela('painel');
+  };
+
+  // --- Correção do bug do painel lateral no "Sair" ---
+  document.getElementById('btnSair').onclick = () => {
+    usuarioLogado = null;
+    isAdmin = false;
+    document.getElementById('menuLateral').classList.remove('aberto');
+    document.getElementById('menuLateral').style.display = 'none';
+    mostrarTela('inicio');
+  };
+
+  // Eventos básicos para navegação e login
   document.getElementById('btnEstudante').onclick = async () => {
     usuarioLogado = null;
     isAdmin = false;
-    await mostrarTela('conteudoEscala');
+    await mostrarTela('painel');
   };
-  document.getElementById('btnProfessor').onclick = () => mostrarTela('telaLogin');
-  document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('telaInicial');
+
+  document.getElementById('btnProfessor').onclick = () => mostrarTela('login');
+  document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('inicio');
   document.getElementById('btnEntrar').onclick = async () => {
     const e = document.getElementById('emailLogin').value.trim().toLowerCase();
     const s = document.getElementById('senhaLogin').value;
     if(admins.includes(e) && s.length >= 4){
       usuarioLogado = e;
       isAdmin = true;
-      await mostrarTela('conteudoEscala');
+      await mostrarTela('painel');
       document.getElementById('mensagemErro').textContent = '';
     } else {
       document.getElementById('mensagemErro').textContent = 'Email ou senha inválidos.';
     }
   };
+
+  // Botão abrir menu lateral
   document.getElementById('menuBtn').onclick = () => {
-    document.getElementById('menuLateral').classList.add('aberto');
+    if(telaAtual === 'painel') {
+      document.getElementById('menuLateral').classList.add('aberto');
+    }
   };
+
+  // Botão fechar menu lateral
   document.getElementById('fecharMenu').onclick = () => {
     document.getElementById('menuLateral').classList.remove('aberto');
   };
+
+  // Botão resetar escala
   document.getElementById('btnResetar').onclick = async () => {
     if(confirm('Tem certeza que deseja resetar toda a escala?')) {
       posicaoUltimaEscala = -1;
@@ -526,22 +713,38 @@
       await gerarEscala();
     }
   };
+
+  // Botão liberar acesso (funcionalidade não implementada)
   document.getElementById('btnLiberarAcesso').onclick = () => alert('Funcionalidade ainda não implementada.');
-  document.getElementById('btnSair').onclick = () => {
-    usuarioLogado = null;
-    isAdmin = false;
-    mostrarTela('telaInicial');
-  };
+
+  // Form confirmar faltas
   document.getElementById('formQuemLimpou').onsubmit = async e => {
     e.preventDefault();
     await confirmarFaltas();
   };
+
+  // Botão continuar para gerar nova escala
   document.getElementById('btnContinuar').onclick = async () => {
     await gerarEscala();
   };
 
-  // Inicializa app
-  mostrarTela('telaInicial');
-</script>
+  // Botão Editar Nomes - abre tela de edição
+  document.getElementById('btnEditarNomes').onclick = () => {
+    mostrarTela('editar-nomes');
+  };
+
+  // Inicializar escala após carregar painel
+  (async () => {
+    if(telaAtual === 'painel') {
+      await lerEscalaDoFirestore();
+      if(!escalaAtual || escalaAtual.length === 0) {
+        await gerarEscala();
+      } else {
+        atualizarResultadoEFormulario();
+      }
+    }
+  })();
+
+  </script>
 </body>
 </html>
