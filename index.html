@@ -3,157 +3,444 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quem Limpa a Sala Hoje? - Alimentos</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Quem limpa a sala hoje?</title>
   <style>
-    .modal {
-      transition: opacity 0.3s ease, transform 0.3s ease;
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #2c3e50;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
     }
-    .modal-hidden {
-      opacity: 0;
-      transform: translateY(-20px);
-      pointer-events: none;
+
+    #app {
+      width: 420px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      position: relative;
+      border: 1px solid #e0e0e0;
     }
-    .modal-visible {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
+
+    h1 {
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 24px;
+      color: #2c3e50;
     }
-    .sidebar {
-      transition: transform 0.3s ease;
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #2c3e50;
     }
-    .sidebar-hidden {
-      transform: translateX(100%);
+
+    button, input {
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      padding: 12px;
+      margin: 8px 0;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      outline: none;
     }
-    .sidebar-visible {
-      transform: translateX(0);
+
+    button {
+      background-color: #2c3e50;
+      color: white;
     }
-    .theme-toggle {
-      transition: background-color 0.3s ease, color 0.3s ease;
+
+    button:hover {
+      background-color: #34495e;
     }
-    [data-theme="dark"] {
-      background-color: #1f2937;
-      color: #f3f4f6;
+
+    input[type="email"], input[type="password"], input[type="text"] {
+      width: 100%;
+      max-width: 300px;
+      border: 2px solid #dcdcdc;
+      transition: border-color 0.3s ease;
+      padding: 12px;
+      box-sizing: border-box;
     }
-    [data-theme="dark"] input,
-    [data-theme="dark"] button {
-      background-color: #374151;
-      color: #f3f4f6;
-      border-color: #4b5563;
+
+    input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
+      border-color: #2c3e50;
     }
-    [data-theme="dark"] input:focus,
-    [data-theme="dark"] button:hover {
-      background-color: #4b5563;
+
+    #menuBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      font-size: 28px;
+      color: #2c3e50;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    #menuLateral {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100vh;
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+      box-shadow: -5px 0 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      transition: right 0.3s ease;
+    }
+
+    #menuLateral.aberto {
+      right: 0;
+      display: flex;
+    }
+
+    #menuLateral button,
+    #fecharMenu {
+      background: #34495e;
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    #menuLateral button:hover,
+    #fecharMenu:hover {
+      background: #3c5a7a;
+    }
+
+    #resultado h2 {
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    #resultado ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px 0;
+      text-align: left;
+    }
+
+    #resultado li {
+      background: #f5f7fa;
+      margin-bottom: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      color: #2c3e50;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #checkboxContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    #checkboxContainer div {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #formQuemLimpou {
+      margin-top: 20px;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #formQuemLimpou button[type="submit"] {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #btnReset {
+      background-color: #c0392b;
+    }
+
+    #btnReset:hover {
+      background-color: #e74c3c;
+    }
+
+    #mensagemErro, #mensagemErroMinhaConta {
+      color: #c0392b;
+      font-weight: 500;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    #mensagemAviso {
+      color: #e67e22;
+      font-weight: 500;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    #btnContinuar {
+      margin-top: 12px;
+      background-color: #27ae60;
+      width: 100%;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #btnContinuar:hover {
+      background-color: #2ecc71;
+    }
+
+    #telaInicial button {
+      width: 100%;
+      max-width: 200px;
+    }
+
+    #checkboxContainer div label {
+      font-size: 16px;
+    }
+
+    #avisoReset {
+      margin-top: 20px;
+      color: #e74c3c;
+      font-weight: 500;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    #telaLogin {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #telaLogin input {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #botoesLogin {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #botoesLogin button {
+      width: 48%;
+      min-width: 120px;
+    }
+
+    #btnEsqueciSenha {
+      background: transparent;
+      color: #2c3e50;
+      text-decoration: underline;
+      font-size: 14px;
+      padding: 5px;
+      margin-top: 5px;
+      width: auto;
+    }
+
+    #btnEsqueciSenha:hover {
+      color: #34495e;
+    }
+
+    #telaEditarNomes, #telaGerenciarAdmins, #telaMinhaConta {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    #listaNomesEdicao, #listaAdminsEdicao {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f9fafb;
+    }
+
+    #listaNomesEdicao li, #listaAdminsEdicao li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e0e0e0;
+      font-weight: 500;
+      color: #2c3e50;
+      word-break: break-word;
+    }
+
+    #listaNomesEdicao li:last-child, #listaAdminsEdicao li:last-child {
+      border-bottom: none;
+    }
+
+    #listaAdminsEdicao button.removerAdminBtn {
+      background-color: #c0392b;
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      min-width: 60px;
+      width: 60px;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    #listaNomesEdicao button.removerNomeBtn {
+      background-color: #c0392b;
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      min-width: 80px;
+      width: 80px;
+      text-align: center;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    #listaNomesEdicao button.removerNomeBtn:hover, #listaAdminsEdicao button.removerAdminBtn:hover {
+      background-color: #e74c3c;
+    }
+
+    #novoNomeContainer, #novoAdminContainer, #alterarSenhaContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 16px;
+    }
+
+    #novoNomeInput, #novoAdminInput, #novaSenhaAdminInput, #novaSenhaInput, #confirmarSenhaInput {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #dcdcdc;
+    }
+
+    #novoNomeContainer button, #novoAdminContainer button {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #telaEditarNomes button, #telaGerenciarAdmins button, #telaMinhaConta button {
+      width: 100%;
+      max-width: 300px;
     }
   </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-900 min-h-screen flex justify-center p-4" data-theme="light">
-  <div id="app" class="w-full max-w-md bg-white rounded-xl shadow-lg p-6 relative">
-    <!-- Tela inicial com lista de salas -->
+<body>
+  <div id="app">
+    <!-- Telas iniciais e login -->
     <div id="telaInicial">
-      <h1 class="text-2xl font-bold text-center mb-4">Quem Limpa a Sala Hoje? - Alimentos</h1>
-      <div id="salasContainer" class="space-y-4"></div>
-      <button id="btnCriarSala" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition mt-4">Criar Nova Sala</button>
-      <button id="themeToggle" class="absolute top-4 right-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition">🌙</button>
+      <h1>Quem limpa a sala hoje?</h1>
+      <p>Escolha seu perfil para continuar:</p>
+      <button id="btnProfessor">Professor / Representante</button>
+      <button id="btnEstudante">Estudante</button>
     </div>
 
-    <!-- Tela de login -->
-    <div id="telaLogin" class="hidden flex flex-col items-center gap-4">
-      <h1 class="text-2xl font-bold">Login - Professor / Representante</h1>
-      <div id="mensagemErro" class="text-red-600 font-medium"></div>
-      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" class="w-full max-w-xs p-3 border-2 border-gray-300 rounded-lg focus:border-green-600" />
-      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" class="w-full max-w-xs p-3 border-2 border-gray-300 rounded-lg focus:border-green-600" />
-      <div class="flex gap-2 w-full max-w-xs">
-        <button id="btnEntrar" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">Entrar</button>
-        <button id="btnVoltarLogin" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition">Voltar</button>
+    <div id="telaLogin" style="display:none;">
+      <h1>Login - Professor / Representante</h1>
+      <div id="mensagemErro"></div>
+      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
+      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
+      <div id="botoesLogin">
+        <button id="btnEntrar">Entrar</button>
+        <button id="btnVoltarLogin">Voltar</button>
       </div>
-      <button id="btnEsqueciSenha" class="text-green-600 underline text-sm hover:text-green-700">Esqueci minha senha</button>
+      <button id="btnEsqueciSenha">Esqueci minha senha</button>
     </div>
 
     <!-- Tela principal da escala -->
-    <div id="conteudoEscala" class="hidden">
-      <button id="menuBtn" title="Abrir menu" class="absolute top-4 right-4 text-2xl">☰</button>
-      <h1 class="text-2xl font-bold text-center mb-4">Escala da Sala: <span id="nomeSala"></span></h1>
-      <div id="resultado" class="mb-6">
-        <h2 class="text-xl font-semibold mb-2">Escala de Hoje:</h2>
-        <ul id="listaEscala" class="space-y-2"></ul>
-        <button id="btnContinuar" class="w-full max-w-xs bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition mt-4 mx-auto block">Continuar</button>
+    <div id="conteudoEscala" style="display:none;">
+      <button id="menuBtn" title="Abrir menu">☰</button>
+      <h1>Quem limpa a sala hoje?</h1>
+      <div id="resultado">
+        <h2>Escala de hoje:</h2>
+        <ul id="listaEscala"></ul>
+        <button id="btnContinuar">Continuar</button>
       </div>
-      <div id="pergunta" class="hidden">
-        <p class="mb-4">Selecione quem <strong>faltou</strong> ou <strong>limpou</strong> e clique em "Confirmar":</p>
-        <form id="formQuemLimpou" class="space-y-4">
-          <div id="checkboxContainer" class="flex flex-wrap gap-4 justify-center"></div>
-          <button type="submit" class="w-full max-w-xs bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition mx-auto">Confirmar</button>
+      <div id="pergunta" style="display:none;">
+        <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e clique em "CONFIRMAR" para atualizar:</p>
+        <form id="formQuemLimpou">
+          <div id="checkboxContainer"></div>
+          <button type="submit">Confirmar</button>
         </form>
-      </div>
-      <div id="laboratorioSection" class="mt-6 hidden">
-        <h2 class="text-xl font-semibold mb-2">Configuração de Laboratório</h2>
-        <button id="btnConfigLaboratorio" class="w-full max-w-xs bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition mx-auto">Configurar Grupos</button>
       </div>
     </div>
 
     <!-- Menu lateral -->
-    <nav id="menuLateral" class="fixed top-0 right-0 w-64 h-full bg-gray-800 text-white p-4 sidebar sidebar-hidden">
-      <button id="fecharMenu" class="w-full bg-gray-700 py-3 rounded-lg hover:bg-gray-600 transition mb-4">Voltar</button>
-      <button id="btnMinhaConta" class="w-full bg-gray-700 py-3 rounded-lg hover:bg-gray-600 transition mb-2">Minha Conta</button>
-      <button id="btnEditarNomes" class="w-full bg-gray-700 py-3 rounded-lg hover:bg-gray-600 transition mb-2">Editar Nomes</button>
-      <button id="btnLiberarAcesso" class="w-full bg-gray-700 py-3 rounded-lg hover:bg-gray-600 transition mb-2">Liberar Acesso</button>
-      <button id="btnResetar" class="w-full bg-red-600 py-3 rounded-lg hover:bg-red-700 transition mb-2">Resetar Escala</button>
-      <button id="btnSair" class="w-full bg-gray-700 py-3 rounded-lg hover:bg-gray-600 transition">Sair</button>
+    <nav id="menuLateral">
+      <button id="fecharMenu" title="Voltar">Voltar</button>
+      <button id="btnMinhaConta">Minha Conta</button>
+      <button id="btnEditarNomes">Editar Nomes</button>
+      <button id="btnLiberarAcesso">Liberar Acesso</button>
+      <button id="btnResetar">Resetar Escala</button>
+      <button id="btnSair">Sair</button>
     </nav>
 
-    <!-- Tela para edição de nomes -->
-    <div id="telaEditarNomes" class="hidden flex flex-col items-center">
-      <h2 class="text-xl font-semibold mb-4">Editar Nomes - <span id="nomeSalaEdicao"></span></h2>
-      <ul id="listaNomesEdicao" class="w-full max-h-64 overflow-y-auto border border-gray-300 rounded-lg bg-gray-50 mb-4"></ul>
-      <div class="w-full max-w-xs mb-4">
-        <input type="text" id="novoNomeInput" placeholder="Digite novo nome" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-600" />
-        <button id="btnAdicionarNome" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition mt-2">Adicionar</button>
+    <!-- Tela para edição dos nomes -->
+    <div id="telaEditarNomes">
+      <h2>Editar Nomes</h2>
+      <ul id="listaNomesEdicao"></ul>
+      <div id="novoNomeContainer">
+        <input type="text" id="novoNomeInput" placeholder="Digite novo nome" />
+        <button id="btnAdicionarNome">Adicionar</button>
       </div>
-      <button id="btnZerarNomes" class="w-full max-w-xs bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition">Zerar</button>
-      <button id="btnVoltarEdicao" class="w-full max-w-xs bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition mt-2">Voltar</button>
+      <button id="btnZerarNomes">Zerar</button>
+      <button id="btnVoltarEdicao">Voltar</button>
     </div>
 
     <!-- Tela para gerenciar administradores -->
-    <div id="telaGerenciarAdmins" class="hidden flex flex-col items-center">
-      <h2 class="text-xl font-semibold mb-4">Gerenciar Administradores - <span id="nomeSalaAdmins"></span></h2>
-      <ul id="listaAdminsEdicao" class="w-full max-h-64 overflow-y-auto border border-gray-300 rounded-lg bg-gray-50 mb-4"></ul>
-      <div class="w-full max-w-xs mb-4">
-        <input type="email" id="novoAdminInput" placeholder="Digite novo email" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-600" />
-        <input type="password" id="novaSenhaAdminInput" placeholder="Senha inicial" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-600 mt-2" />
-        <button id="btnAdicionarAdmin" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition mt-2">Adicionar</button>
+    <div id="telaGerenciarAdmins">
+      <h2>Gerenciar Administradores</h2>
+      <ul id="listaAdminsEdicao"></ul>
+      <div id="novoAdminContainer">
+        <input type="email" id="novoAdminInput" placeholder="Digite novo email" />
+        <input type="password" id="novaSenhaAdminInput" placeholder="Senha inicial" />
+        <button id="btnAdicionarAdmin">Adicionar</button>
       </div>
-      <button id="btnSalvarAdmins" class="w-full max-w-xs bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">Salvar</button>
-      <button id="btnVoltarAdmins" class="w-full max-w-xs bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition mt-2">Voltar</button>
+      <button id="btnSalvarAdmins">Salvar</button>
+      <button id="btnVoltarAdmins">Voltar</button>
     </div>
 
     <!-- Tela para minha conta -->
-    <div id="telaMinhaConta" class="hidden flex flex-col items-center">
-      <h2 class="text-xl font-semibold mb-4">Minha Conta</h2>
-      <div id="mensagemAviso" class="text-yellow-600 font-medium mb-4"></div>
-      <div id="mensagemErroMinhaConta" class="text-red-600 font-medium mb-4"></div>
-      <div class="w-full max-w-xs mb-4">
-        <input type="password" id="novaSenhaInput" placeholder="Nova senha" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-600" />
-        <input type="password" id="confirmarSenhaInput" placeholder="Confirmar nova senha" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-600 mt-2" />
-        <button id="btnAlterarSenha" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition mt-2">Alterar Senha</button>
+    <div id="telaMinhaConta">
+      <h2>Minha Conta</h2>
+      <div id="mensagemAviso"></div>
+      <div id="mensagemErroMinhaConta"></div>
+      <div id="alterarSenhaContainer">
+        <input type="password" id="novaSenhaInput" placeholder="Nova senha" />
+        <input type="password" id="confirmarSenhaInput" placeholder="Confirmar nova senha" />
+        <button id="btnAlterarSenha">Alterar Senha</button>
       </div>
-      <button id="btnVoltarMinhaConta" class="w-full max-w-xs bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition">Voltar</button>
-    </div>
-
-    <!-- Modal para configuração de laboratório -->
-    <div id="modalLaboratorio" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center modal modal-hidden">
-      <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-        <h2 class="text-xl font-semibold mb-4">Configurar Grupos de Laboratório</h2>
-        <div class="mb-4">
-          <label for="qtdGrupos" class="block text-sm font-medium mb-1">Quantidade de Grupos:</label>
-          <input type="number" id="qtdGrupos" min="1" max="10" value="1" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-600" />
-        </div>
-        <div id="gruposContainer" class="space-y-4"></div>
-        <div class="flex gap-2 mt-4">
-          <button id="btnSalvarLaboratorio" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">Salvar</button>
-          <button id="btnCancelarLaboratorio" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition">Cancelar</button>
-        </div>
-      </div>
+      <button id="btnVoltarMinhaConta">Voltar</button>
     </div>
   </div>
 
@@ -161,7 +448,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
+  
   <script>
     // Firebase config
     const firebaseConfig = {
@@ -177,350 +464,284 @@
     const auth = firebase.auth();
 
     // Variáveis globais
+    let admins = [
+      "gonzagamezzomozaira@gmail.com",
+      "fabiana.martini@edu.sc.senai.br",
+      "beatriz_k_morais@estudante.sesisenai.org.br",
+      "nicolasgmbatista15@gmail.com",
+      "cassia.savi@edu.sc.senai.br"
+    ];
+    let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b));
+    let posicaoUltimaEscala = -1;
+    let historicoTarefa = {};
+    let escalaAtual = [];
+    let faltantesPendentes = [];
     let usuarioLogado = null;
     let isAdmin = false;
-    let isSuperAdmin = false;
     let telaAtual = 'inicio';
-    let salas = [];
-    let salaAtual = null;
     let adminConfig = {};
 
     // Funções para mostrar/ocultar telas
     function mostrarTela(t) {
       telaAtual = t;
-      document.getElementById('telaInicial').classList.add('hidden');
-      document.getElementById('telaLogin').classList.add('hidden');
-      document.getElementById('conteudoEscala').classList.add('hidden');
-      document.getElementById('telaEditarNomes').classList.add('hidden');
-      document.getElementById('telaGerenciarAdmins').classList.add('hidden');
-      document.getElementById('telaMinhaConta').classList.add('hidden');
-      document.getElementById('menuLateral').classList.remove('sidebar-visible');
-      document.getElementById('menuLateral').classList.add('sidebar-hidden');
-      document.getElementById('modalLaboratorio').classList.add('modal-hidden');
-      document.getElementById('modalLaboratorio').classList.remove('modal-visible');
+      document.getElementById('telaInicial').style.display = 'none';
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('conteudoEscala').style.display = 'none';
+      document.getElementById('telaEditarNomes').style.display = 'none';
+      document.getElementById('telaGerenciarAdmins').style.display = 'none';
+      document.getElementById('telaMinhaConta').style.display = 'none';
+      document.getElementById('menuBtn').style.display = 'none';
+      document.getElementById('menuLateral').classList.remove('aberto');
+      document.getElementById('menuLateral').style.display = 'none';
+      document.getElementById('btnContinuar').style.display = 'none';
+      document.getElementById('pergunta').style.display = 'none';
 
       switch (t) {
         case 'inicio':
-          document.getElementById('telaInicial').classList.remove('hidden');
-          atualizarListaSalas();
+          document.getElementById('telaInicial').style.display = 'block';
           break;
         case 'login':
-          document.getElementById('telaLogin').classList.remove('hidden');
+          document.getElementById('telaLogin').style.display = 'flex';
           document.getElementById('emailLogin').value = '';
           document.getElementById('senhaLogin').value = '';
           document.getElementById('mensagemErro').textContent = '';
           break;
         case 'painel':
-          document.getElementById('conteudoEscala').classList.remove('hidden');
-          document.getElementById('menuBtn').classList.toggle('hidden', !isAdmin);
-          document.getElementById('pergunta').classList.toggle('hidden', !isAdmin);
-          document.getElementById('laboratorioSection').classList.toggle('hidden', !isAdmin);
+          document.getElementById('conteudoEscala').style.display = 'block';
+          document.getElementById('menuBtn').style.display = isAdmin ? 'block' : 'none';
+          document.getElementById('menuLateral').style.display = isAdmin ? 'none' : 'none';
+          document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
+          document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
           atualizarResultadoEFormulario();
           if (isAdmin) montarCheckboxFaltantes();
           break;
         case 'editar-nomes':
-          document.getElementById('telaEditarNomes').classList.remove('hidden');
+          document.getElementById('telaEditarNomes').style.display = 'flex';
           atualizarListaNomesEdicao();
           break;
         case 'gerenciar-admins':
-          document.getElementById('telaGerenciarAdmins').classList.remove('hidden');
+          document.getElementById('telaGerenciarAdmins').style.display = 'flex';
           atualizarListaAdminsEdicao();
           break;
         case 'minha-conta':
-          document.getElementById('telaMinhaConta').classList.remove('hidden');
+          document.getElementById('telaMinhaConta').style.display = 'flex';
           atualizarTelaMinhaConta();
           break;
       }
       console.log(`Tela atual: ${telaAtual}`);
     }
 
+    // Inicializa app
+    mostrarTela('inicio');
+
     // Funções de persistência
     async function salvarEscalaNoFirestore() {
-      if (!salaAtual) return;
       try {
-        await db.collection('salas').doc(salaAtual.id).collection('escala').doc('dados').set({
-          posicaoUltimaEscala: salaAtual.posicaoUltimaEscala,
-          historicoTarefa: salaAtual.historicoTarefa,
-          escalaAtual: salaAtual.escalaAtual,
-          faltantesPendentes: salaAtual.faltantesPendentes
+        await db.collection('escala').doc('dados').set({
+          posicaoUltimaEscala,
+          historicoTarefa,
+          escalaAtual,
+          faltantesPendentes
         });
-        console.log(`Escala salva para sala ${salaAtual.id}`);
+        console.log('Escala salva no Firestore:', { posicaoUltimaEscala, historicoTarefa, escalaAtual, faltantesPendentes });
       } catch (error) {
-        console.error("Erro ao salvar escala:", error);
+        console.error("Erro ao salvar no Firestore:", error);
         alert("Erro ao salvar a escala. Verifique sua conexão.");
       }
     }
 
     async function salvarConfigNoFirestore() {
-      if (!salaAtual) return;
       try {
-        await db.collection('salas').doc(salaAtual.id).collection('config').doc('dados').set({
-          nomes: salaAtual.nomes,
-          admins: salaAtual.admins,
-          adminConfig: adminConfig
-        });
-        console.log(`Config salva para sala ${salaAtual.id}`);
+        await db.collection('escala').doc('config').set({ nomes, admins, adminConfig }, { merge: true });
+        console.log('Config salva no Firestore:', { nomes, admins, adminConfig });
       } catch (error) {
-        console.error("Erro ao salvar config:", error);
-        alert("Erro ao salvar configurações. Verifique sua conexão.");
+        console.error('Erro ao salvar config no Firestore:', error);
+        alert('Erro ao salvar configurações. Verifique sua conexão.');
       }
     }
 
-    async function carregarSalas() {
+    async function lerEscalaDoFirestore() {
       try {
-        const snapshot = await db.collection('salas').get();
-        salas = [];
-        for (const doc of snapshot.docs) {
-          if (isSuperAdmin || doc.data().admins.includes(usuarioLogado.email)) {
-            const configDoc = await db.collection('salas').doc(doc.id).collection('config').doc('dados').get();
-            const escalaDoc = await db.collection('salas').doc(doc.id).collection('escala').doc('dados').get();
-            salas.push({
-              id: doc.id,
-              nome: doc.data().nome,
-              admins: configDoc.exists ? configDoc.data().admins : [],
-              nomes: configDoc.exists ? configDoc.data().nomes : [],
-              adminConfig: configDoc.exists ? configDoc.data().adminConfig : {},
-              posicaoUltimaEscala: escalaDoc.exists ? escalaDoc.data().posicaoUltimaEscala : -1,
-              historicoTarefa: escalaDoc.exists ? escalaDoc.data().historicoTarefa : {},
-              escalaAtual: escalaDoc.exists ? escalaDoc.data().escalaAtual : [],
-              faltantesPendentes: escalaDoc.exists ? escalaDoc.data().faltantesPendentes : []
-            });
-          }
-        }
-        console.log('Salas carregadas:', salas);
-        atualizarListaSalas();
-      } catch (error) {
-        console.error("Erro ao carregar salas:", error);
-        alert("Erro ao carregar salas. Verifique sua conexão.");
-      }
-    }
-
-    async function carregarLaboratorio(data) {
-      if (!salaAtual) return;
-      try {
-        const doc = await db.collection('salas').doc(salaAtual.id).collection('laboratorio').doc(data).get();
+        const doc = await db.collection('escala').doc('dados').get();
+        const configDoc = await db.collection('escala').doc('config').get();
+        
         if (doc.exists) {
-          return doc.data().grupos || [];
+          const data = doc.data();
+          posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
+          historicoTarefa = data.historicoTarefa ?? {};
+          escalaAtual = data.escalaAtual ?? [];
+          faltantesPendentes = data.faltantesPendentes ?? [];
+          console.log('Escala carregada do Firestore:', { posicaoUltimaEscala, historicoTarefa, escalaAtual, faltantesPendentes });
+        } else {
+          console.log('Nenhum dado encontrado no Firestore, inicializando escala vazia');
+          escalaAtual = [];
+          posicaoUltimaEscala = -1;
+          historicoTarefa = {};
+          faltantesPendentes = [];
+          await salvarEscalaNoFirestore();
         }
-        return [];
-      } catch (error) {
-        console.error("Erro ao carregar laboratório:", error);
-        return [];
-      }
-    }
 
-    async function salvarLaboratorio(data, grupos) {
-      if (!salaAtual) return;
-      try {
-        await db.collection('salas').doc(salaAtual.id).collection('laboratorio').doc(data).set({ grupos });
-        console.log(`Laboratório salvo para ${data} na sala ${salaAtual.id}`);
+        if (configDoc.exists) {
+          const configData = configDoc.data();
+          nomes = configData.nomes ?? ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b));
+          admins = configData.admins ?? [
+            "gonzagamezzomozaira@gmail.com",
+            "fabiana.martini@edu.sc.senai.br",
+            "beatriz_k_morais@estudante.sesisenai.org.br",
+            "nicolasgmbatista15@gmail.com",
+            "cassia.savi@edu.sc.senai.br"
+          ];
+          adminConfig = configData.adminConfig ?? {};
+          console.log('Config carregada do Firestore:', { nomes, admins, adminConfig });
+        } else {
+          console.log('Nenhuma config encontrada no Firestore, usando padrão');
+        }
+        atualizarResultadoEFormulario();
       } catch (error) {
-        console.error("Erro ao salvar laboratório:", error);
-        alert("Erro ao salvar configuração de laboratório. Verifique sua conexão.");
+        console.error("Erro ao carregar do Firestore:", error);
+        alert("Erro ao carregar a escala. Usando valores padrão.");
       }
     }
 
     // Funções da escala
-    function proximoIndice(atual, ignorados = [], nomes = salaAtual.nomes) {
+    function proximoIndice(atual, ignorados = []) {
       let i = atual;
       for (let c = 0; c < nomes.length; c++) {
         i = (i + 1) % nomes.length;
         if (!ignorados.includes(nomes[i])) return i;
       }
+      console.log('Nenhum índice disponível para substituição');
       return -1;
     }
 
     async function gerarEscala() {
-      if (!salaAtual || salaAtual.nomes.length === 0) {
-        salaAtual.escalaAtual = [];
-        document.getElementById('listaEscala').innerHTML = '<li class="bg-gray-100 p-3 rounded-lg">Nenhum nome cadastrado.</li>';
-        document.getElementById('pergunta').classList.toggle('hidden', !isAdmin);
-        document.getElementById('btnContinuar').classList.toggle('hidden', !isAdmin);
+      if (nomes.length === 0) {
+        escalaAtual = [];
+        document.getElementById('listaEscala').innerHTML = '<li>Nenhum nome cadastrado.</li>';
+        document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
         await salvarEscalaNoFirestore();
+        console.log('Nenhum nome cadastrado, escala vazia');
         return;
       }
 
-      salaAtual.escalaAtual = [...salaAtual.faltantesPendentes];
-      let usados = salaAtual.escalaAtual.map(p => p.nome);
-      let idx = salaAtual.posicaoUltimaEscala;
+      console.log('Gerando nova escala, faltantes pendentes:', faltantesPendentes);
+      escalaAtual = [...faltantesPendentes];
+      let usados = escalaAtual.map(p => p.nome);
+      let idx = posicaoUltimaEscala;
 
-      while (salaAtual.escalaAtual.length < 2 && salaAtual.nomes.length > usados.length) {
+      while (escalaAtual.length < 2 && nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
-        const nome = salaAtual.nomes[idx];
-        const ultimaTarefa = salaAtual.historicoTarefa[nome];
-        let tarefa = salaAtual.escalaAtual.length === 0 
+        const nome = nomes[idx];
+        const ultimaTarefa = historicoTarefa[nome];
+        let tarefa = escalaAtual.length === 0 
           ? (ultimaTarefa === 'chão' ? 'mesa' : 'chão')
-          : (salaAtual.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
-        salaAtual.escalaAtual.push({ nome, tarefa, index: idx });
-        salaAtual.historicoTarefa[nome] = tarefa;
+          : (escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
+        escalaAtual.push({ nome, tarefa, index: idx });
+        historicoTarefa[nome] = tarefa;
         usados.push(nome);
-        salaAtual.posicaoUltimaEscala = idx;
+        posicaoUltimaEscala = idx;
+        console.log(`Adicionado à escala: ${nome} - ${tarefa}`);
       }
 
-      salaAtual.faltantesPendentes = [];
+      faltantesPendentes = [];
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
     }
 
     function substituirPessoaNaEscala(nomeRemovido, tarefa) {
-      if (!salaAtual || salaAtual.nomes.length === 0) {
-        salaAtual.escalaAtual = [];
-        salaAtual.faltantesPendentes = salaAtual.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+      if (nomes.length === 0) {
+        escalaAtual = [];
+        faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
         return;
       }
 
-      let usados = salaAtual.escalaAtual.map(p => p.nome).concat(salaAtual.faltantesPendentes.map(f => f.nome));
-      let idx = salaAtual.posicaoUltimaEscala;
+      let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+      let idx = posicaoUltimaEscala;
       idx = proximoIndice(idx, usados);
       if (idx === -1) {
-        salaAtual.escalaAtual = salaAtual.escalaAtual.filter(p => p.nome !== nomeRemovido);
-        salaAtual.faltantesPendentes = salaAtual.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+        console.log('Nenhum substituto disponível para', nomeRemovido);
+        escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
+        faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
         return;
       }
 
-      const novoNome = salaAtual.nomes[idx];
-      salaAtual.escalaAtual = salaAtual.escalaAtual.filter(p => p.nome !== nomeRemovido);
-      salaAtual.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
-      salaAtual.historicoTarefa[novoNome] = tarefa;
-      salaAtual.posicaoUltimaEscala = idx;
-      salaAtual.faltantesPendentes = salaAtual.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
-    }
-
-    function adicionarPessoaNaEscala(novoNome) {
-      if (!salaAtual || salaAtual.nomes.length === 0) return;
-
-      let usados = salaAtual.escalaAtual.map(p => p.nome).concat(salaAtual.faltantesPendentes.map(f => f.nome));
-      if (usados.includes(novoNome)) return;
-
-      const idxNovoNome = salaAtual.nomes.indexOf(novoNome);
-      if (idxNovoNome === -1) return;
-
-      if (salaAtual.escalaAtual.length === 0) {
-        const tarefa = salaAtual.historicoTarefa[novoNome] === 'chão' ? 'mesa' : 'chão';
-        salaAtual.escalaAtual.push({ nome: novoNome, tarefa, index: idxNovoNome });
-        salaAtual.historicoTarefa[novoNome] = tarefa;
-        salaAtual.posicaoUltimaEscala = idxNovoNome;
-        return;
-      }
-
-      if (salaAtual.escalaAtual.length === 1) {
-        const tarefa = salaAtual.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
-        salaAtual.escalaAtual.push({ nome: novoNome, tarefa, index: idxNovoNome });
-        salaAtual.historicoTarefa[novoNome] = tarefa;
-        salaAtual.posicaoUltimaEscala = idxNovoNome;
-        return;
-      }
-
-      const idxPrimeiro = salaAtual.escalaAtual[0].index;
-      const proximaPessoaIdx = proximoIndice(idxPrimeiro, usados);
-      if (proximaPessoaIdx === idxNovoNome) {
-        const tarefa = salaAtual.escalaAtual[1].tarefa;
-        salaAtual.escalaAtual = [salaAtual.escalaAtual[0], { nome: novoNome, tarefa, index: idxNovoNome }];
-        salaAtual.historicoTarefa[novoNome] = tarefa;
-        salaAtual.posicaoUltimaEscala = idxNovoNome;
-      }
+      const novoNome = nomes[idx];
+      escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
+      escalaAtual.push({ nome: novoNome, tarefa, index: idx });
+      historicoTarefa[novoNome] = tarefa;
+      posicaoUltimaEscala = idx;
+      faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+      console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
     }
 
     function atualizarResultadoEFormulario() {
-      if (!salaAtual) return;
       const listaEscala = document.getElementById('listaEscala');
       listaEscala.innerHTML = '';
-      document.getElementById('nomeSala').textContent = salaAtual.nome;
-      if (salaAtual.escalaAtual.length === 0) {
-        listaEscala.innerHTML = '<li class="bg-gray-100 p-3 rounded-lg">Nenhuma escala disponível.</li>';
-        document.getElementById('pergunta').classList.toggle('hidden', !isAdmin);
-        document.getElementById('btnContinuar').classList.toggle('hidden', !isAdmin);
+      if (escalaAtual.length === 0) {
+        listaEscala.innerHTML = '<li>Nenhuma escala disponível.</li>';
+        document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
       } else {
-        salaAtual.escalaAtual.forEach(p => {
+        escalaAtual.forEach(p => {
           const li = document.createElement('li');
-          li.className = 'bg-gray-100 p-3 rounded-lg flex justify-between';
           li.textContent = `${p.nome} - ${p.tarefa}`;
           listaEscala.appendChild(li);
         });
-        document.getElementById('pergunta').classList.toggle('hidden', !isAdmin);
-        document.getElementById('btnContinuar').classList.toggle('hidden', !isAdmin);
+        document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
         if (isAdmin) montarCheckboxFaltantes();
       }
+      console.log('Interface atualizada, escala atual:', escalaAtual, 'Faltantes pendentes:', faltantesPendentes);
     }
 
     function montarCheckboxFaltantes() {
-      if (!salaAtual) return;
       const container = document.getElementById('checkboxContainer');
       container.innerHTML = '';
-      salaAtual.escalaAtual.forEach(p => {
+      escalaAtual.forEach(p => {
         const div = document.createElement('div');
-        div.className = 'flex items-center gap-2';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = `chk_${p.nome.replace(/\s+/g, '_')}`;
         checkbox.value = p.nome;
         checkbox.name = 'faltante';
-        checkbox.className = 'h-5 w-5';
         const label = document.createElement('label');
         label.htmlFor = checkbox.id;
         label.textContent = p.nome;
-        label.className = 'text-sm';
         div.appendChild(checkbox);
         div.appendChild(label);
         container.appendChild(div);
       });
-    }
-
-    // Funções de gerenciamento de salas
-    function atualizarListaSalas() {
-      const container = document.getElementById('salasContainer');
-      container.innerHTML = '';
-      salas.forEach(sala => {
-        const div = document.createElement('div');
-        div.className = 'bg-gray-100 p-4 rounded-lg flex justify-between items-center';
-        div.innerHTML = `
-          <span class="font-medium">${sala.nome}</span>
-          <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition" onclick="selecionarSala('${sala.id}')">Acessar</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    async function selecionarSala(salaId) {
-      salaAtual = salas.find(s => s.id === salaId);
-      if (!salaAtual) return;
-      mostrarTela('painel');
-      document.getElementById('nomeSala').textContent = salaAtual.nome;
-      document.getElementById('nomeSalaEdicao').textContent = salaAtual.nome;
-      document.getElementById('nomeSalaAdmins').textContent = salaAtual.nome;
-      atualizarResultadoEFormulario();
-    }
-
-    // Funções de laboratório
-    function atualizarGruposLaboratorio(qtd) {
-      const container = document.getElementById('gruposContainer');
-      container.innerHTML = '';
-      for (let i = 1; i <= qtd; i++) {
-        const div = document.createElement('div');
-        div.className = 'mb-4';
-        div.innerHTML = `
-          <label class="block text-sm font-medium mb-1">Grupo ${i} - Funções:</label>
-          <input type="text" id="funcoesGrupo${i}" placeholder="Ex.: Preparação, Limpeza, Análise" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-600" />
-        `;
-        container.appendChild(div);
-      }
+      console.log('Checkboxes montados para:', escalaAtual.map(p => p.nome));
     }
 
     // Funções de autenticação
-    document.getElementById('btnProfessor').addEventListener('click', () => {
+    document.getElementById('btnProfessor').addEventListener('click', function() {
       mostrarTela('login');
     });
 
-    document.getElementById('btnEstudante').addEventListener('click', () => {
+    document.getElementById('btnEstudante').addEventListener('click', function() {
       usuarioLogado = { email: null, tipo: 'estudante' };
       isAdmin = false;
-      isSuperAdmin = false;
-      carregarSalas();
-      mostrarTela('inicio');
+      mostrarTela('painel');
     });
 
-    document.getElementById('btnEntrar').addEventListener('click', () => {
+    document.getElementById('btnResetar').addEventListener('click', async function() {
+      const confirmacao = confirm("Tem certeza que deseja resetar completamente a escala?");
+      if (!confirmacao) return;
+
+      posicaoUltimaEscala = -1;
+      historicoTarefa = {};
+      escalaAtual = [];
+      faltantesPendentes = [];
+
+      await salvarEscalaNoFirestore();
+      atualizarResultadoEFormulario();
+      alert("Escala resetada com sucesso!");
+    });
+
+    document.getElementById('btnEntrar').addEventListener('click', function() {
       const email = document.getElementById('emailLogin').value.trim();
       const senha = document.getElementById('senhaLogin').value.trim();
       const mensagemErro = document.getElementById('mensagemErro');
@@ -532,32 +753,38 @@
 
       auth.signInWithEmailAndPassword(email, senha)
         .then((userCredential) => {
-          usuarioLogado = { email: userCredential.user.email, tipo: 'admin' };
-          isSuperAdmin = usuarioLogado.email === 'nicolasgmbatista15@gmail.com';
-          mensagemErro.textContent = '';
-          carregarSalas().then(() => {
-            if (adminConfig[usuarioLogado.email]?.primeiroLogin) {
+          const user = userCredential.user;
+          if (admins.includes(user.email)) {
+            usuarioLogado = { email: user.email, tipo: 'admin' };
+            isAdmin = true;
+            mensagemErro.textContent = '';
+            if (adminConfig[user.email]?.primeiroLogin) {
               mostrarTela('minha-conta');
             } else {
-              mostrarTela('inicio');
+              mostrarTela('painel');
             }
-          });
+          } else {
+            mensagemErro.textContent = 'Usuário não autorizado.';
+            auth.signOut();
+          }
         })
         .catch((error) => {
           console.error('Erro de autenticação:', error);
-          mensagemErro.textContent = error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' 
-            ? 'Email ou senha incorretos.'
-            : error.code === 'auth/invalid-email' 
-              ? 'Email inválido.'
-              : 'Erro ao fazer login. Tente novamente.';
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            mensagemErro.textContent = 'Email ou senha incorretos.';
+          } else if (error.code === 'auth/invalid-email') {
+            mensagemErro.textContent = 'Email inválido.';
+          } else {
+            mensagemErro.textContent = 'Erro ao fazer login. Tente novamente.';
+          }
         });
     });
 
-    document.getElementById('btnVoltarLogin').addEventListener('click', () => {
+    document.getElementById('btnVoltarLogin').addEventListener('click', function() {
       mostrarTela('inicio');
     });
 
-    document.getElementById('btnEsqueciSenha').addEventListener('click', () => {
+    document.getElementById('btnEsqueciSenha').addEventListener('click', function() {
       const email = document.getElementById('emailLogin').value.trim();
       const mensagemErro = document.getElementById('mensagemErro');
 
@@ -568,36 +795,43 @@
 
       auth.sendPasswordResetEmail(email)
         .then(() => {
-          mensagemErro.textContent = 'Email de redefinição enviado! Verifique sua caixa de entrada ou spam.';
+          mensagemErro.textContent = 'Email de redefinição de senha enviado! Verifique sua caixa de entrada ou pasta de spam.';
         })
         .catch((error) => {
           console.error('Erro ao enviar email de redefinição:', error);
-          mensagemErro.textContent = error.code === 'auth/invalid-email' 
-            ? 'Email inválido.'
-            : error.code === 'auth/user-not-found' 
-              ? 'Email não registrado.'
-              : 'Erro ao enviar email de redefinição. Tente novamente.';
+          if (error.code === 'auth/invalid-email') {
+            mensagemErro.textContent = 'Email inválido.';
+          } else if (error.code === 'auth/user-not-found') {
+            mensagemErro.textContent = 'Email não registrado.';
+          } else {
+            mensagemErro.textContent = 'Erro ao enviar email de redefinição. Tente novamente.';
+          }
         });
     });
 
-    document.getElementById('menuBtn').addEventListener('click', () => {
-      document.getElementById('menuLateral').classList.toggle('sidebar-hidden');
-      document.getElementById('menuLateral').classList.toggle('sidebar-visible');
+    const menuBtn = document.getElementById('menuBtn');
+    const menuLateral = document.getElementById('menuLateral');
+    const fecharMenu = document.getElementById('fecharMenu');
+
+    menuBtn.addEventListener('click', function() {
+      menuLateral.style.display = 'flex';
+      menuLateral.classList.toggle('aberto');
     });
 
-    document.getElementById('fecharMenu').addEventListener('click', () => {
-      document.getElementById('menuLateral').classList.add('sidebar-hidden');
-      document.getElementById('menuLateral').classList.remove('sidebar-visible');
+    fecharMenu.addEventListener('click', function() {
+      menuLateral.classList.remove('aberto');
+      setTimeout(() => {
+        menuLateral.style.display = 'none';
+      }, 300);
     });
 
-    document.getElementById('btnSair').addEventListener('click', () => {
+    document.getElementById('btnSair').addEventListener('click', function() {
       auth.signOut()
         .then(() => {
           usuarioLogado = null;
           isAdmin = false;
-          isSuperAdmin = false;
-          salaAtual = null;
           mostrarTela('inicio');
+          console.log('Usuário deslogado com sucesso');
         })
         .catch((error) => {
           console.error('Erro ao deslogar:', error);
@@ -605,88 +839,106 @@
         });
     });
 
-    document.getElementById('btnContinuar').addEventListener('click', async () => {
-      if (isAdmin) await gerarEscala();
+    document.getElementById('btnContinuar').addEventListener('click', async function() {
+      if (isAdmin) {
+        console.log('Botão Continuar clicado, gerando nova escala');
+        await gerarEscala();
+      }
     });
 
-    document.getElementById('formQuemLimpou').addEventListener('submit', async (e) => {
+    document.getElementById('formQuemLimpou').addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (!salaAtual) return;
+      console.log('Evento submit disparado em formQuemLimpou');
 
       const checkboxes = document.querySelectorAll('#checkboxContainer input[name="faltante"]:checked');
+      console.log('Checkboxes marcados:', checkboxes.length, Array.from(checkboxes).map(cb => cb.value));
+
       if (checkboxes.length === 0) {
+        console.log('Nenhum faltante selecionado, mantendo escala atual');
         await salvarEscalaNoFirestore();
         atualizarResultadoEFormulario();
         return;
       }
 
-      salaAtual.faltantesPendentes = [];
+      const escalaAntes = [...escalaAtual];
+      faltantesPendentes = [];
       checkboxes.forEach(cb => {
         const nome = cb.value;
-        const pessoa = salaAtual.escalaAtual.find(p => p.nome === nome);
-        if (pessoa) salaAtual.faltantesPendentes.push({ nome, tarefa: pessoa.tarefa });
+        const pessoa = escalaAtual.find(p => p.nome === nome);
+        if (pessoa) {
+          faltantesPendentes.push({ nome, tarefa: pessoa.tarefa });
+          console.log(`Faltante adicionado: ${nome} - ${pessoa.tarefa}`);
+        }
         cb.checked = false;
       });
 
-      salaAtual.escalaAtual = salaAtual.escalaAtual.filter(p => !salaAtual.faltantesPendentes.some(f => f.nome === p.nome));
-      let usados = salaAtual.escalaAtual.map(p => p.nome).concat(salaAtual.faltantesPendentes.map(f => f.nome));
-      let idx = salaAtual.posicaoUltimaEscala;
+      escalaAtual = escalaAtual.filter(p => !faltantesPendentes.some(f => f.nome === p.nome));
+      console.log('Escala após remover faltantes:', escalaAtual);
 
-      for (let faltante of salaAtual.faltantesPendentes) {
-        if (salaAtual.escalaAtual.length >= 2) break;
+      let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+      let idx = posicaoUltimaEscala;
+
+      for (let faltante of faltantesPendentes) {
+        if (escalaAtual.length >= 2) break;
         idx = proximoIndice(idx, usados);
-        if (idx === -1) break;
-        const nome = salaAtual.nomes[idx];
+        if (idx === -1) {
+          console.log('Nenhum substituto disponível para', faltante.nome);
+          break;
+        }
+        const nome = nomes[idx];
         const tarefa = faltante.tarefa;
-        salaAtual.escalaAtual.push({ nome, tarefa, index: idx });
-        salaAtual.historicoTarefa[nome] = tarefa;
+        escalaAtual.push({ nome, tarefa, index: idx });
+        historicoTarefa[nome] = tarefa;
         usados.push(nome);
-        salaAtual.posicaoUltimaEscala = idx;
+        posicaoUltimaEscala = idx;
+        console.log(`Substituto adicionado: ${nome} - ${tarefa}`);
       }
 
-      while (salaAtual.escalaAtual.length < 2 && salaAtual.nomes.length > usados.length) {
+      while (escalaAtual.length < 2 && nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
-        const nome = salaAtual.nomes[idx];
-        const tarefa = salaAtual.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
-        salaAtual.escalaAtual.push({ nome, tarefa, index: idx });
-        salaAtual.historicoTarefa[nome] = tarefa;
+        const nome = nomes[idx];
+        const tarefa = escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
+        escalaAtual.push({ nome, tarefa, index: idx });
+        historicoTarefa[nome] = tarefa;
         usados.push(nome);
-        salaAtual.posicaoUltimaEscala = idx;
+        posicaoUltimaEscala = idx;
+        console.log(`Complemento da escala: ${nome} - ${tarefa}`);
       }
+
+      console.log('Escala final:', escalaAtual);
+      console.log('Faltantes pendentes:', faltantesPendentes);
+      console.log('Histórico de tarefas:', historicoTarefa);
+      console.log('Escala antes vs depois:', { antes: escalaAntes, depois: escalaAtual });
 
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
     });
 
     // Funções de edição de nomes
-    document.getElementById('btnEditarNomes').addEventListener('click', () => {
+    document.getElementById('btnEditarNomes').addEventListener('click', function() {
       mostrarTela('editar-nomes');
     });
 
-    document.getElementById('btnVoltarEdicao').addEventListener('click', () => {
+    document.getElementById('btnVoltarEdicao').addEventListener('click', function() {
       mostrarTela('painel');
     });
 
     function atualizarListaNomesEdicao() {
-      if (!salaAtual) return;
       const ul = document.getElementById('listaNomesEdicao');
       ul.innerHTML = '';
-      salaAtual.nomes.forEach((nome, idx) => {
+      nomes.forEach((nome, idx) => {
         const li = document.createElement('li');
-        li.className = 'flex justify-between items-center p-3 border-b border-gray-200';
         li.textContent = nome;
         const btnRemover = document.createElement('button');
         btnRemover.textContent = 'Remover';
-        btnRemover.className = 'bg-red-600 text-white px-4 py-1 rounded-lg hover:bg-red-700 transition';
+        btnRemover.className = 'removerNomeBtn';
         btnRemover.addEventListener('click', async () => {
-          const pessoaNaEscala = salaAtual.escalaAtual.find(p => p.nome === nome);
-          salaAtual.nomes.splice(idx, 1);
-          salaAtual.escalaAtual = salaAtual.escalaAtual.filter(p => p.nome !== nome);
-          salaAtual.faltantesPendentes = salaAtual.faltantesPendentes.filter(f => f.nome !== nome);
-          if (pessoaNaEscala && salaAtual.nomes.length > 0) {
-            substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
-          }
+          // Remover o nome da lista, mas não alterar a escala imediatamente
+          nomes.splice(idx, 1);
+          // Remover o nome da escalaAtual e faltantesPendentes, sem substituição
+          escalaAtual = escalaAtual.filter(p => p.nome !== nome);
+          faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nome);
           await salvarConfigNoFirestore();
           await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
@@ -697,17 +949,14 @@
       });
     }
 
-    document.getElementById('btnAdicionarNome').addEventListener('click', async () => {
-      if (!salaAtual) return;
+    document.getElementById('btnAdicionarNome').addEventListener('click', async function() {
       const input = document.getElementById('novoNomeInput');
       const novoNome = input.value.trim();
-      if (novoNome.length > 0 && !salaAtual.nomes.some(n => n.toLowerCase() === novoNome.toLowerCase())) {
-        salaAtual.nomes.push(novoNome);
-        salaAtual.nomes.sort((a, b) => a.localeCompare(b));
-        adicionarPessoaNaEscala(novoNome);
+      if (novoNome.length > 0 && !nomes.some(n => n.toLowerCase() === novoNome.toLowerCase())) {
+        nomes.push(novoNome);
+        nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
         await salvarConfigNoFirestore();
-        await salvarEscalaNoFirestore();
         atualizarListaNomesEdicao();
         atualizarResultadoEFormulario();
       } else {
@@ -715,42 +964,42 @@
       }
     });
 
-    document.getElementById('btnZerarNomes').addEventListener('click', async () => {
-      if (!salaAtual) return;
+    document.getElementById('btnZerarNomes').addEventListener('click', async function() {
       if (confirm('Tem certeza que quer apagar todos os nomes?')) {
-        salaAtual.nomes = [];
-        salaAtual.escalaAtual = [];
-        salaAtual.faltantesPendentes = [];
+        nomes = [];
+        escalaAtual = [];
+        faltantesPendentes = [];
         await salvarConfigNoFirestore();
         await salvarEscalaNoFirestore();
         atualizarListaNomesEdicao();
         mostrarTela('painel');
+        atualizarResultadoEFormulario();
         alert('Lista de nomes zerada com sucesso!');
       }
     });
 
     // Funções de gerenciamento de administradores
-    document.getElementById('btnLiberarAcesso').addEventListener('click', () => {
-      if (isAdmin) mostrarTela('gerenciar-admins');
+    document.getElementById('btnLiberarAcesso').addEventListener('click', function() {
+      if (isAdmin) {
+        mostrarTela('gerenciar-admins');
+      }
     });
 
-    document.getElementById('btnVoltarAdmins').addEventListener('click', () => {
+    document.getElementById('btnVoltarAdmins').addEventListener('click', function() {
       mostrarTela('painel');
     });
 
     function atualizarListaAdminsEdicao() {
-      if (!salaAtual) return;
       const ul = document.getElementById('listaAdminsEdicao');
       ul.innerHTML = '';
-      salaAtual.admins.forEach((email, idx) => {
+      admins.forEach((email, idx) => {
         const li = document.createElement('li');
-        li.className = 'flex justify-between items-center p-3 border-b border-gray-200';
         li.textContent = email;
         const btnRemover = document.createElement('button');
         btnRemover.textContent = 'Remover';
-        btnRemover.className = 'bg-red-600 text-white px-4 py-1 rounded-lg hover:bg-red-700 transition';
+        btnRemover.className = 'removerAdminBtn';
         btnRemover.addEventListener('click', () => {
-          if (salaAtual.admins.length <= 1) {
+          if (admins.length <= 1) {
             alert('Não é possível remover o último administrador!');
             return;
           }
@@ -758,7 +1007,7 @@
             alert('Você não pode remover seu próprio email!');
             return;
           }
-          salaAtual.admins.splice(idx, 1);
+          admins.splice(idx, 1);
           atualizarListaAdminsEdicao();
           salvarConfigNoFirestore();
         });
@@ -767,8 +1016,7 @@
       });
     }
 
-    document.getElementById('btnAdicionarAdmin').addEventListener('click', () => {
-      if (!salaAtual) return;
+    document.getElementById('btnAdicionarAdmin').addEventListener('click', function() {
       const inputEmail = document.getElementById('novoAdminInput');
       const inputSenha = document.getElementById('novaSenhaAdminInput');
       const novoEmail = inputEmail.value.trim();
@@ -779,7 +1027,7 @@
         alert('Digite um email válido!');
         return;
       }
-      if (salaAtual.admins.includes(novoEmail)) {
+      if (admins.includes(novoEmail)) {
         alert('Este email já está na lista de administradores!');
         return;
       }
@@ -791,8 +1039,8 @@
       auth.fetchSignInMethodsForEmail(novoEmail)
         .then((signInMethods) => {
           if (signInMethods.length > 0) {
-            salaAtual.admins.push(novoEmail);
-            salaAtual.admins.sort((a, b) => a.localeCompare(b));
+            admins.push(novoEmail);
+            admins.sort((a, b) => a.localeCompare(b));
             adminConfig[novoEmail] = { primeiroLogin: true };
             inputEmail.value = '';
             inputSenha.value = '';
@@ -801,44 +1049,58 @@
           } else {
             auth.createUserWithEmailAndPassword(novoEmail, novaSenha)
               .then((userCredential) => {
-                salaAtual.admins.push(novoEmail);
-                salaAtual.admins.sort((a, b) => a.localeCompare(b));
+                admins.push(novoEmail);
+                admins.sort((a, b) => a.localeCompare(b));
                 adminConfig[novoEmail] = { primeiroLogin: true };
                 inputEmail.value = '';
                 inputSenha.value = '';
                 atualizarListaAdminsEdicao();
                 salvarConfigNoFirestore();
-                userCredential.user.sendEmailVerification();
+                userCredential.user.sendEmailVerification()
+                  .then(() => {
+                    console.log('Email de verificação enviado para:', novoEmail);
+                  })
+                  .catch((error) => {
+                    console.error('Erro ao enviar email de verificação:', error);
+                  });
               })
               .catch((error) => {
                 console.error('Erro ao criar usuário:', error);
-                alert(error.code === 'auth/email-already-in-use' 
-                  ? 'Este email já está registrado.'
-                  : error.code === 'auth/invalid-email' 
-                    ? 'Email inválido.'
-                    : 'Erro ao criar usuário. Tente novamente.');
+                if (error.code === 'auth/email-already-in-use') {
+                  alert('Este email já está registrado, mas não como administrador.');
+                } else if (error.code === 'auth/invalid-email') {
+                  alert('Email inválido.');
+                } else {
+                  alert('Erro ao criar usuário. Tente novamente.');
+                }
               });
           }
         })
         .catch((error) => {
           console.error('Erro ao verificar email:', error);
-          alert('Erro ao verificar o email. Verifique se é válido.');
+          alert('Erro ao verificar o email. Verifique se é válido e tente novamente.');
         });
     });
 
-    document.getElementById('btnSalvarAdmins').addEventListener('click', async () => {
-      if (!salaAtual) return;
-      await salvarConfigNoFirestore();
-      alert('Lista de administradores salva com sucesso!');
-      mostrarTela('painel');
+    document.getElementById('btnSalvarAdmins').addEventListener('click', async function() {
+      try {
+        await salvarConfigNoFirestore();
+        alert('Lista de administradores salva com sucesso!');
+        mostrarTela('painel');
+      } catch (error) {
+        console.error('Erro ao salvar administradores no Firestore:', error);
+        alert('Erro ao salvar administradores. Verifique sua conexão.');
+      }
     });
 
     // Funções de Minha Conta
-    document.getElementById('btnMinhaConta').addEventListener('click', () => {
-      if (isAdmin) mostrarTela('minha-conta');
+    document.getElementById('btnMinhaConta').addEventListener('click', function() {
+      if (isAdmin) {
+        mostrarTela('minha-conta');
+      }
     });
 
-    document.getElementById('btnVoltarMinhaConta').addEventListener('click', () => {
+    document.getElementById('btnVoltarMinhaConta').addEventListener('click', function() {
       mostrarTela('painel');
     });
 
@@ -848,12 +1110,14 @@
       mensagemErro.textContent = '';
       document.getElementById('novaSenhaInput').value = '';
       document.getElementById('confirmarSenhaInput').value = '';
-      mensagemAviso.textContent = adminConfig[usuarioLogado.email]?.primeiroLogin 
-        ? 'Bem-vindo! Por favor, defina uma nova senha para sua conta.'
-        : '';
+      if (adminConfig[usuarioLogado.email]?.primeiroLogin) {
+        mensagemAviso.textContent = 'Bem-vindo! Por favor, defina uma nova senha para sua conta.';
+      } else {
+        mensagemAviso.textContent = '';
+      }
     }
 
-    document.getElementById('btnAlterarSenha').addEventListener('click', () => {
+    document.getElementById('btnAlterarSenha').addEventListener('click', function() {
       const novaSenha = document.getElementById('novaSenhaInput').value.trim();
       const confirmarSenha = document.getElementById('confirmarSenhaInput').value.trim();
       const mensagemErro = document.getElementById('mensagemErroMinhaConta');
@@ -882,16 +1146,18 @@
                 mostrarTela('painel');
               })
               .catch((error) => {
-                console.error('Erro ao salvar config:', error);
+                console.error('Erro ao salvar config no Firestore:', error);
                 mensagemErro.textContent = 'Erro ao salvar alterações. Tente novamente.';
               });
           })
           .catch((error) => {
             console.error('Erro ao alterar senha:', error);
-            mensagemErro.textContent = error.code === 'auth/requires-recent-login' 
-              ? 'Faça login novamente para alterar a senha.'
-              : 'Erro ao alterar senha. Tente novamente.';
-            if (error.code === 'auth/requires-recent-login') auth.signOut().then(() => mostrarTela('login'));
+            if (error.code === 'auth/requires-recent-login') {
+              mensagemErro.textContent = 'Por favor, faça login novamente para alterar a senha.';
+              auth.signOut().then(() => mostrarTela('login'));
+            } else {
+              mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
+            }
           });
       } else {
         mensagemErro.textContent = 'Usuário não autenticado. Faça login novamente.';
@@ -899,93 +1165,10 @@
       }
     });
 
-    // Funções de criação de salas
-    document.getElementById('btnCriarSala').addEventListener('click', async () => {
-      if (!isSuperAdmin) {
-        alert('Apenas o super administrador pode criar novas salas.');
-        return;
-      }
-      const nomeSala = prompt('Digite o nome da nova sala:');
-      if (nomeSala && nomeSala.trim()) {
-        const salaId = db.collection('salas').doc().id;
-        const novaSala = {
-          id: salaId,
-          nome: nomeSala.trim(),
-          admins: ['nicolasgmbatista15@gmail.com'],
-          nomes: [],
-          adminConfig: {},
-          posicaoUltimaEscala: -1,
-          historicoTarefa: {},
-          escalaAtual: [],
-          faltantesPendentes: []
-        };
-        await db.collection('salas').doc(salaId).set({ nome: novaSala.nome, admins: novaSala.admins });
-        await db.collection('salas').doc(salaId).collection('config').doc('dados').set({
-          nomes: [],
-          admins: ['nicolasgmbatista15@gmail.com'],
-          adminConfig: {}
-        });
-        await db.collection('salas').doc(salaId).collection('escala').doc('dados').set({
-          posicaoUltimaEscala: -1,
-          historicoTarefa: {},
-          escalaAtual: [],
-          faltantesPendentes: []
-        });
-        salas.push(novaSala);
-        atualizarListaSalas();
-      }
-    });
-
-    // Funções de laboratório
-    document.getElementById('btnConfigLaboratorio').addEventListener('click', async () => {
-      if (!salaAtual) return;
-      document.getElementById('modalLaboratorio').classList.remove('modal-hidden');
-      document.getElementById('modalLaboratorio').classList.add('modal-visible');
-      const hoje = new Date().toISOString().split('T')[0];
-      const grupos = await carregarLaboratorio(hoje);
-      document.getElementById('qtdGrupos').value = grupos.length || 1;
-      atualizarGruposLaboratorio(grupos.length || 1);
-      grupos.forEach((g, i) => {
-        document.getElementById(`funcoesGrupo${i + 1}`).value = g.funcoes.join(', ');
-      });
-    });
-
-    document.getElementById('qtdGrupos').addEventListener('change', (e) => {
-      atualizarGruposLaboratorio(parseInt(e.target.value));
-    });
-
-    document.getElementById('btnSalvarLaboratorio').addEventListener('click', async () => {
-      if (!salaAtual) return;
-      const qtdGrupos = parseInt(document.getElementById('qtdGrupos').value);
-      const grupos = [];
-      for (let i = 1; i <= qtdGrupos; i++) {
-        const funcoes = document.getElementById(`funcoesGrupo${i}`).value.split(',').map(f => f.trim()).filter(f => f);
-        grupos.push({ id: i, funcoes });
-      }
-      const hoje = new Date().toISOString().split('T')[0];
-      await salvarLaboratorio(hoje, grupos);
-      document.getElementById('modalLaboratorio').classList.add('modal-hidden');
-      document.getElementById('modalLaboratorio').classList.remove('modal-visible');
-      alert('Configuração de laboratório salva com sucesso!');
-    });
-
-    document.getElementById('btnCancelarLaboratorio').addEventListener('click', () => {
-      document.getElementById('modalLaboratorio').classList.add('modal-hidden');
-      document.getElementById('modalLaboratorio').classList.remove('modal-visible');
-    });
-
-    // Tema claro/escuro
-    document.getElementById('themeToggle').addEventListener('click', () => {
-      const body = document.body;
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
-    });
-
-    // Inicializa app
-    carregarSalas().then(() => {
+    // Carregar escala e configs do Firestore ao iniciar app
+    lerEscalaDoFirestore().then(() => {
       if (usuarioLogado) {
-        mostrarTela('inicio');
+        mostrarTela('painel');
       } else {
         mostrarTela('inicio');
       }
