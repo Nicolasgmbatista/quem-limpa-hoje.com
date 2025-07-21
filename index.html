@@ -6,7 +6,7 @@
   <title>Quem limpa a sala hoje?</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       background: #f0f2f5;
       color: #2c3e50;
       display: flex;
@@ -20,28 +20,36 @@
     #app {
       width: 420px;
       background: #fff;
-      padding: 30px 40px;
+      padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
       text-align: center;
       position: relative;
-      border: 1px solid #dcdcdc;
+      border: 1px solid #e0e0e0;
     }
 
     h1 {
-      margin-bottom: 12px;
-      font-weight: 700;
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 24px;
+      color: #2c3e50;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #2c3e50;
     }
 
     button, input {
       font-size: 16px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: none;
-      padding: 10px 18px;
-      margin: 10px 6px;
+      padding: 12px;
+      margin: 8px 0;
       cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
+      font-weight: 500;
+      transition: all 0.3s ease;
       outline: none;
     }
 
@@ -55,11 +63,12 @@
     }
 
     input[type="email"], input[type="password"], input[type="text"] {
-      width: 260px;
-      border: 2px solid #ccc;
+      width: 100%;
+      max-width: 300px;
+      border: 2px solid #dcdcdc;
       transition: border-color 0.3s ease;
-      margin-bottom: 15px;
-      padding: 10px;
+      padding: 12px;
+      box-sizing: border-box;
     }
 
     input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
@@ -68,56 +77,44 @@
 
     #menuBtn {
       position: absolute;
-      top: 18px;
-      right: 18px;
+      top: 20px;
+      right: 20px;
       background: transparent;
       font-size: 28px;
       color: #2c3e50;
       border: none;
       cursor: pointer;
-      user-select: none;
       padding: 0;
-      line-height: 1;
     }
 
     #menuLateral {
       position: fixed;
       top: 0;
-      right: -280px;
-      width: 280px;
+      right: -300px;
+      width: 300px;
       height: 100vh;
       background: #2c3e50;
       color: white;
-      padding: 30px 20px;
+      padding: 20px;
+      display: flex;
       flex-direction: column;
-      gap: 20px;
-      box-shadow: -3px 0 8px rgba(0,0,0,0.15);
+      gap: 15px;
+      box-shadow: -5px 0 10px rgba(0,0,0,0.2);
       z-index: 1000;
-      transition: right 0.3s ease, opacity 0.3s ease;
-      opacity: 0;
-      pointer-events: none;
-      visibility: hidden;
+      transition: right 0.3s ease;
     }
 
     #menuLateral.aberto {
       right: 0;
-      opacity: 1;
-      pointer-events: auto;
-      visibility: visible;
     }
 
     #menuLateral button,
     #fecharMenu {
       background: #34495e;
       width: 100%;
-      padding: 12px 0;
-      border: none;
-      color: white;
-      font-weight: bold;
+      padding: 12px;
+      border-radius: 8px;
       font-size: 16px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: background-color 0.3s ease;
     }
 
     #menuLateral button:hover,
@@ -126,24 +123,24 @@
     }
 
     #resultado h2 {
-      margin-bottom: 8px;
-      font-weight: 700;
+      margin-bottom: 12px;
+      font-weight: 600;
     }
 
     #resultado ul {
       list-style: none;
       padding: 0;
-      margin: 0 0 15px 0;
+      margin: 0 0 20px 0;
       text-align: left;
     }
 
     #resultado li {
-      background: #ecf0f1;
-      margin-bottom: 10px;
-      padding: 12px 15px;
+      background: #f5f7fa;
+      margin-bottom: 8px;
+      padding: 12px;
       border-radius: 8px;
       color: #2c3e50;
-      font-weight: 600;
+      font-weight: 500;
       display: flex;
       justify-content: space-between;
     }
@@ -151,20 +148,21 @@
     #checkboxContainer {
       display: flex;
       flex-wrap: wrap;
-      gap: 15px 30px;
+      gap: 12px;
       justify-content: center;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
     #checkboxContainer div {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     #formQuemLimpou button[type="submit"] {
       margin-top: 20px;
       width: 100%;
+      max-width: 300px;
     }
 
     #btnReset {
@@ -177,20 +175,23 @@
 
     #mensagemErro, #mensagemErroMinhaConta {
       color: #c0392b;
-      font-weight: 700;
+      font-weight: 500;
       margin-bottom: 12px;
+      font-size: 14px;
     }
 
     #mensagemAviso {
       color: #e67e22;
-      font-weight: 700;
+      font-weight: 500;
       margin-bottom: 12px;
+      font-size: 14px;
     }
 
     #btnContinuar {
-      margin-top: 10px;
+      margin-top: 12px;
       background-color: #27ae60;
       width: 100%;
+      max-width: 300px;
     }
 
     #btnContinuar:hover {
@@ -198,7 +199,8 @@
     }
 
     #telaInicial button {
-      width: 180px;
+      width: 100%;
+      max-width: 200px;
     }
 
     #formQuemLimpou {
@@ -215,42 +217,76 @@
     #avisoReset {
       margin-top: 20px;
       color: #e74c3c;
-      font-weight: bold;
+      font-weight: 500;
       font-size: 14px;
       text-align: center;
     }
 
-    #telaEditarNomes, #telaGerenciarAdmins, #telaMinhaConta {
-      display: none;
-      text-align: left;
-      max-width: 360px;
-      margin: 0 auto;
+    #telaLogin {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
 
-    #telaEditarNomes h2, #telaGerenciarAdmins h2, #telaMinhaConta h2 {
-      text-align: center;
-      margin-bottom: 16px;
+    #telaLogin input {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #botoesLogin {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    #botoesLogin button {
+      width: 120px;
+    }
+
+    #btnEsqueciSenha {
+      background: transparent;
+      color: #2c3e50;
+      text-decoration: underline;
+      font-size: 14px;
+      padding: 5px;
+      margin-top: 5px;
+    }
+
+    #btnEsqueciSenha:hover {
+      color: #34495e;
+    }
+
+    #telaEditarNomes, #telaGerenciarAdmins, #telaMinhaConta {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      max-width: 360px;
+      margin: 0 auto;
     }
 
     #listaNomesEdicao, #listaAdminsEdicao {
       list-style: none;
       padding: 0;
-      max-height: 280px;
+      width: 100%;
+      max-height: 300px;
       overflow-y: auto;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #f7f7f7;
+      margin-bottom: 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f9fafb;
     }
 
     #listaNomesEdicao li, #listaAdminsEdicao li {
-      padding: 10px 14px;
-      border-bottom: 1px solid #ddd;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-weight: 600;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      font-weight: 500;
       color: #2c3e50;
+      word-break: break-word;
     }
 
     #listaNomesEdicao li:last-child, #listaAdminsEdicao li:last-child {
@@ -259,14 +295,11 @@
 
     #listaNomesEdicao button.removerNomeBtn, #listaAdminsEdicao button.removerAdminBtn {
       background-color: #c0392b;
-      padding: 6px 12px;
+      padding: 8px 16px;
       font-size: 14px;
       border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      color: white;
-      transition: background-color 0.3s ease;
+      min-width: 80px;
+      text-align: center;
     }
 
     #listaNomesEdicao button.removerNomeBtn:hover, #listaAdminsEdicao button.removerAdminBtn:hover {
@@ -276,41 +309,28 @@
     #novoNomeContainer, #novoAdminContainer, #alterarSenhaContainer {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 15px;
-      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 16px;
     }
 
-    #novoNomeInput, #novoAdminInput, #novaSenhaInput, #confirmarSenhaInput {
-      flex-grow: 1;
-      padding: 10px 12px;
+    #novoNomeInput, #novoAdminInput, #novaSenhaAdminInput, #novaSenhaInput, #confirmarSenhaInput {
+      width: 100%;
+      padding: 12px;
       font-size: 16px;
-      border-radius: 6px;
-      border: 2px solid #ccc;
-      transition: border-color 0.3s ease;
+      border-radius: 8px;
+      border: 2px solid #dcdcdc;
     }
 
-    #novoNomeInput:focus, #novoAdminInput:focus, #novaSenhaInput:focus, #confirmarSenhaInput:focus {
-      border-color: #2c3e50;
-      outline: none;
+    #novoNomeContainer button, #novoAdminContainer button {
+      width: 100%;
+      max-width: 300px;
     }
 
     #telaEditarNomes button, #telaGerenciarAdmins button, #telaMinhaConta button {
       width: 100%;
-      margin: 6px 0;
-    }
-
-    #btnEsqueciSenha {
-      background: transparent;
-      color: #2c3e50;
-      text-decoration: underline;
-      font-size: 14px;
-      padding: 5px;
-      margin-top: 0;
-    }
-
-    #btnEsqueciSenha:hover {
-      color: #34495e;
+      max-width: 300px;
     }
   </style>
 </head>
@@ -390,7 +410,7 @@
       <button id="btnVoltarAdmins">Voltar</button>
     </div>
 
-    <!-- Nova tela para minha conta -->
+    <!-- Tela para minha conta -->
     <div id="telaMinhaConta">
       <h2>Minha Conta</h2>
       <div id="mensagemAviso"></div>
@@ -439,7 +459,7 @@
     let usuarioLogado = null;
     let isAdmin = false;
     let telaAtual = 'inicio';
-    let adminConfig = {}; // Para armazenar configurações como primeiroLogin
+    let adminConfig = {};
 
     // Funções para mostrar/ocultar telas
     function mostrarTela(t) {
@@ -461,7 +481,7 @@
           document.getElementById('telaInicial').style.display = 'block';
           break;
         case 'login':
-          document.getElementById('telaLogin').style.display = 'block';
+          document.getElementById('telaLogin').style.display = 'flex';
           document.getElementById('emailLogin').value = '';
           document.getElementById('senhaLogin').value = '';
           document.getElementById('mensagemErro').textContent = '';
@@ -476,15 +496,15 @@
           if (isAdmin) montarCheckboxFaltantes();
           break;
         case 'editar-nomes':
-          document.getElementById('telaEditarNomes').style.display = 'block';
+          document.getElementById('telaEditarNomes').style.display = 'flex';
           atualizarListaNomesEdicao();
           break;
         case 'gerenciar-admins':
-          document.getElementById('telaGerenciarAdmins').style.display = 'block';
+          document.getElementById('telaGerenciarAdmins').style.display = 'flex';
           atualizarListaAdminsEdicao();
           break;
         case 'minha-conta':
-          document.getElementById('telaMinhaConta').style.display = 'block';
+          document.getElementById('telaMinhaConta').style.display = 'flex';
           atualizarTelaMinhaConta();
           break;
       }
@@ -677,7 +697,6 @@
             usuarioLogado = { email: user.email, tipo: 'admin' };
             isAdmin = true;
             mensagemErro.textContent = '';
-            // Verificar primeiro login
             if (adminConfig[user.email]?.primeiroLogin) {
               mostrarTela('minha-conta');
             } else {
@@ -715,7 +734,7 @@
 
       auth.sendPasswordResetEmail(email)
         .then(() => {
-          mensagemErro.textContent = 'Email de redefinição de senha enviado! Verifique sua caixa de entrada.';
+          mensagemErro.textContent = 'Email de redefinição de senha enviado! Verifique sua caixa de entrada ou pasta de spam.';
         })
         .catch((error) => {
           console.error('Erro ao enviar email de redefinição:', error);
@@ -1018,7 +1037,6 @@
                 inputEmail.value = '';
                 inputSenha.value = '';
                 atualizarListaAdminsEdicao();
-                // Enviar email de verificação
                 userCredential.user.sendEmailVerification()
                   .then(() => {
                     console.log('Email de verificação enviado para:', novoEmail);
