@@ -586,20 +586,72 @@
   }
 
   async function continuarEscala() {
-    faltantesPendentes = [];
-    await gerarEscala();
-  }
+  // Limpa os faltantes pendentes para avançar sem marcar ninguém
+  faltantesPendentes = [];
+  await gerarEscala();
+}
 
-  // Resetar escala
-  async function resetarEscala() {
-    if(!confirm('Tem certeza que deseja resetar a escala?')) return;
-    posicaoUltimaEscala = -1;
-    historicoTarefa = {};
-    escalaAtual = [];
-    faltantesPendentes = [];
+// Evento do botão continuar
+async function gerarEscala() {
+  // Se não tem escala atual, gera escala inicial
+  if (escalaAtual.length === 0) {
+    let idx = posicaoUltimaEscala;
+    let usados = [];
+    let escala = [];
+
+    for (let i = 0; i < 2; i++) {
+      idx = proximoIndice(idx, usados);
+      const nome = nomes[idx];
+      const tarefa = i === 0 ? alternarTarefa(historicoTarefa[nome] || 'mesa') : alternarTarefa(escala[0].tarefa);
+      historicoTarefa[nome] = tarefa;
+      usados.push(nome);
+      escala.push({ nome, tarefa, index: idx });
+    }
+
+    escalaAtual = escala;
+    posicaoUltimaEscala = idx;
     await salvarEscalaNoFirestore();
     atualizarResultadoEFormulario();
+    return;
   }
+
+  // Se tem faltantes pendentes, substitui e atualiza escala
+  const faltantesHoje = [...faltantesPendentes];
+  faltantesPendentes = [];
+
+  const presentes = escalaAtual.filter(p => !faltantesHoje.some(f => f.nome === p.nome));
+
+  let idx = posicaoUltimaEscala;
+  let usados = presentes.map(p => p.nome);
+  let substitutos = [];
+
+  for (let i = 0; i < faltantesHoje.length; i++) {
+    idx = proximoIndice(idx, usados);
+    if (idx === -1) break;
+
+    const nome = nomes[idx];
+    const tarefa = substitutos.length === 0
+      ? alternarTarefa(presentes[0]?.tarefa || 'mesa')
+      : alternarTarefa(substitutos[substitutos.length - 1].tarefa);
+
+    historicoTarefa[nome] = tarefa;
+    substitutos.push({ nome, tarefa, index: idx });
+    usados.push(nome);
+  }
+
+  escalaAtual = [...presentes, ...substitutos];
+  faltantesPendentes = faltantesHoje;
+
+  if (substitutos.length > 0) {
+    posicaoUltimaEscala = substitutos[substitutos.length - 1].index;
+  } else if (presentes.length > 0) {
+    posicaoUltimaEscala = presentes[presentes.length - 1].index;
+  }
+
+  await salvarEscalaNoFirestore();
+  atualizarResultadoEFormulario();
+}
+
 
   // Botões iniciais e eventos
   document.getElementById('btnProfessor').addEventListener('click', () => mostrarTela('login'));
