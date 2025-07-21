@@ -908,9 +908,13 @@
           escalaAtual = escalaAtual.filter(p => nomes.includes(p.nome));
           faltantesPendentes = faltantesPendentes.filter(f => nomes.includes(f.nome));
           await salvarConfigNoFirestore();
-          await salvarEscalaNoFirestore();
+          if (escalaAtual.length < 2 && nomes.length > 0) {
+            await gerarEscala();
+          } else {
+            await salvarEscalaNoFirestore();
+            atualizarResultadoEFormulario();
+          }
           atualizarListaNomesEdicao();
-          atualizarResultadoEFormulario();
         });
         li.appendChild(btnRemover);
         ul.appendChild(li);
@@ -925,9 +929,13 @@
         nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
         await salvarConfigNoFirestore();
-        await salvarEscalaNoFirestore();
+        if (escalaAtual.length < 2 && nomes.length > 0) {
+          await gerarEscala();
+        } else {
+          await salvarEscalaNoFirestore();
+          atualizarResultadoEFormulario();
+        }
         atualizarListaNomesEdicao();
-        atualizarResultadoEFormulario();
       } else {
         alert('Nome inválido ou já existe!');
       }
