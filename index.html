@@ -83,25 +83,17 @@
     #menuLateral {
   position: fixed;
   top: 0;
-  right: -280px; /* fica fora da tela à direita */
-  width: 280px;
-  height: 100vh;
-  background: #2c3e50;
-  color: white;
-  box-shadow: -3px 0 8px rgba(0,0,0,0.15);
-  padding: 30px 20px;
-  flex-direction: column;
-  gap: 20px;
+  right: -280px; /* fora da tela */
+  /* ... restante */
+  display: flex;
   transition: right 0.3s ease;
-  z-index: 1000;
-  display: flex; /* manter como flex para os filhos funcionarem */
 }
 
+#menuLateral.aberto {
+  right: 0;
+  display: flex; /* já está flex */
+}
 
-    #menuLateral.aberto {
-      right: 0;
-      display: flex;
-    }
 
     #menuLateral button,
     #fecharMenu {
