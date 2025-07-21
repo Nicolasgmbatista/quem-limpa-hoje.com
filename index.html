@@ -359,6 +359,8 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- Adicionado Firebase Authentication -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   
   <script>
     // Firebase config
@@ -372,9 +374,16 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth(); // Inicializa Firebase Authentication
 
     // Variáveis globais
-    let admins = ["gonzagamezzomozaira@gmail.com", "fabiana.martini@edu.sc.senai.br", "beatriz_k_morais@estudante.sesisenai.org.br", "nicolasgmbatista15@gmail.com", "cassia.savi@edu.sc.senai.br"];
+    let admins = [
+      "gonzagamezzomozaira@gmail.com",
+      "fabiana.martini@edu.sc.senai.br",
+      "beatriz_k_morais@estudante.sesisenai.org.br",
+      "nicolasgmbatista15@gmail.com",
+      "cassia.savi@edu.sc.senai.br"
+    ];
     let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b));
     let posicaoUltimaEscala = -1;
     let historicoTarefa = {};
@@ -585,22 +594,41 @@
       alert("Escala resetada com sucesso!");
     });
 
+    // Modificado para usar Firebase Authentication
     document.getElementById('btnEntrar').addEventListener('click', function() {
       const email = document.getElementById('emailLogin').value.trim();
       const senha = document.getElementById('senhaLogin').value.trim();
+      const mensagemErro = document.getElementById('mensagemErro');
 
       if (email.length === 0 || senha.length === 0) {
-        document.getElementById('mensagemErro').textContent = 'Preencha email e senha!';
+        mensagemErro.textContent = 'Preencha email e senha!';
         return;
       }
-      if (admins.includes(email)) {
-        usuarioLogado = { email, tipo: 'admin' };
-        isAdmin = true;
-        document.getElementById('mensagemErro').textContent = '';
-        mostrarTela('painel');
-      } else {
-        document.getElementById('mensagemErro').textContent = 'Usuário não autorizado.';
-      }
+
+      // Tenta autenticar com Firebase Authentication
+      auth.signInWithEmailAndPassword(email, senha)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          if (admins.includes(user.email)) {
+            usuarioLogado = { email: user.email, tipo: 'admin' };
+            isAdmin = true;
+            mensagemErro.textContent = '';
+            mostrarTela('painel');
+          } else {
+            mensagemErro.textContent = 'Usuário não autorizado.';
+            auth.signOut(); // Desloga usuário não autorizado
+          }
+        })
+        .catch((error) => {
+          console.error('Erro de autenticação:', error);
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            mensagemErro.textContent = 'Email ou senha incorretos.';
+          } else if (error.code === 'auth/invalid-email') {
+            mensagemErro.textContent = 'Email inválido.';
+          } else {
+            mensagemErro.textContent = 'Erro ao fazer login. Tente novamente.';
+          }
+        });
     });
 
     document.getElementById('btnVoltarLogin').addEventListener('click', function() {
@@ -619,10 +647,19 @@
       menuLateral.classList.remove('aberto');
     });
 
+    // Modificado para usar signOut do Firebase
     document.getElementById('btnSair').addEventListener('click', function() {
-      usuarioLogado = null;
-      isAdmin = false;
-      mostrarTela('inicio');
+      auth.signOut()
+        .then(() => {
+          usuarioLogado = null;
+          isAdmin = false;
+          mostrarTela('inicio');
+          console.log('Usuário deslogado com sucesso');
+        })
+        .catch((error) => {
+          console.error('Erro ao deslogar:', error);
+          alert('Erro ao sair. Tente novamente.');
+        });
     });
 
     document.getElementById('btnContinuar').addEventListener('click', async function() {
@@ -741,17 +778,13 @@
       }
     });
 
-    // Modificado para substituir nomes removidos na escala atual
     document.getElementById('btnSalvarNomes').addEventListener('click', async function() {
       try {
-        // Captura a escala atual antes das alterações
         const escalaAntes = [...escalaAtual];
-        // Remove nomes que não estão mais na lista de nomes
         const nomesRemovidos = escalaAtual.filter(p => !nomes.includes(p.nome));
         escalaAtual = escalaAtual.filter(p => nomes.includes(p.nome));
         faltantesPendentes = faltantesPendentes.filter(f => nomes.includes(f.nome));
 
-        // Substitui nomes removidos na escala atual
         let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
         let idx = posicaoUltimaEscala;
 
@@ -763,7 +796,7 @@
             break;
           }
           const nome = nomes[idx];
-          const tarefa = removido.tarefa; // Mantém a tarefa original
+          const tarefa = removido.tarefa;
           escalaAtual.push({ nome, tarefa, index: idx });
           historicoTarefa[nome] = tarefa;
           usados.push(nome);
@@ -771,7 +804,6 @@
           console.log(`Substituto adicionado para ${removido.nome}: ${nome} - ${tarefa}`);
         }
 
-        // Completa a escala se necessário
         while (escalaAtual.length < 2 && nomes.length > usados.length) {
           idx = proximoIndice(idx, usados);
           if (idx === -1) break;
@@ -784,7 +816,6 @@
           console.log(`Complemento da escala: ${nome} - ${tarefa}`);
         }
 
-        // Salva a lista de nomes e a escala ajustada no Firestore
         await db.collection('escala').doc('config').set({ nomes }, { merge: true });
         await salvarEscalaNoFirestore();
         console.log('Escala após substituição:', escalaAtual);
@@ -804,7 +835,6 @@
       if (confirm('Tem certeza que quer apagar todos os nomes?')) {
         nomes = [];
         try {
-          // Limpa a escala atual e faltantes, pois não há mais nomes disponíveis
           escalaAtual = [];
           faltantesPendentes = [];
           await db.collection('escala').doc('config').set({ nomes }, { merge: true });
