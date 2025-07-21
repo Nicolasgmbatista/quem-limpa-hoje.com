@@ -5,126 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quem limpa a sala hoje?</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      color: #2c3e50;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-    }
+   body {
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
+  color: #2c3e50;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
 
-    #app {
-      width: 420px;
-      background: #fff;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      text-align: center;
-      position: relative;
-      border: 1px solid #dcdcdc;
-    }
+#app {
+  width: 420px;
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  position: relative;
+  border: 1px solid #dcdcdc;
+}
 
-    h1 {
-      margin-bottom: 12px;
-      font-weight: 700;
-    }
+h1 {
+  margin-bottom: 12px;
+  font-weight: 700;
+}
 
-    button, input {
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      padding: 10px 18px;
-      margin: 10px 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-      outline: none;
-    }
+button, input {
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  padding: 10px 18px;
+  margin: 10px 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  outline: none;
+}
 
-    button {
-      background-color: #2c3e50;
-      color: white;
-    }
+button {
+  background-color: #2c3e50;
+  color: white;
+}
 
-    button:hover {
-      background-color: #34495e;
-    }
+button:hover {
+  background-color: #34495e;
+}
 
-    input[type="email"], input[type="password"], input[type="text"] {
-      width: 260px;
-      border: 2px solid #ccc;
-      transition: border-color 0.3s ease;
-      margin-bottom: 15px;
-      padding: 10px;
-    }
+input[type="email"], input[type="password"], input[type="text"] {
+  width: 260px;
+  border: 2px solid #ccc;
+  transition: border-color 0.3s ease;
+  margin-bottom: 15px;
+  padding: 10px;
+}
 
-    input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
-      border-color: #2c3e50;
-    }
+input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
+  border-color: #2c3e50;
+}
 
-    #menuBtn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      background: transparent;
-      font-size: 28px;
-      color: #2c3e50;
-      border: none;
-      cursor: pointer;
-      user-select: none;
-      padding: 0;
-      line-height: 1;
-    }
+/* Botão para abrir o menu lateral */
+#menuBtn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: transparent;
+  font-size: 28px;
+  color: #2c3e50;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+  line-height: 1;
+}
 
-    #menuLateral {
+/* Menu lateral */
+#menuLateral {
   position: fixed;
   top: 0;
-  right: -280px; /* fora da tela */
-  /* ... restante */
-  display: flex;
+  right: -280px; /* fora da tela inicialmente */
+  width: 280px;
+  height: 100vh;
+  background: #2c3e50;
+  color: white;
+  box-shadow: -3px 0 8px rgba(0,0,0,0.15);
+  padding: 30px 20px;
+  flex-direction: column;
+  gap: 20px;
   transition: right 0.3s ease;
+  z-index: 1000;
+  display: flex; /* mantém display flex sempre para animação funcionar */
 }
 
+/* Quando aberto, menu fica visível */
 #menuLateral.aberto {
   right: 0;
-  display: flex; /* já está flex */
 }
 
+/* Botões dentro do menu lateral e botão fechar */
+#menuLateral button,
+#fecharMenu {
+  background: #34495e;
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
 
-    #menuLateral button,
-    #fecharMenu {
-      background: #34495e;
-      width: 100%;
-      padding: 12px 0;
-      border: none;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: background-color 0.3s ease;
-    }
+#menuLateral button:hover,
+#fecharMenu:hover {
+  background: #3c5a7a;
+}
 
-    #menuLateral button:hover,
-    #fecharMenu:hover {
-      background: #3c5a7a;
-    }
+/* Estilos do resultado da escala */
+#resultado h2 {
+  margin-bottom: 8px;
+  font-weight: 700;
+}
 
-    #resultado h2 {
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
+#resultado ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+  text-align: left;
+}
 
-    #resultado ul {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 15px 0;
-      text-align: left;
-    }
 
     #resultado li {
       background: #ecf0f1;
