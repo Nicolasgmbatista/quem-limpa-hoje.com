@@ -1,370 +1,183 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quem limpa a sala hoje?</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escala de Limpeza</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
   <style>
     body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #d3d3d3;
-      color: #222;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
       margin: 0;
-      padding: 20px;
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
     }
-    #app {
-      width: 420px;
-      background: #fefefe;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgb(0 0 0 / 0.15);
+
+    header {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 1rem;
       text-align: center;
-      position: relative;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1e3a8a;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem 0.25rem;
+      border: none;
+      border-radius: 10px;
+      background-color: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #1d4ed8;
+    }
+
+    #painelLateral {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      background-color: #1e293b;
+      color: white;
+      padding: 1rem;
+      transition: right 0.3s ease-in-out;
+    }
+
+    #painelLateral.ativo {
+      right: 0;
+    }
+
+    .painel-opcao {
+      margin-bottom: 1rem;
+      background-color: #334155;
+      padding: 0.75rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .painel-opcao:hover {
+      background-color: #475569;
+    }
+
+    #editarNomesSecao {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    #listaNomes input {
+      display: block;
+      margin-bottom: 0.5rem;
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 5px;
       border: 1px solid #ccc;
     }
-    h1 {
-      margin-bottom: 12px;
-      font-weight: 700;
-      color: #222;
-    }
-    #btnProfessor, #btnEstudante {
-      background-color: #222;
-      color: white;
-      font-weight: 700;
-      font-size: 18px;
-      border-radius: 6px;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px 12px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      outline: none;
-    }
-    #btnProfessor:hover, #btnEstudante:hover {
-      background-color: #444;
-    }
-    input[type=email], input[type=password] {
-      font-size: 18px;
-      font-weight: 600;
-      width: 100%;
-      border-radius: 6px;
-      border: none;
-      padding: 14px 10px;
-      margin-bottom: 16px;
-      outline: none;
-      box-sizing: border-box;
-    }
-    button[type=submit], #btnEntrar, #btnVoltarLogin, #btnContinuar {
-      background-color: #222;
-      color: white;
-      font-weight: 700;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      padding: 12px 24px;
-      margin: 12px 4px 0 4px;
-      cursor: pointer;
-      outline: none;
-      transition: background-color 0.3s ease;
-      width: 100%;
-    }
-    button[type=submit]:hover, #btnEntrar:hover, #btnVoltarLogin:hover, #btnContinuar:hover {
-      background-color: #444;
-    }
-    #listaEscala {
-      text-align: left;
-      padding-left: 0;
-      margin-bottom: 20px;
-      font-weight: 700;
-      list-style-type: none;
-    }
-    #listaEscala li {
-      margin: 6px 0;
-    }
-    #checkboxContainer div {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-      justify-content: flex-start;
-    }
-    #mensagemErro {
-      font-weight: 700;
-      color: red;
-      margin-bottom: 8px;
-      min-height: 24px;
+
+    .painel-controles {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <div id="app">
-    <!-- Tela inicial -->
-    <div id="telaInicial">
-      <h1>Quem limpa a sala hoje?</h1>
-      <p>Escolha seu perfil para continuar:</p>
-      <button id="btnProfessor">Professor / Representante</button>
-      <button id="btnEstudante">Estudante</button>
-    </div>
+  <header>
+    <h1>Escala de Limpeza</h1>
+  </header>
 
-    <!-- Tela de login -->
-    <div id="telaLogin" style="display:none;">
-      <h1>Login - Professor / Representante</h1>
-      <div id="mensagemErro"></div>
-      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
-      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
-      <button id="btnEntrar">Entrar</button>
-      <button id="btnVoltarLogin">Voltar</button>
-    </div>
+  <div class="container">
+    <h2>Selecione seu tipo de acesso</h2>
+    <button class="button" onclick="abrirPainel()">Professor/Representante</button>
+    <button class="button">Estudante</button>
+  </div>
 
-    <!-- Tela principal da escala -->
-    <div id="conteudoEscala" style="display:none;">
-      <h1>Quem limpa a sala hoje?</h1>
+  <div id="painelLateral">
+    <div class="painel-opcao" onclick="abrirEditarNomes()">Editar nomes</div>
+    <div class="painel-opcao">Liberar acesso</div>
+    <div class="painel-opcao">Zerar</div>
+    <div class="painel-opcao" onclick="sairPainel()">Sair</div>
+  </div>
 
-      <h2>Escala de hoje:</h2>
-      <ul id="listaEscala"></ul>
-
-      <p><strong>Selecione quem faltou e clique em "Confirmar":</strong></p>
-      <form id="formQuemLimpou">
-        <div id="checkboxContainer"></div>
-        <button type="submit">Confirmar</button>
-      </form>
-
-      <button id="btnContinuar" style="display:none; margin-top:16px;">Continuar</button>
+  <div class="container" id="editarNomesSecao">
+    <h2>Editar Nomes</h2>
+    <div id="listaNomes"></div>
+    <div class="painel-controles">
+      <button class="button" onclick="adicionarCampo()">Adicionar</button>
+      <button class="button" onclick="zerarCampos()">Zerar</button>
+      <button class="button" onclick="salvarNomes()">Salvar</button>
+      <button class="button" onclick="fecharEditarNomes()">Voltar</button>
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <script>
-  // Config Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
-    authDomain: "quem-limpa-hoje.firebaseapp.com",
-    projectId: "quem-limpa-hoje",
-    storageBucket: "quem-limpa-hoje.firebasestorage.app",
-    messagingSenderId: "44929275404",
-    appId: "1:44929275404:web:971258e864925cb3684029"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+    const painel = document.getElementById('painelLateral');
+    const editarSecao = document.getElementById('editarNomesSecao');
+    const lista = document.getElementById('listaNomes');
 
-  // Variáveis
-  const admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
-  const nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
+    let nomes = ['Aluno 1', 'Aluno 2'];
 
-  let posicaoUltimaEscala = -1;
-  let historicoTarefa = {};
-  let escalaAtual = [];
-  let faltantesPendentes = [];
-
-  let usuarioLogado = null;
-  let isAdmin = false;
-
-  // Mostrar telas
-  function mostrarTela(nomeTela) {
-    document.getElementById('telaInicial').style.display = 'none';
-    document.getElementById('telaLogin').style.display = 'none';
-    document.getElementById('conteudoEscala').style.display = 'none';
-
-    if (nomeTela === 'inicio') {
-      document.getElementById('telaInicial').style.display = 'block';
-    } else if (nomeTela === 'login') {
-      document.getElementById('telaLogin').style.display = 'block';
-    } else if (nomeTela === 'painel') {
-      document.getElementById('conteudoEscala').style.display = 'block';
-    }
-  }
-
-  mostrarTela('inicio');
-
-  // Ler dados do Firestore
-  async function lerEscalaDoFirestore() {
-    const doc = await db.collection('escala').doc('dados').get();
-    if(doc.exists) {
-      const data = doc.data();
-      posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
-      historicoTarefa = data.historicoTarefa ?? {};
-      escalaAtual = data.escalaAtual ?? [];
-      faltantesPendentes = data.faltantesPendentes ?? [];
-    } else {
-      posicaoUltimaEscala = -1;
-      historicoTarefa = {};
-      escalaAtual = [];
-      faltantesPendentes = [];
-    }
-  }
-
-  // Salvar dados no Firestore
-  async function salvarEscalaNoFirestore() {
-    await db.collection('escala').doc('dados').set({
-      posicaoUltimaEscala,
-      historicoTarefa,
-      escalaAtual,
-      faltantesPendentes
-    });
-  }
-
-  // Função auxiliar para pegar próximo índice válido
-  function proximoIndice(atual, ignorados=[]) {
-    let i = atual;
-    for(let c=0; c<nomes.length; c++) {
-      i = (i+1)%nomes.length;
-      if(!ignorados.includes(nomes[i])) return i;
-    }
-    return -1;
-  }
-
-  // Alternar tarefa mesa <-> chão
-  function alternarTarefa(tarefa) {
-    return tarefa === 'mesa' ? 'chão' : 'mesa';
-  }
-
-  // Gerar escala nova
-  async function gerarEscala() {
-    const retornantes = [...faltantesPendentes];
-    faltantesPendentes = [];
-    let usados = retornantes.map(f=>f.nome);
-    let idx = posicaoUltimaEscala;
-
-    if(escalaAtual.length === 0) {
-      const idx1 = proximoIndice(idx, usados);
-      const n1 = nomes[idx1];
-      const t1 = alternarTarefa(historicoTarefa[n1]||'mesa');
-      historicoTarefa[n1] = t1;
-      usados.push(n1);
-
-      const idx2 = proximoIndice(idx1, usados);
-      const n2 = nomes[idx2];
-      const t2 = alternarTarefa(t1);
-      historicoTarefa[n2] = t2;
-
-      escalaAtual = [{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
-      posicaoUltimaEscala = idx2;
-      await salvarEscalaNoFirestore();
-      atualizarResultadoEFormulario();
-      return;
+    function abrirPainel() {
+      painel.classList.add('ativo');
     }
 
-    const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
-    const substitutos = [];
-    usados = escalaAtual.map(p => p.nome).concat(retornantes.map(f => f.nome));
-    for(let i=0; i<presentes.length; i++) {
-      idx = proximoIndice(idx, usados);
-      const n = nomes[idx];
-      const t = i === 0 ? alternarTarefa(historicoTarefa[n]||'mesa') : substitutos[0].tarefa==='mesa'?'chão':'mesa';
-      historicoTarefa[n] = t;
-      substitutos.push({nome:n,tarefa:t,index:idx});
-      usados.push(n);
+    function sairPainel() {
+      painel.classList.remove('ativo');
+      editarSecao.style.display = 'none';
     }
-    escalaAtual = [...retornantes, ...substitutos];
-    posicaoUltimaEscala = substitutos[substitutos.length-1].index;
-    await salvarEscalaNoFirestore();
-    atualizarResultadoEFormulario();
-  }
 
-  // Atualizar escala na tela e montar o formulário de faltantes
-  function atualizarResultadoEFormulario() {
-    const lista = document.getElementById('listaEscala');
-    lista.innerHTML = '';
-    escalaAtual.forEach(p => {
-      const li = document.createElement('li');
-      li.textContent = `${p.nome} - ${p.tarefa}`;
-      lista.appendChild(li);
-    });
-
-    const container = document.getElementById('checkboxContainer');
-    container.innerHTML = '';
-    escalaAtual.forEach(p => {
-      const div = document.createElement('div');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = 'cb_' + p.nome.replace(/\s/g, '');
-      checkbox.value = p.nome;
-
-      const label = document.createElement('label');
-      label.htmlFor = checkbox.id;
-      label.textContent = p.nome;
-
-      div.appendChild(checkbox);
-      div.appendChild(label);
-      container.appendChild(div);
-    });
-
-    // Mostrar botão continuar só se for admin
-    document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
-  }
-
-  // Eventos botões da tela inicial
-  document.getElementById('btnProfessor').onclick = () => mostrarTela('login');
-  document.getElementById('btnEstudante').onclick = async () => {
-    usuarioLogado = null;
-    isAdmin = false;
-    mostrarTela('painel');
-    await carregarEscala();
-  };
-  document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('inicio');
-
-  // Login simples
-  document.getElementById('btnEntrar').onclick = async () => {
-    const email = document.getElementById('emailLogin').value.trim();
-    const senha = document.getElementById('senhaLogin').value.trim();
-    const erroEl = document.getElementById('mensagemErro');
-    erroEl.textContent = '';
-
-    if (!email || !senha) {
-      erroEl.textContent = 'Preencha email e senha.';
-      return;
+    function abrirEditarNomes() {
+      painel.classList.remove('ativo');
+      editarSecao.style.display = 'block';
+      atualizarLista();
     }
-    if (admins.includes(email)) {
-      usuarioLogado = email;
-      isAdmin = true;
-      mostrarTela('painel');
-      await carregarEscala();
-    } else {
-      erroEl.textContent = 'Usuário não autorizado.';
+
+    function fecharEditarNomes() {
+      editarSecao.style.display = 'none';
     }
-  };
 
-  // Botão continuar (para admins)
-  document.getElementById('btnContinuar').onclick = async () => {
-    await gerarEscala();
-  };
-
-  // Form confirmar quem faltou
-  document.getElementById('formQuemLimpou').onsubmit = async (e) => {
-    e.preventDefault();
-    const checkboxes = document.querySelectorAll('#checkboxContainer input[type=checkbox]');
-    const faltaram = [];
-    checkboxes.forEach(cb => {
-      if (cb.checked) faltaram.push(cb.value);
-    });
-
-    faltantesPendentes = faltaram.map(nome => {
-      const pessoa = escalaAtual.find(p => p.nome === nome);
-      return pessoa ? { nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index } : null;
-    }).filter(Boolean);
-
-    await salvarEscalaNoFirestore();
-
-    alert('Faltantes confirmados!');
-    await carregarEscala();
-  };
-
-  // Carregar escala (inicial ou atual)
-  async function carregarEscala() {
-    await lerEscalaDoFirestore();
-    if (escalaAtual.length === 0) {
-      await gerarEscala();
-    } else {
-      atualizarResultadoEFormulario();
+    function atualizarLista() {
+      lista.innerHTML = '';
+      nomes.forEach((nome, index) => {
+        const input = document.createElement('input');
+        input.value = nome;
+        input.oninput = (e) => nomes[index] = e.target.value;
+        lista.appendChild(input);
+      });
     }
-  }
+
+    function adicionarCampo() {
+      nomes.push('');
+      atualizarLista();
+    }
+
+    function zerarCampos() {
+      nomes = [];
+      atualizarLista();
+    }
+
+    function salvarNomes() {
+      console.log('Nomes salvos:', nomes);
+      alert('Nomes salvos com sucesso!');
+      editarSecao.style.display = 'none';
+    }
   </script>
 </body>
 </html>
