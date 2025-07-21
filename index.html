@@ -608,7 +608,10 @@
       let i = atual;
       for (let c = 0; c < nomes.length; c++) {
         i = (i + 1) % nomes.length;
-        if (!ignorados.includes(nomes[i])) return i;
+        if (!ignorados.includes(nomes[i])) {
+          console.log(`Próximo índice encontrado: ${i} (${nomes[i]})`);
+          return i;
+        }
       }
       console.log('Nenhum índice disponível para substituição');
       return -1;
@@ -654,11 +657,13 @@
       if (nomes.length === 0) {
         escalaAtual = [];
         faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+        console.log('Nenhum nome disponível, escala zerada');
         return;
       }
 
       let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
-      let idx = posicaoUltimaEscala;
+      let idx = nomes.indexOf(nomeRemovido);
+      if (idx === -1) idx = posicaoUltimaEscala;
       idx = proximoIndice(idx, usados);
       if (idx === -1) {
         console.log('Nenhum substituto disponível para', nomeRemovido);
@@ -666,6 +671,8 @@
         faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
         return;
       }
+
+ collapsed
 
       const novoNome = nomes[idx];
       escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
@@ -958,7 +965,31 @@
         nomes.push(novoNome);
         nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
+        // Atualizar a escala atual se houver menos de 2 pessoas ou substituir a segunda
+        if (escalaAtual.length < 2 && nomes.length > escalaAtual.length) {
+          let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+          let idx = proximoIndice(posicaoUltimaEscala, usados);
+          if (idx !== -1) {
+            const nome = nomes[idx];
+            const tarefa = escalaAtual.length === 0 ? 'chão' : (escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
+            escalaAtual.push({ nome, tarefa, index: idx });
+            historicoTarefa[nome] = tarefa;
+            posicaoUltimaEscala = idx;
+          }
+        } else if (escalaAtual.length === 2) {
+          const primeiraPessoa = escalaAtual[0];
+          escalaAtual = [primeiraPessoa];
+          let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+          let idx = nomes.indexOf(novoNome);
+          if (idx !== -1 && !usados.includes(novoNome)) {
+            const tarefa = primeiraPessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
+            escalaAtual.push({ nome: novoNome, tarefa, index: idx });
+            historicoTarefa[novoNome] = tarefa;
+            posicaoUltimaEscala = idx;
+          }
+        }
         await salvarConfigNoFirestore();
+        await salvarEscalaNoFirestore();
         atualizarListaNomesEdicao();
         atualizarResultadoEFormulario();
       } else {
