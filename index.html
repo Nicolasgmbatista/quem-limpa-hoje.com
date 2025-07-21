@@ -85,24 +85,25 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
 #menuLateral {
   position: fixed;
   top: 0;
-  right: -280px; /* fora da tela inicialmente */
+  right: 0;
   width: 280px;
   height: 100vh;
   background: #2c3e50;
   color: white;
-  box-shadow: -3px 0 8px rgba(0,0,0,0.15);
   padding: 30px 20px;
   flex-direction: column;
   gap: 20px;
-  transition: right 0.3s ease;
+  box-shadow: -3px 0 8px rgba(0,0,0,0.15);
   z-index: 1000;
-  display: flex; /* mantém display flex sempre para animação funcionar */
+
+  display: none; /* inicialmente oculto */
+  transition: none; /* sem transição */
 }
 
-/* Quando aberto, menu fica visível */
 #menuLateral.aberto {
-  right: 0;
+  display: flex; /* mostra o menu */
 }
+
 
 /* Botões dentro do menu lateral e botão fechar */
 #menuLateral button,
