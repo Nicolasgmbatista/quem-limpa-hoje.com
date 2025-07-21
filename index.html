@@ -573,8 +573,12 @@
           faltantesPendentes = data.faltantesPendentes ?? [];
           console.log('Escala carregada do Firestore:', { posicaoUltimaEscala, historicoTarefa, escalaAtual, faltantesPendentes });
         } else {
-          console.log('Nenhum dado encontrado no Firestore, gerando nova escala');
-          await gerarEscala();
+          console.log('Nenhum dado encontrado no Firestore, inicializando escala vazia');
+          escalaAtual = [];
+          posicaoUltimaEscala = -1;
+          historicoTarefa = {};
+          faltantesPendentes = [];
+          await salvarEscalaNoFirestore();
         }
 
         if (configDoc.exists) {
@@ -592,6 +596,7 @@
         } else {
           console.log('Nenhuma config encontrada no Firestore, usando padrão');
         }
+        atualizarResultadoEFormulario();
       } catch (error) {
         console.error("Erro ao carregar do Firestore:", error);
         alert("Erro ao carregar a escala. Usando valores padrão.");
@@ -643,6 +648,56 @@
       faltantesPendentes = [];
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
+    }
+
+    function substituirPessoaNaEscala(nomeRemovido, tarefa) {
+      if (nomes.length === 0) {
+        escalaAtual = [];
+        faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+        return;
+      }
+
+      let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+      let idx = posicaoUltimaEscala;
+      idx = proximoIndice(idx, usados);
+      if (idx === -1) {
+        console.log('Nenhum substituto disponível para', nomeRemovido);
+        escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
+        faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+        return;
+      }
+
+      const novoNome = nomes[idx];
+      escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
+      escalaAtual.push({ nome: novoNome, tarefa, index: idx });
+      historicoTarefa[novoNome] = tarefa;
+      posicaoUltimaEscala = idx;
+      faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+      console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
+    }
+
+    function adicionarPessoaNaEscala(novoNome) {
+      if (escalaAtual.length >= 2 || nomes.length === 0) {
+        return;
+      }
+
+      let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+      if (usados.includes(novoNome)) {
+        return;
+      }
+
+      const idx = nomes.indexOf(novoNome);
+      if (idx === -1) {
+        return;
+      }
+
+      const tarefa = escalaAtual.length === 0 
+        ? (historicoTarefa[novoNome] === 'chão' ? 'mesa' : 'chão')
+        : (escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
+      escalaAtual.push({ nome: novoNome, tarefa, index: idx });
+      historicoTarefa[novoNome] = tarefa;
+      posicaoUltimaEscala = idx;
+      console.log(`Adicionado ${novoNome} à escala - ${tarefa}`);
     }
 
     function atualizarResultadoEFormulario() {
@@ -903,18 +958,17 @@
         btnRemover.textContent = 'Remover';
         btnRemover.className = 'removerNomeBtn';
         btnRemover.addEventListener('click', async () => {
-          const escalaAntes = [...escalaAtual];
+          const pessoaNaEscala = escalaAtual.find(p => p.nome === nome);
           nomes.splice(idx, 1);
-          escalaAtual = escalaAtual.filter(p => nomes.includes(p.nome));
-          faltantesPendentes = faltantesPendentes.filter(f => nomes.includes(f.nome));
-          await salvarConfigNoFirestore();
-          if (escalaAtual.length < 2 && nomes.length > 0) {
-            await gerarEscala();
-          } else {
-            await salvarEscalaNoFirestore();
-            atualizarResultadoEFormulario();
+          escalaAtual = escalaAtual.filter(p => p.nome !== nome);
+          faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nome);
+          if (pessoaNaEscala && nomes.length > 0) {
+            substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
           }
+          await salvarConfigNoFirestore();
+          await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
+          atualizarResultadoEFormulario();
         });
         li.appendChild(btnRemover);
         ul.appendChild(li);
@@ -927,15 +981,14 @@
       if (novoNome.length > 0 && !nomes.some(n => n.toLowerCase() === novoNome.toLowerCase())) {
         nomes.push(novoNome);
         nomes.sort((a, b) => a.localeCompare(b));
+        if (escalaAtual.length < 2) {
+          adicionarPessoaNaEscala(novoNome);
+        }
         input.value = '';
         await salvarConfigNoFirestore();
-        if (escalaAtual.length < 2 && nomes.length > 0) {
-          await gerarEscala();
-        } else {
-          await salvarEscalaNoFirestore();
-          atualizarResultadoEFormulario();
-        }
+        await salvarEscalaNoFirestore();
         atualizarListaNomesEdicao();
+        atualizarResultadoEFormulario();
       } else {
         alert('Nome inválido ou já existe!');
       }
