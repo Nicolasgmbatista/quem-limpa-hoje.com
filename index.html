@@ -490,143 +490,113 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
     return -1;
   }
 
-  // Função gerarEscala com try-catch para evitar erros travando a UI
-async function gerarEscala() {
-  try {
+  async function gerarEscala() {
     const retornantes = [...faltantesPendentes];
     faltantesPendentes = [];
-    let usados = retornantes.map(f => f.nome);
+    let usados = retornantes.map(f=>f.nome);
     let idx = posicaoUltimaEscala;
 
-    if (escalaAtual.length === 0) {
-      const idx1 = proximoIndice(idx, usados);
-      const n1 = nomes[idx1];
-      const t1 = alternarTarefa(historicoTarefa[n1] || 'mesa');
-      historicoTarefa[n1] = t1;
+    if(escalaAtual.length===0){
+      const idx1=proximoIndice(idx,usados);
+      const n1=nomes[idx1];
+      const t1=alternarTarefa(historicoTarefa[n1]||'mesa');
+      historicoTarefa[n1]=t1;
       usados.push(n1);
 
-      const idx2 = proximoIndice(idx1, usados);
-      const n2 = nomes[idx2];
-      const t2 = alternarTarefa(t1);
-      historicoTarefa[n2] = t2;
+      const idx2=proximoIndice(idx1,usados);
+      const n2=nomes[idx2];
+      const t2=alternarTarefa(t1);
+      historicoTarefa[n2]=t2;
 
-      escalaAtual = [
-        { nome: n1, tarefa: t1, index: idx1 },
-        { nome: n2, tarefa: t2, index: idx2 }
-      ];
-      posicaoUltimaEscala = idx2;
+      escalaAtual=[{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
+      posicaoUltimaEscala=idx2;
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
       return;
     }
 
-    const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
+    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome===p.nome));
     const substitutos = [];
-    usados = escalaAtual.map(p => p.nome).concat(retornantes.map(f => f.nome));
-    for (let i = 0; i < presentes.length; i++) {
-      idx = proximoIndice(idx, usados);
-      const n = nomes[idx];
-      const t = i === 0
-        ? alternarTarefa(historicoTarefa[presentes[i].nome] || 'mesa')
-        : alternarTarefa(substitutos[0].tarefa);
-      historicoTarefa[n] = t;
-      substitutos.push({ nome: n, tarefa: t, index: idx });
+    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
+    for(let i=0;i<presentes.length;i++){
+      idx = proximoIndice(idx,usados);
+      const n=nomes[idx];
+      const t = i===0 ? alternarTarefa(historicoTarefa[presentes[i].nome]||'mesa') : alternarTarefa(substitutos[0].tarefa);
+      historicoTarefa[n]=t;
+      substitutos.push({nome:n,tarefa:t,index:idx});
       usados.push(n);
     }
     escalaAtual = [...retornantes, ...substitutos];
-    posicaoUltimaEscala = substitutos.length > 0
-      ? substitutos[substitutos.length - 1].index
-      : posicaoUltimaEscala;
+    posicaoUltimaEscala = substitutos.length > 0 ? substitutos[substitutos.length-1].index : posicaoUltimaEscala;
     await salvarEscalaNoFirestore();
     atualizarResultadoEFormulario();
-
-  } catch (e) {
-    console.error('Erro em gerarEscala:', e);
   }
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Botões iniciais
+  function atualizarResultadoEFormulario() {
+    const listaEscala = document.getElementById('listaEscala');
+    listaEscala.innerHTML = '';
+    escalaAtual.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = `${p.nome} - ${p.tarefa}`;
+      listaEscala.appendChild(li);
+    });
+
+    // Mostrar o formulário para marcar faltas só se for admin
+    document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
+    montarCheckboxFaltantes();
+  }
+
+  function montarCheckboxFaltantes() {
+    const container = document.getElementById('checkboxContainer');
+    container.innerHTML = '';
+
+    escalaAtual.forEach(p => {
+      const div = document.createElement('div');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = 'chk_' + p.nome;
+      checkbox.value = p.nome;
+      const label = document.createElement('label');
+      label.htmlFor = checkbox.id;
+      label.textContent = p.nome;
+      div.appendChild(checkbox);
+      div.appendChild(label);
+      container.appendChild(div);
+    });
+  }
+
+  // Botões e eventos
+
   document.getElementById('btnProfessor').addEventListener('click', () => {
-    console.log('Clique no botão Professor detectado');
     mostrarTela('login');
   });
 
-  document.getElementById('btnEstudante').addEventListener('click', async () => {
-    console.log('Clique no botão Estudante detectado');
+  document.getElementById('btnEstudante').addEventListener('click', () => {
     usuarioLogado = { email: null, tipo: 'estudante' };
     isAdmin = false;
     mostrarTela('painel');
-    await gerarEscala();
+    gerarEscala();
   });
 
-  // Aqui você pode adicionar mais botões se quiser
-});
+    document.getElementById('btnResetar').addEventListener('click', async () => {
+  const confirmacao = confirm("Tem certeza que deseja resetar completamente a escala?");
+  if (!confirmacao) return;
 
+  posicaoUltimaEscala = -1;
+  historicoTarefa = {};
+  escalaAtual = [];
+  faltantesPendentes = [];
 
-  // Para dia seguinte, vamos montar a escala:
-  // - quem faltou é removido do dia atual e ficará para o próximo dia
-  // - para o dia atual, substituímos os faltantes por outras pessoas disponíveis
+  await db.collection('escala').doc('dados').set({
+    posicaoUltimaEscala,
+    historicoTarefa,
+    escalaAtual,
+    faltantesPendentes
+  });
 
-  // Pessoas presentes = escala atual sem os faltantes
-  const presentes = escalaAtual.filter(p => !faltantes.some(f => f.nome === p.nome));
-
-  usadosHoje = presentes.map(p => p.nome); // nomes que já aparecem no dia atual
-
-  let idx = posicaoUltimaEscala;
-
-  // Substituir faltantes por outras pessoas (substitutos)
-  const substitutos = [];
-  for (let i = 0; i < (escalaAtual.length - presentes.length); i++) {
-    idx = proximoIndice(idx, usadosHoje);
-    const nomeSubstituto = nomes[idx];
-    usadosHoje.push(nomeSubstituto);
-    substitutos.push({ nome: nomeSubstituto, tarefa: '', index: idx });
-  }
-
-  // Agora vamos definir as tarefas para presentes e substitutos:
-  // A tarefa deve alternar para que o rodízio seja justo.
-  // Para isso, vamos juntar faltantes (que serão para o próximo dia) + substitutos (para o dia atual)
-
-  // Definindo tarefas para substitutos:
-  for (let i = 0; i < substitutos.length; i++) {
-    let tarefa;
-    if (i === 0 && presentes.length > 0) {
-      // alternar em relação ao último presente
-      tarefa = alternarTarefa(historicoTarefa[presentes[presentes.length - 1].nome] || 'mesa');
-    } else if (i > 0) {
-      tarefa = alternarTarefa(substitutos[i - 1].tarefa);
-    } else {
-      tarefa = 'mesa'; // default se nada acima
-    }
-    substitutos[i].tarefa = tarefa;
-    historicoTarefa[substitutos[i].nome] = tarefa;
-  }
-
-  // Definindo tarefas para presentes (mantendo a tarefa anterior ou alternando)
-  for (let i = 0; i < presentes.length; i++) {
-    let tarefaAtual = historicoTarefa[presentes[i].nome] || 'mesa';
-    presentes[i].tarefa = tarefaAtual;
-    historicoTarefa[presentes[i].nome] = tarefaAtual;
-  }
-
-  // Atualizar escala atual = presentes + substitutos
-  escalaAtual = [...presentes, ...substitutos];
-
-  // Agora o que estava faltando, vai para o próximo dia, ou seja,
-  // mantemos faltantesPendentes para o botão Continuar
-  faltantesPendentes = faltantes;
-
-  // Atualizar posicaoUltimaEscala para o último substituto
-  if (substitutos.length > 0) {
-    posicaoUltimaEscala = substitutos[substitutos.length - 1].index;
-  } else if (presentes.length > 0) {
-    posicaoUltimaEscala = presentes[presentes.length - 1].index;
-  }
-
-  await salvarEscalaNoFirestore();
   atualizarResultadoEFormulario();
-}
+  alert("Escala resetada com sucesso!");
+});
 
   document.getElementById('btnEntrar').addEventListener('click', () => {
     const email = document.getElementById('emailLogin').value.trim();
