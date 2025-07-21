@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quem limpa a sala hoje?</title>
   <style>
-    /* Seu CSS já enviado permanece igual */
     body {
       font-family: Arial, sans-serif;
       background: #f0f2f5;
@@ -360,417 +359,389 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
+  
   <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
-      authDomain: "quem-limpa-hoje.firebaseapp.com",
-      projectId: "quem-limpa-hoje",
-      storageBucket: "quem-limpa-hoje.firebasestorage.app",
-      messagingSenderId: "44929275404",
-      appId: "1:44929275404:web:971258e864925cb3684029"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
+    authDomain: "quem-limpa-hoje.firebaseapp.com",
+    projectId: "quem-limpa-hoje",
+    storageBucket: "quem-limpa-hoje.firebasestorage.app",
+    messagingSenderId: "44929275404",
+    appId: "1:44929275404:web:971258e864925cb3684029"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-    let admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
+  // Variáveis globais
+  let admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
 
-    let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
+  let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
 
-    let posicaoUltimaEscala = -1;
-    let historicoTarefa = {};
-    let escalaAtual = [];
-    let faltantesPendentes = [];
+  let posicaoUltimaEscala = -1;
+  let historicoTarefa = {};
+  let escalaAtual = [];
+  let faltantesPendentes = [];
 
-    let usuarioLogado = null;
-    let isAdmin = false;
+  let usuarioLogado = null;
+  let isAdmin = false;
 
-    let telaAtual = 'inicio';
+  let telaAtual = 'inicio'; // 'inicio', 'login', 'painel', 'editar-nomes'
 
-    // Função para alternar tarefa
-    function alternarTarefa(tarefa) {
-      return tarefa === 'mesa' ? 'chão' : 'mesa';
-    }
+  // Mostrar telas
+  function mostrarTela(t) {
+    telaAtual = t;
+    document.getElementById('telaInicial').style.display = 'none';
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('conteudoEscala').style.display = 'none';
+    document.getElementById('telaEditarNomes').style.display = 'none';
 
-    // Retorna o próximo índice válido, ignorando nomes na lista de ignorados
-    function proximoIndice(atual, ignorados=[]) {
-      let i = atual;
-      for(let c=0; c<nomes.length; c++) {
-        i = (i + 1) % nomes.length;
-        if(!ignorados.includes(nomes[i])) return i;
-      }
-      return -1;
-    }
-
-    // Mostrar/ocultar telas
-    function mostrarTela(t) {
-      telaAtual = t;
-      document.getElementById('telaInicial').style.display = 'none';
-      document.getElementById('telaLogin').style.display = 'none';
-      document.getElementById('conteudoEscala').style.display = 'none';
-      document.getElementById('telaEditarNomes').style.display = 'none';
-
-      switch(t) {
-        case 'inicio':
-          document.getElementById('telaInicial').style.display = 'block';
-          document.getElementById('menuBtn').style.display = 'none';
+    switch(t) {
+      case 'inicio':
+        document.getElementById('telaInicial').style.display = 'block';
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').classList.remove('aberto');
+        document.getElementById('menuLateral').style.display = 'none';
+        break;
+      case 'login':
+        document.getElementById('telaLogin').style.display = 'block';
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').classList.remove('aberto');
+        document.getElementById('menuLateral').style.display = 'none';
+        break;
+      case 'painel':
+        document.getElementById('conteudoEscala').style.display = 'block';
+        document.getElementById('menuBtn').style.display = isAdmin ? 'block' : 'none';
+        if(isAdmin) {
+          document.getElementById('menuLateral').style.display = 'flex';
+        } else {
           document.getElementById('menuLateral').classList.remove('aberto');
           document.getElementById('menuLateral').style.display = 'none';
-          break;
-        case 'login':
-          document.getElementById('telaLogin').style.display = 'block';
-          document.getElementById('menuBtn').style.display = 'none';
-          document.getElementById('menuLateral').classList.remove('aberto');
-          document.getElementById('menuLateral').style.display = 'none';
-          break;
-        case 'painel':
-          document.getElementById('conteudoEscala').style.display = 'block';
-          document.getElementById('menuBtn').style.display = isAdmin ? 'block' : 'none';
-          if(isAdmin) {
-            document.getElementById('menuLateral').style.display = 'flex';
-          } else {
-            document.getElementById('menuLateral').classList.remove('aberto');
-            document.getElementById('menuLateral').style.display = 'none';
-          }
-          document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
-          break;
-        case 'editar-nomes':
-          document.getElementById('telaEditarNomes').style.display = 'block';
-          document.getElementById('menuBtn').style.display = 'none';
-          document.getElementById('menuLateral').classList.remove('aberto');
-          document.getElementById('menuLateral').style.display = 'none';
-          carregarNomesDoFirebase();
-          break;
-      }
-    }
-
-    async function salvarEscalaNoFirestore() {
-      await db.collection('escala').doc('dados').set({
-        posicaoUltimaEscala,
-        historicoTarefa,
-        escalaAtual,
-        faltantesPendentes
-      });
-    }
-
-    async function lerEscalaDoFirestore() {
-      const doc = await db.collection('escala').doc('dados').get();
-      if(doc.exists) {
-        const data = doc.data();
-        posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
-        historicoTarefa = data.historicoTarefa ?? {};
-        escalaAtual = data.escalaAtual ?? [];
-        faltantesPendentes = data.faltantesPendentes ?? [];
-      } else {
-        posicaoUltimaEscala = -1;
-        historicoTarefa = {};
-        escalaAtual = [];
-        faltantesPendentes = [];
-      }
-    }
-
-    // Gera a escala considerando faltantes
-    async function gerarEscala() {
-      // Se escala vazia, inicializar com 2 pessoas
-      if (escalaAtual.length === 0) {
-        let idx = posicaoUltimaEscala;
-        let usados = [];
-        let escala = [];
-
-        for (let i = 0; i < 2; i++) {
-          idx = proximoIndice(idx, usados);
-          const nome = nomes[idx];
-          const tarefa = i === 0 ? alternarTarefa(historicoTarefa[nome] || 'mesa') : alternarTarefa(escala[0].tarefa);
-          historicoTarefa[nome] = tarefa;
-          usados.push(nome);
-          escala.push({ nome, tarefa, index: idx });
         }
-
-        escalaAtual = escala;
-        posicaoUltimaEscala = idx;
-        await salvarEscalaNoFirestore();
-        atualizarResultadoEFormulario();
-        return;
-      }
-
-      // Faltantes pendentes do dia anterior mantêm a tarefa e vão para o próximo dia
-      const faltantesHoje = [...faltantesPendentes];
-      faltantesPendentes = [];
-
-      // Presentes = escala atual menos os faltantes do dia
-      const presentes = escalaAtual.filter(p => !faltantesHoje.some(f => f.nome === p.nome));
-
-      // Substitutos para faltantes no dia atual
-      let idx = posicaoUltimaEscala;
-      let usados = presentes.map(p => p.nome).concat(faltantesHoje.map(f => f.nome));
-      let substitutos = [];
-
-      for (let i = 0; i < faltantesHoje.length; i++) {
-        idx = proximoIndice(idx, usados);
-        if (idx === -1) break;
-        const nome = nomes[idx];
-        // O primeiro substituto alterna tarefa do primeiro presente, os próximos alternam tarefa do substituto anterior
-        const tarefa = substitutos.length === 0 ? alternarTarefa(historicoTarefa[presentes[0]?.nome] || 'mesa') : alternarTarefa(substitutos[substitutos.length - 1].tarefa);
-        historicoTarefa[nome] = tarefa;
-        substitutos.push({ nome, tarefa, index: idx });
-        usados.push(nome);
-      }
-
-      // Escala atual = presentes + substitutos
-      escalaAtual = [...presentes, ...substitutos];
-
-      // Os faltantes continuam pendentes para o próximo dia (mantendo tarefa que tinham)
-      faltantesPendentes = faltantesHoje;
-
-      // Atualiza posição última escala para último índice usado
-      if (substitutos.length > 0) {
-        posicaoUltimaEscala = substitutos[substitutos.length - 1].index;
-      }
-
-      await salvarEscalaNoFirestore();
-      atualizarResultadoEFormulario();
+        document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
+        break;
+      case 'editar-nomes':
+        document.getElementById('telaEditarNomes').style.display = 'block';
+        document.getElementById('menuBtn').style.display = 'none';
+        document.getElementById('menuLateral').classList.remove('aberto');
+        document.getElementById('menuLateral').style.display = 'none';
+        carregarNomesDoFirebase();
+        break;
     }
+  }
 
-    // Atualiza a lista visual e formulário de quem limpou/faltou
-    function atualizarResultadoEFormulario() {
-      const listaEscala = document.getElementById('listaEscala');
-      listaEscala.innerHTML = "";
+  mostrarTela('inicio');
 
-      escalaAtual.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = `${item.nome} — ${item.tarefa}`;
-        listaEscala.appendChild(li);
-      });
+  // Firestore funções
+  async function salvarEscalaNoFirestore() {
+    await db.collection('escala').doc('dados').set({
+      posicaoUltimaEscala,
+      historicoTarefa,
+      escalaAtual,
+      faltantesPendentes
+    });
+  }
 
-      // Mostrar formulário para marcar quem faltou ou limpou só se for admin
-      const pergunta = document.getElementById('pergunta');
-      const checkboxContainer = document.getElementById('checkboxContainer');
-      checkboxContainer.innerHTML = "";
-
-      if (!isAdmin) {
-        pergunta.style.display = 'none';
-        return;
-      }
-
-      pergunta.style.display = 'block';
-
-      escalaAtual.forEach(item => {
-        const div = document.createElement('div');
-        const checkbox = document.createElement('input');
-        checkbox.type = "checkbox";
-        checkbox.name = "quemFaltou";
-        checkbox.value = item.nome;
-        checkbox.id = `chk_${item.nome.replace(/\s+/g, '')}`;
-        const label = document.createElement('label');
-        label.htmlFor = checkbox.id;
-        label.textContent = item.nome + " (" + item.tarefa + ")";
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        checkboxContainer.appendChild(div);
-      });
-    }
-
-    // Ao confirmar quem faltou, atualizamos o estado e chamamos gerarEscala novamente
-    async function confirmarFaltantes(event) {
-      event.preventDefault();
-
-      const checkboxes = document.querySelectorAll('input[name="quemFaltou"]:checked');
-      if (checkboxes.length === 0) {
-        alert('Selecione pelo menos uma pessoa que faltou ou limpou.');
-        return;
-      }
-
-      // Atualiza faltantes pendentes
-      faltantesPendentes = Array.from(checkboxes).map(cb => {
-        // Pega a tarefa da pessoa na escala atual
-        const item = escalaAtual.find(e => e.nome === cb.value);
-        return item ? { nome: item.nome, tarefa: item.tarefa } : null;
-      }).filter(x => x !== null);
-
-      // Regenera escala, pois faltantes serão movidos para o próximo dia
-      await gerarEscala();
-    }
-
-    // Resetar escala e dados
-    async function resetarEscala() {
-      if (!confirm('Tem certeza que deseja resetar toda a escala? Isso apagará o histórico.')) return;
-
+  async function lerEscalaDoFirestore() {
+    const doc = await db.collection('escala').doc('dados').get();
+    if(doc.exists) {
+      const data = doc.data();
+      posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
+      historicoTarefa = data.historicoTarefa ?? {};
+      escalaAtual = data.escalaAtual ?? [];
+      faltantesPendentes = data.faltantesPendentes ?? [];
+    } else {
       posicaoUltimaEscala = -1;
       historicoTarefa = {};
       escalaAtual = [];
       faltantesPendentes = [];
+    }
+  }
 
+  function alternarTarefa(tarefa) {
+    return tarefa === 'mesa' ? 'chão' : 'mesa';
+  }
+
+  function proximoIndice(atual, ignorados=[]) {
+    let i = atual;
+    for(let c=0;c<nomes.length;c++) {
+      i = (i+1)%nomes.length;
+      if(!ignorados.includes(nomes[i])) return i;
+    }
+    return -1;
+  }
+
+  async function gerarEscala() {
+    if (escalaAtual.length === 0) {
+      let idx = posicaoUltimaEscala;
+      let usados = [];
+      let escala = [];
+
+      for (let i = 0; i < 2; i++) {
+        idx = proximoIndice(idx, usados);
+        const nome = nomes[idx];
+        const tarefa = i === 0 ? alternarTarefa(historicoTarefa[nome] || 'mesa') : alternarTarefa(escala[0].tarefa);
+        historicoTarefa[nome] = tarefa;
+        usados.push(nome);
+        escala.push({ nome, tarefa, index: idx });
+      }
+
+      escalaAtual = escala;
+      posicaoUltimaEscala = idx;
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
+      return;
     }
 
-    // Botão continuar avança sem marcar faltantes, mas mantendo pendentes atuais (se houver)
-    async function continuarEscala() {
-      // Apenas gera nova escala com faltantes pendentes
-      await gerarEscala();
+    const faltantesHoje = [...faltantesPendentes];
+    faltantesPendentes = [];
+
+    const presentes = escalaAtual.filter(p => !faltantesHoje.some(f => f.nome === p.nome));
+
+    let idx = posicaoUltimaEscala;
+    let usados = presentes.map(p => p.nome);
+    let substitutos = [];
+
+    for (let i = 0; i < faltantesHoje.length; i++) {
+      idx = proximoIndice(idx, usados);
+      if (idx === -1) break;
+
+      const nome = nomes[idx];
+      const tarefa = substitutos.length === 0
+        ? alternarTarefa(presentes[0]?.tarefa || 'mesa')
+        : alternarTarefa(substitutos[substitutos.length - 1].tarefa);
+
+      historicoTarefa[nome] = tarefa;
+      substitutos.push({ nome, tarefa, index: idx });
+      usados.push(nome);
     }
 
-    // Login (simples, só valida email e senha fictício)
-    function validarLogin(email, senha) {
-      // Só para teste: admin são emails na lista admins com senha '123456'
-      if (admins.includes(email.toLowerCase()) && senha === '123456') {
-        return true;
-      }
-      return false;
+    escalaAtual = [...presentes, ...substitutos];
+    faltantesPendentes = faltantesHoje;
+
+    if (substitutos.length > 0) {
+      posicaoUltimaEscala = substitutos[substitutos.length - 1].index;
+    } else if (presentes.length > 0) {
+      posicaoUltimaEscala = presentes[presentes.length - 1].index;
     }
 
-    // Atualiza lista de nomes para edição na tela de editar nomes
-    function atualizarListaNomesEdicao() {
-      const lista = document.getElementById('listaNomesEdicao');
-      lista.innerHTML = "";
-      nomes.forEach(nome => {
-        const li = document.createElement('li');
-        li.textContent = nome;
-        const btnRemover = document.createElement('button');
-        btnRemover.textContent = 'Remover';
-        btnRemover.className = 'removerNomeBtn';
-        btnRemover.onclick = () => {
-          if(confirm(`Remover ${nome} da lista?`)) {
-            nomes = nomes.filter(n => n !== nome);
-            atualizarListaNomesEdicao();
-          }
-        };
-        li.appendChild(btnRemover);
-        lista.appendChild(li);
+    await salvarEscalaNoFirestore();
+    atualizarResultadoEFormulario();
+  }
+
+  function atualizarResultadoEFormulario() {
+    const listaEscala = document.getElementById('listaEscala');
+    listaEscala.innerHTML = '';
+    escalaAtual.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = `${p.nome} — Tarefa: ${p.tarefa}`;
+      listaEscala.appendChild(li);
+    });
+
+    // Mostrar o formulário de faltantes só para admin
+    if (isAdmin && escalaAtual.length > 0) {
+      montarFormularioFaltantes();
+      document.getElementById('pergunta').style.display = 'block';
+    } else {
+      document.getElementById('pergunta').style.display = 'none';
+    }
+  }
+
+  function montarFormularioFaltantes() {
+    const container = document.getElementById('checkboxContainer');
+    container.innerHTML = '';
+
+    escalaAtual.forEach(p => {
+      const div = document.createElement('div');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.name = 'quemFaltou';
+      input.value = p.nome;
+      input.id = `faltante_${p.nome}`;
+      const label = document.createElement('label');
+      label.htmlFor = input.id;
+      label.textContent = p.nome;
+      div.appendChild(input);
+      div.appendChild(label);
+      container.appendChild(div);
+    });
+  }
+
+  async function confirmarFaltantes(event) {
+    event.preventDefault();
+
+    const checkboxes = document.querySelectorAll('input[name="quemFaltou"]:checked');
+    if (checkboxes.length === 0) {
+      alert('Selecione pelo menos uma pessoa que faltou ou limpou.');
+      return;
+    }
+
+    faltantesPendentes = Array.from(checkboxes).map(cb => {
+      const nome = cb.value;
+      const item = escalaAtual.find(e => e.nome === nome);
+      return item ? { nome: item.nome, tarefa: item.tarefa } : null;
+    }).filter(x => x !== null);
+
+    await gerarEscala();
+  }
+
+  async function continuarEscala() {
+    faltantesPendentes = [];
+    await gerarEscala();
+  }
+
+  // Resetar escala
+  async function resetarEscala() {
+    if(!confirm('Tem certeza que deseja resetar a escala?')) return;
+    posicaoUltimaEscala = -1;
+    historicoTarefa = {};
+    escalaAtual = [];
+    faltantesPendentes = [];
+    await salvarEscalaNoFirestore();
+    atualizarResultadoEFormulario();
+  }
+
+  // Botões iniciais e eventos
+  document.getElementById('btnProfessor').addEventListener('click', () => mostrarTela('login'));
+  document.getElementById('btnEstudante').addEventListener('click', () => {
+    usuarioLogado = 'estudante';
+    isAdmin = false;
+    lerEscalaDoFirestore().then(() => {
+      atualizarResultadoEFormulario();
+      mostrarTela('painel');
+    });
+  });
+
+  document.getElementById('btnVoltarLogin').addEventListener('click', () => mostrarTela('inicio'));
+
+  document.getElementById('btnEntrar').addEventListener('click', () => {
+    const email = document.getElementById('emailLogin').value.trim().toLowerCase();
+    if(admins.includes(email)) {
+      usuarioLogado = email;
+      isAdmin = true;
+      document.getElementById('mensagemErro').textContent = '';
+      lerEscalaDoFirestore().then(() => {
+        atualizarResultadoEFormulario();
+        mostrarTela('painel');
       });
+    } else {
+      document.getElementById('mensagemErro').textContent = 'Usuário ou senha inválidos.';
     }
+  });
 
-    // Salvar nomes no Firestore
-    async function salvarNomesNoFirebase() {
-      await db.collection('config').doc('nomes').set({ nomes });
+  // Menu lateral
+  const menuBtn = document.getElementById('menuBtn');
+  const menuLateral = document.getElementById('menuLateral');
+  const fecharMenu = document.getElementById('fecharMenu');
+
+  menuBtn.addEventListener('click', () => {
+    menuLateral.classList.toggle('aberto');
+  });
+
+  fecharMenu.addEventListener('click', () => {
+    menuLateral.classList.remove('aberto');
+  });
+
+  // Botões menu lateral
+  document.getElementById('btnResetar').addEventListener('click', async () => {
+    await resetarEscala();
+    menuLateral.classList.remove('aberto');
+  });
+
+  document.getElementById('btnSair').addEventListener('click', () => {
+    usuarioLogado = null;
+    isAdmin = false;
+    escalaAtual = [];
+    faltantesPendentes = [];
+    posicaoUltimaEscala = -1;
+    historicoTarefa = {};
+    mostrarTela('inicio');
+  });
+
+  document.getElementById('btnContinuar').addEventListener('click', () => {
+    continuarEscala();
+  });
+
+  // Confirmar faltantes
+  document.getElementById('formQuemLimpou').addEventListener('submit', confirmarFaltantes);
+
+  // --- Tela editar nomes ---
+  document.getElementById('btnEditarNomes').addEventListener('click', () => mostrarTela('editar-nomes'));
+
+  document.getElementById('btnVoltarEdicao').addEventListener('click', () => {
+    mostrarTela('painel');
+  });
+
+  document.getElementById('btnAdicionarNome').addEventListener('click', () => {
+    const input = document.getElementById('novoNomeInput');
+    const novoNome = input.value.trim();
+    if (novoNome && !nomes.includes(novoNome)) {
+      nomes.push(novoNome);
+      nomes.sort((a,b) => a.localeCompare(b));
+      input.value = '';
+      atualizarListaEdicao();
+    } else {
+      alert('Nome inválido ou já existente.');
     }
+  });
 
-    // Carregar nomes do Firestore
-    async function carregarNomesDoFirebase() {
-      const doc = await db.collection('config').doc('nomes').get();
-      if(doc.exists && doc.data().nomes && Array.isArray(doc.data().nomes)) {
-        nomes = doc.data().nomes.sort((a,b) => a.localeCompare(b));
+  document.getElementById('btnSalvarNomes').addEventListener('click', async () => {
+    if(!confirm('Tem certeza que deseja salvar a lista de nomes atual?')) return;
+    await salvarNomesNoFirebase();
+    alert('Nomes salvos com sucesso.');
+  });
+
+  document.getElementById('btnZerarNomes').addEventListener('click', () => {
+    if(confirm('Deseja zerar a lista de nomes para o padrão original?')) {
+      nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"];
+      nomes.sort((a,b) => a.localeCompare(b));
+      atualizarListaEdicao();
+    }
+  });
+
+  function atualizarListaEdicao() {
+    const ul = document.getElementById('listaNomesEdicao');
+    ul.innerHTML = '';
+    nomes.forEach((nome, idx) => {
+      const li = document.createElement('li');
+      li.textContent = nome;
+      const btnRemover = document.createElement('button');
+      btnRemover.textContent = 'Remover';
+      btnRemover.classList.add('removerNomeBtn');
+      btnRemover.addEventListener('click', () => {
+        if(confirm(`Deseja remover "${nome}" da lista?`)) {
+          nomes.splice(idx, 1);
+          atualizarListaEdicao();
+        }
+      });
+      li.appendChild(btnRemover);
+      ul.appendChild(li);
+    });
+  }
+
+  async function salvarNomesNoFirebase() {
+    await db.collection('config').doc('nomes').set({
+      nomes
+    });
+  }
+
+  async function carregarNomesDoFirebase() {
+    const doc = await db.collection('config').doc('nomes').get();
+    if(doc.exists) {
+      const data = doc.data();
+      if(Array.isArray(data.nomes)) {
+        nomes = data.nomes.sort((a,b) => a.localeCompare(b));
       }
-      atualizarListaNomesEdicao();
     }
+    atualizarListaEdicao();
+  }
 
-    // Zerar lista de nomes para valores padrão
-    function zerarListaNomes() {
-      if(confirm("Tem certeza que deseja resetar a lista de nomes para o padrão inicial?")) {
-        nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
-        atualizarListaNomesEdicao();
-      }
-    }
-
-    // Eventos do DOM
-    window.onload = async () => {
-      mostrarTela('inicio');
-
-      document.getElementById('btnProfessor').onclick = () => mostrarTela('login');
-      document.getElementById('btnEstudante').onclick = async () => {
-        usuarioLogado = 'Estudante';
-        isAdmin = false;
-        await lerEscalaDoFirestore();
-        if(escalaAtual.length === 0) {
-          await gerarEscala();
-        } else {
-          atualizarResultadoEFormulario();
-        }
-        mostrarTela('painel');
-      };
-
-      document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('inicio');
-
-      document.getElementById('btnEntrar').onclick = () => {
-        const email = document.getElementById('emailLogin').value.trim();
-        const senha = document.getElementById('senhaLogin').value.trim();
-        const msgErro = document.getElementById('mensagemErro');
-
-        if(validarLogin(email, senha)) {
-          usuarioLogado = email.toLowerCase();
-          isAdmin = true;
-          msgErro.textContent = '';
-          lerEscalaDoFirestore().then(() => {
-            if(escalaAtual.length === 0) {
-              gerarEscala();
-            } else {
-              atualizarResultadoEFormulario();
-            }
-            mostrarTela('painel');
-          });
-        } else {
-          msgErro.textContent = 'Email ou senha inválidos.';
-        }
-      };
-
-      document.getElementById('formQuemLimpou').onsubmit = confirmarFaltantes;
-
-      // Menu lateral
-      const menuBtn = document.getElementById('menuBtn');
-      const menuLateral = document.getElementById('menuLateral');
-      const fecharMenu = document.getElementById('fecharMenu');
-
-      menuBtn.onclick = () => {
-        menuLateral.classList.toggle('aberto');
-        menuLateral.style.display = menuLateral.classList.contains('aberto') ? 'flex' : 'none';
-      };
-
-      fecharMenu.onclick = () => {
-        menuLateral.classList.remove('aberto');
-        menuLateral.style.display = 'none';
-      };
-
-      document.getElementById('btnSair').onclick = () => {
-        usuarioLogado = null;
-        isAdmin = false;
-        escalaAtual = [];
-        faltantesPendentes = [];
-        posicaoUltimaEscala = -1;
-        historicoTarefa = {};
-        mostrarTela('inicio');
-      };
-
-      document.getElementById('btnResetar').onclick = resetarEscala;
-
-      document.getElementById('btnContinuar').onclick = continuarEscala;
-
-      document.getElementById('btnEditarNomes').onclick = () => {
-        carregarNomesDoFirebase();
-        mostrarTela('editar-nomes');
-      };
-
-      // Tela de edição nomes
-      document.getElementById('btnAdicionarNome').onclick = () => {
-        const novoNomeInput = document.getElementById('novoNomeInput');
-        let novoNome = novoNomeInput.value.trim();
-        if(novoNome.length < 3) {
-          alert("Nome muito curto!");
-          return;
-        }
-        if(nomes.includes(novoNome)) {
-          alert("Nome já está na lista!");
-          return;
-        }
-        nomes.push(novoNome);
-        nomes.sort((a,b) => a.localeCompare(b));
-        atualizarListaNomesEdicao();
-        novoNomeInput.value = "";
-      };
-
-      document.getElementById('btnSalvarNomes').onclick = async () => {
-        await salvarNomesNoFirebase();
-        alert("Nomes salvos com sucesso!");
-      };
-
-      document.getElementById('btnZerarNomes').onclick = () => {
-        zerarListaNomes();
-      };
-
-      document.getElementById('btnVoltarEdicao').onclick = () => {
-        mostrarTela('painel');
-      };
-    };
+  // Ao carregar a página, se quiser, tenta carregar a escala e nomes
+  window.addEventListener('load', () => {
+    lerEscalaDoFirestore().then(() => {
+      if(telaAtual === 'painel') atualizarResultadoEFormulario();
+    });
+  });
   </script>
 </body>
 </html>
