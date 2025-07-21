@@ -446,6 +446,8 @@
     async function lerEscalaDoFirestore() {
       try {
         const doc = await db.collection('escala').doc('dados').get();
+        const configDoc = await db.collection('escala').doc('config').get();
+        
         if (doc.exists) {
           const data = doc.data();
           posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
@@ -456,6 +458,14 @@
         } else {
           console.log('Nenhum dado encontrado no Firestore, gerando nova escala');
           await gerarEscala();
+        }
+
+        if (configDoc.exists) {
+          const configData = configDoc.data();
+          nomes = configData.nomes ?? ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b));
+          console.log('Lista de nomes carregada do Firestore:', nomes);
+        } else {
+          console.log('Nenhuma lista de nomes encontrada no Firestore, usando padrão');
         }
       } catch (error) {
         console.error("Erro ao carregar do Firestore:", error);
@@ -505,7 +515,6 @@
         console.log(`Adicionado à escala: ${nome} - ${tarefa}`);
       }
 
-      // Limpa faltantes pendentes apenas quando gerando uma nova escala (via "Continuar")
       faltantesPendentes = [];
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
@@ -543,7 +552,7 @@
         checkbox.name = 'faltante';
         const label = document.createElement('label');
         label.htmlFor = checkbox.id;
-        label.textContent = p.nome; // Apenas o nome, sem a tarefa
+        label.textContent = p.nome;
         div.appendChild(checkbox);
         div.appendChild(label);
         container.appendChild(div);
@@ -627,7 +636,6 @@
       e.preventDefault();
       console.log('Evento submit disparado em formQuemLimpou');
 
-      // Captura checkboxes marcados
       const checkboxes = document.querySelectorAll('#checkboxContainer input[name="faltante"]:checked');
       console.log('Checkboxes marcados:', checkboxes.length, Array.from(checkboxes).map(cb => cb.value));
 
@@ -638,7 +646,6 @@
         return;
       }
 
-      // Salva faltantes com a mesma tarefa
       const escalaAntes = [...escalaAtual];
       faltantesPendentes = [];
       checkboxes.forEach(cb => {
@@ -651,11 +658,9 @@
         cb.checked = false;
       });
 
-      // Remove faltantes da escala atual
       escalaAtual = escalaAtual.filter(p => !faltantesPendentes.some(f => f.nome === p.nome));
       console.log('Escala após remover faltantes:', escalaAtual);
 
-      // Preenche com substitutos
       let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
       let idx = posicaoUltimaEscala;
 
@@ -667,7 +672,7 @@
           break;
         }
         const nome = nomes[idx];
-        const tarefa = faltante.tarefa; // Substituto assume a tarefa do faltante
+        const tarefa = faltante.tarefa;
         escalaAtual.push({ nome, tarefa, index: idx });
         historicoTarefa[nome] = tarefa;
         usados.push(nome);
@@ -675,7 +680,6 @@
         console.log(`Substituto adicionado: ${nome} - ${tarefa}`);
       }
 
-      // Completa a escala se necessário
       while (escalaAtual.length < 2 && nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
@@ -737,21 +741,86 @@
       }
     });
 
-    document.getElementById('btnSalvarNomes').addEventListener('click', function() {
-      alert('Nomes salvos com sucesso!');
-      mostrarTela('painel');
-      gerarEscala();
-    });
+    // Modificado para substituir nomes removidos na escala atual
+    document.getElementById('btnSalvarNomes').addEventListener('click', async function() {
+      try {
+        // Captura a escala atual antes das alterações
+        const escalaAntes = [...escalaAtual];
+        // Remove nomes que não estão mais na lista de nomes
+        const nomesRemovidos = escalaAtual.filter(p => !nomes.includes(p.nome));
+        escalaAtual = escalaAtual.filter(p => nomes.includes(p.nome));
+        faltantesPendentes = faltantesPendentes.filter(f => nomes.includes(f.nome));
 
-    document.getElementById('btnZerarNomes').addEventListener('click', function() {
-      if (confirm('Tem certeza que quer apagar todos os nomes?')) {
-        nomes = [];
-        atualizarListaNomesEdicao();
-        gerarEscala();
+        // Substitui nomes removidos na escala atual
+        let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+        let idx = posicaoUltimaEscala;
+
+        for (let removido of nomesRemovidos) {
+          if (escalaAtual.length >= 2) break;
+          idx = proximoIndice(idx, usados);
+          if (idx === -1) {
+            console.log('Nenhum substituto disponível para', removido.nome);
+            break;
+          }
+          const nome = nomes[idx];
+          const tarefa = removido.tarefa; // Mantém a tarefa original
+          escalaAtual.push({ nome, tarefa, index: idx });
+          historicoTarefa[nome] = tarefa;
+          usados.push(nome);
+          posicaoUltimaEscala = idx;
+          console.log(`Substituto adicionado para ${removido.nome}: ${nome} - ${tarefa}`);
+        }
+
+        // Completa a escala se necessário
+        while (escalaAtual.length < 2 && nomes.length > usados.length) {
+          idx = proximoIndice(idx, usados);
+          if (idx === -1) break;
+          const nome = nomes[idx];
+          const tarefa = escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
+          escalaAtual.push({ nome, tarefa, index: idx });
+          historicoTarefa[nome] = tarefa;
+          usados.push(nome);
+          posicaoUltimaEscala = idx;
+          console.log(`Complemento da escala: ${nome} - ${tarefa}`);
+        }
+
+        // Salva a lista de nomes e a escala ajustada no Firestore
+        await db.collection('escala').doc('config').set({ nomes }, { merge: true });
+        await salvarEscalaNoFirestore();
+        console.log('Escala após substituição:', escalaAtual);
+        console.log('Nomes removidos:', nomesRemovidos);
+        console.log('Escala antes vs depois:', { antes: escalaAntes, depois: escalaAtual });
+
+        alert('Nomes salvos com sucesso!');
+        mostrarTela('painel');
+        atualizarResultadoEFormulario();
+      } catch (error) {
+        console.error('Erro ao salvar no Firestore:', error);
+        alert('Erro ao salvar nomes. Verifique sua conexão.');
       }
     });
 
-    // Carregar escala do Firestore ao iniciar app
+    document.getElementById('btnZerarNomes').addEventListener('click', async function() {
+      if (confirm('Tem certeza que quer apagar todos os nomes?')) {
+        nomes = [];
+        try {
+          // Limpa a escala atual e faltantes, pois não há mais nomes disponíveis
+          escalaAtual = [];
+          faltantesPendentes = [];
+          await db.collection('escala').doc('config').set({ nomes }, { merge: true });
+          await salvarEscalaNoFirestore();
+          atualizarListaNomesEdicao();
+          mostrarTela('painel');
+          atualizarResultadoEFormulario();
+          alert('Lista de nomes zerada com sucesso!');
+        } catch (error) {
+          console.error('Erro ao zerar nomes no Firestore:', error);
+          alert('Erro ao zerar nomes. Verifique sua conexão.');
+        }
+      }
+    });
+
+    // Carregar escala e nomes do Firestore ao iniciar app
     lerEscalaDoFirestore().then(() => {
       if (usuarioLogado) {
         mostrarTela('painel');
