@@ -606,8 +606,9 @@
     // Funções da escala
     function proximoIndice(atual, ignorados = []) {
       let i = atual;
+      if (i < 0) i = nomes.length - 1; // Se índice inicial for -1, começar do último
       for (let c = 0; c < nomes.length; c++) {
-        i = (i + 1) % nomes.length;
+        i = (i + 1) % nomes.length; // Avança para o próximo índice
         if (!ignorados.includes(nomes[i])) {
           console.log(`Próximo índice encontrado: ${i} (${nomes[i]})`);
           return i;
@@ -661,18 +662,17 @@
         return;
       }
 
-      let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+      // Encontrar o índice do nome removido para começar a busca a partir dele
       let idx = nomes.indexOf(nomeRemovido);
-      if (idx === -1) idx = posicaoUltimaEscala;
-      idx = proximoIndice(idx, usados);
+      if (idx === -1) idx = posicaoUltimaEscala; // Fallback para posicaoUltimaEscala
+      let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
+      idx = proximoIndice(idx, usados.filter(u => u !== nomeRemovido)); // Excluir nomeRemovido dos ignorados
       if (idx === -1) {
         console.log('Nenhum substituto disponível para', nomeRemovido);
         escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
         faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
         return;
       }
-
- collapsed
 
       const novoNome = nomes[idx];
       escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
