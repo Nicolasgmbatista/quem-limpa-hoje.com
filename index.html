@@ -96,7 +96,7 @@
       background: #2c3e50;
       color: white;
       padding: 20px;
-      display: flex;
+      display: none;
       flex-direction: column;
       gap: 15px;
       box-shadow: -5px 0 10px rgba(0,0,0,0.2);
@@ -106,6 +106,7 @@
 
     #menuLateral.aberto {
       right: 0;
+      display: flex;
     }
 
     #menuLateral button,
@@ -159,6 +160,13 @@
       gap: 8px;
     }
 
+    #formQuemLimpou {
+      margin-top: 20px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     #formQuemLimpou button[type="submit"] {
       margin-top: 20px;
       width: 100%;
@@ -203,13 +211,6 @@
       max-width: 200px;
     }
 
-    #formQuemLimpou {
-      margin-top: 20px;
-      max-width: 320px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
     #checkboxContainer div label {
       font-size: 16px;
     }
@@ -239,10 +240,13 @@
       flex-wrap: wrap;
       gap: 10px;
       justify-content: center;
+      width: 100%;
+      max-width: 300px;
     }
 
     #botoesLogin button {
-      width: 120px;
+      width: 48%;
+      min-width: 120px;
     }
 
     #btnEsqueciSenha {
@@ -252,6 +256,7 @@
       font-size: 14px;
       padding: 5px;
       margin-top: 5px;
+      width: auto;
     }
 
     #btnEsqueciSenha:hover {
@@ -293,7 +298,7 @@
       border-bottom: none;
     }
 
-    #listaNomesEdicao button.removerNomeBtn, #listaAdminsEdicao button.removerAdminBtn {
+    #listaAdminsEdicao button.removerAdminBtn {
       background-color: #c0392b;
       padding: 6px 10px;
       font-size: 13px;
@@ -302,6 +307,18 @@
       width: 60px;
       text-align: center;
       line-height: 1.2;
+    }
+
+    #listaNomesEdicao button.removerNomeBtn {
+      background-color: #c0392b;
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      min-width: 80px;
+      width: 80px;
+      text-align: center;
+      line-height: 1.2;
+      white-space: nowrap;
     }
 
     #listaNomesEdicao button.removerNomeBtn:hover, #listaAdminsEdicao button.removerAdminBtn:hover {
@@ -354,8 +371,8 @@
       <div id="botoesLogin">
         <button id="btnEntrar">Entrar</button>
         <button id="btnVoltarLogin">Voltar</button>
-        <button id="btnEsqueciSenha">Esqueci minha senha</button>
       </div>
+      <button id="btnEsqueciSenha">Esqueci minha senha</button>
     </div>
 
     <!-- Tela principal da escala -->
@@ -395,7 +412,8 @@
         <button id="btnAdicionarNome">Adicionar</button>
       </div>
       <button id="btnSalvarNomes">Salvar</button>
-      <button id="btnZerarNomes">Zerar</button><button id="btnVoltarEdicao">Voltar</button>
+      <button id="btnZerarNomes">Zerar</button>
+      <button id="btnVoltarEdicao">Voltar</button>
     </div>
 
     <!-- Tela para gerenciar administradores -->
@@ -490,7 +508,7 @@
         case 'painel':
           document.getElementById('conteudoEscala').style.display = 'block';
           document.getElementById('menuBtn').style.display = isAdmin ? 'block' : 'none';
-          document.getElementById('menuLateral').style.display = isAdmin ? 'flex' : 'none';
+          document.getElementById('menuLateral').style.display = isAdmin ? 'none' : 'none';
           document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
           document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
           atualizarResultadoEFormulario();
@@ -528,6 +546,16 @@
       } catch (error) {
         console.error("Erro ao salvar no Firestore:", error);
         alert("Erro ao salvar a escala. Verifique sua conexão.");
+      }
+    }
+
+    async function salvarConfigNoFirestore() {
+      try {
+        await db.collection('escala').doc('config').set({ nomes, admins, adminConfig }, { merge: true });
+        console.log('Config salva no Firestore:', { nomes, admins, adminConfig });
+      } catch (error) {
+        console.error('Erro ao salvar config no Firestore:', error);
+        alert('Erro ao salvar configurações. Verifique sua conexão.');
       }
     }
 
@@ -754,11 +782,15 @@
     const fecharMenu = document.getElementById('fecharMenu');
 
     menuBtn.addEventListener('click', function() {
+      menuLateral.style.display = 'flex';
       menuLateral.classList.toggle('aberto');
     });
 
     fecharMenu.addEventListener('click', function() {
       menuLateral.classList.remove('aberto');
+      setTimeout(() => {
+        menuLateral.style.display = 'none';
+      }, 300);
     });
 
     document.getElementById('btnSair').addEventListener('click', function() {
@@ -869,23 +901,32 @@
         const btnRemover = document.createElement('button');
         btnRemover.textContent = 'Remover';
         btnRemover.className = 'removerNomeBtn';
-        btnRemover.addEventListener('click', () => {
+        btnRemover.addEventListener('click', async () => {
+          const escalaAntes = [...escalaAtual];
           nomes.splice(idx, 1);
+          escalaAtual = escalaAtual.filter(p => nomes.includes(p.nome));
+          faltantesPendentes = faltantesPendentes.filter(f => nomes.includes(f.nome));
+          await salvarConfigNoFirestore();
+          await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
+          atualizarResultadoEFormulario();
         });
         li.appendChild(btnRemover);
         ul.appendChild(li);
       });
     }
 
-    document.getElementById('btnAdicionarNome').addEventListener('click', function() {
+    document.getElementById('btnAdicionarNome').addEventListener('click', async function() {
       const input = document.getElementById('novoNomeInput');
       const novoNome = input.value.trim();
       if (novoNome.length > 0 && !nomes.some(n => n.toLowerCase() === novoNome.toLowerCase())) {
         nomes.push(novoNome);
         nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
+        await salvarConfigNoFirestore();
+        await salvarEscalaNoFirestore();
         atualizarListaNomesEdicao();
+        atualizarResultadoEFormulario();
       } else {
         alert('Nome inválido ou já existe!');
       }
@@ -893,48 +934,8 @@
 
     document.getElementById('btnSalvarNomes').addEventListener('click', async function() {
       try {
-        const escalaAntes = [...escalaAtual];
-        const nomesRemovidos = escalaAtual.filter(p => !nomes.includes(p.nome));
-        escalaAtual = escalaAtual.filter(p => nomes.includes(p.nome));
-        faltantesPendentes = faltantesPendentes.filter(f => nomes.includes(f.nome));
-
-        let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
-        let idx = posicaoUltimaEscala;
-
-        for (let removido of nomesRemovidos) {
-          if (escalaAtual.length >= 2) break;
-          idx = proximoIndice(idx, usados);
-          if (idx === -1) {
-            console.log('Nenhum substituto disponível para', removido.nome);
-            break;
-          }
-          const nome = nomes[idx];
-          const tarefa = removido.tarefa;
-          escalaAtual.push({ nome, tarefa, index: idx });
-          historicoTarefa[nome] = tarefa;
-          usados.push(nome);
-          posicaoUltimaEscala = idx;
-          console.log(`Substituto adicionado para ${removido.nome}: ${nome} - ${tarefa}`);
-        }
-
-        while (escalaAtual.length < 2 && nomes.length > usados.length) {
-          idx = proximoIndice(idx, usados);
-          if (idx === -1) break;
-          const nome = nomes[idx];
-          const tarefa = escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
-          escalaAtual.push({ nome, tarefa, index: idx });
-          historicoTarefa[nome] = tarefa;
-          usados.push(nome);
-          posicaoUltimaEscala = idx;
-          console.log(`Complemento da escala: ${nome} - ${tarefa}`);
-        }
-
-        await db.collection('escala').doc('config').set({ nomes, admins, adminConfig }, { merge: true });
+        await salvarConfigNoFirestore();
         await salvarEscalaNoFirestore();
-        console.log('Escala após substituição:', escalaAtual);
-        console.log('Nomes removidos:', nomesRemovidos);
-        console.log('Escala antes vs depois:', { antes: escalaAntes, depois: escalaAtual });
-
         alert('Nomes salvos com sucesso!');
         mostrarTela('painel');
         atualizarResultadoEFormulario();
@@ -950,7 +951,7 @@
         try {
           escalaAtual = [];
           faltantesPendentes = [];
-          await db.collection('escala').doc('config').set({ nomes, admins, adminConfig }, { merge: true });
+          await salvarConfigNoFirestore();
           await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
           mostrarTela('painel');
@@ -1029,6 +1030,7 @@
             inputEmail.value = '';
             inputSenha.value = '';
             atualizarListaAdminsEdicao();
+            salvarConfigNoFirestore();
           } else {
             auth.createUserWithEmailAndPassword(novoEmail, novaSenha)
               .then((userCredential) => {
@@ -1038,6 +1040,7 @@
                 inputEmail.value = '';
                 inputSenha.value = '';
                 atualizarListaAdminsEdicao();
+                salvarConfigNoFirestore();
                 userCredential.user.sendEmailVerification()
                   .then(() => {
                     console.log('Email de verificação enviado para:', novoEmail);
@@ -1066,7 +1069,7 @@
 
     document.getElementById('btnSalvarAdmins').addEventListener('click', async function() {
       try {
-        await db.collection('escala').doc('config').set({ admins, nomes, adminConfig }, { merge: true });
+        await salvarConfigNoFirestore();
         alert('Lista de administradores salva com sucesso!');
         mostrarTela('painel');
       } catch (error) {
@@ -1122,7 +1125,7 @@
         user.updatePassword(novaSenha)
           .then(() => {
             adminConfig[usuarioLogado.email] = { primeiroLogin: false };
-            db.collection('escala').doc('config').set({ admins, nomes, adminConfig }, { merge: true })
+            salvarConfigNoFirestore()
               .then(() => {
                 alert('Senha alterada com sucesso!');
                 mostrarTela('painel');
