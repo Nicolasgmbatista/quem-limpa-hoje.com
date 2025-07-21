@@ -214,19 +214,19 @@
       text-align: center;
     }
 
-    #telaEditarNomes {
+    #telaEditarNomes, #telaGerenciarAdmins {
       display: none;
       text-align: left;
       max-width: 360px;
       margin: 0 auto;
     }
 
-    #telaEditarNomes h2 {
+    #telaEditarNomes h2, #telaGerenciarAdmins h2 {
       text-align: center;
       margin-bottom: 16px;
     }
 
-    #listaNomesEdicao {
+    #listaNomesEdicao, #listaAdminsEdicao {
       list-style: none;
       padding: 0;
       max-height: 280px;
@@ -237,7 +237,7 @@
       background: #f7f7f7;
     }
 
-    #listaNomesEdicao li {
+    #listaNomesEdicao li, #listaAdminsEdicao li {
       padding: 10px 14px;
       border-bottom: 1px solid #ddd;
       display: flex;
@@ -247,11 +247,11 @@
       color: #2c3e50;
     }
 
-    #listaNomesEdicao li:last-child {
+    #listaNomesEdicao li:last-child, #listaAdminsEdicao li:last-child {
       border-bottom: none;
     }
 
-    #listaNomesEdicao button.removerNomeBtn {
+    #listaNomesEdicao button.removerNomeBtn, #listaAdminsEdicao button.removerAdminBtn {
       background-color: #c0392b;
       padding: 6px 12px;
       font-size: 14px;
@@ -263,18 +263,18 @@
       transition: background-color 0.3s ease;
     }
 
-    #listaNomesEdicao button.removerNomeBtn:hover {
+    #listaNomesEdicao button.removerNomeBtn:hover, #listaAdminsEdicao button.removerAdminBtn:hover {
       background-color: #e74c3c;
     }
 
-    #novoNomeContainer {
+    #novoNomeContainer, #novoAdminContainer {
       display: flex;
       gap: 8px;
       margin-bottom: 15px;
       justify-content: center;
     }
 
-    #novoNomeInput {
+    #novoNomeInput, #novoAdminInput {
       flex-grow: 1;
       padding: 10px 12px;
       font-size: 16px;
@@ -283,12 +283,12 @@
       transition: border-color 0.3s ease;
     }
 
-    #novoNomeInput:focus {
+    #novoNomeInput:focus, #novoAdminInput:focus {
       border-color: #2c3e50;
       outline: none;
     }
 
-    #telaEditarNomes button {
+    #telaEditarNomes button, #telaGerenciarAdmins button {
       width: 100%;
       margin: 6px 0;
     }
@@ -354,12 +354,23 @@
       <button id="btnZerarNomes">Zerar</button>
       <button id="btnVoltarEdicao">Voltar</button>
     </div>
+
+    <!-- Nova tela para gerenciar administradores -->
+    <div id="telaGerenciarAdmins">
+      <h2>Gerenciar Administradores</h2>
+      <ul id="listaAdminsEdicao"></ul>
+      <div id="novoAdminContainer">
+        <input type="email" id="novoAdminInput" placeholder="Digite novo email" />
+        <button id="btnAdicionarAdmin">Adicionar</button>
+      </div>
+      <button id="btnSalvarAdmins">Salvar</button>
+      <button id="btnVoltarAdmins">Voltar</button>
+    </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <!-- Adicionado Firebase Authentication -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   
   <script>
@@ -374,7 +385,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const auth = firebase.auth(); // Inicializa Firebase Authentication
+    const auth = firebase.auth();
 
     // Variáveis globais
     let admins = [
@@ -400,6 +411,7 @@
       document.getElementById('telaLogin').style.display = 'none';
       document.getElementById('conteudoEscala').style.display = 'none';
       document.getElementById('telaEditarNomes').style.display = 'none';
+      document.getElementById('telaGerenciarAdmins').style.display = 'none';
       document.getElementById('menuBtn').style.display = 'none';
       document.getElementById('menuLateral').classList.remove('aberto');
       document.getElementById('menuLateral').style.display = 'none';
@@ -428,6 +440,10 @@
         case 'editar-nomes':
           document.getElementById('telaEditarNomes').style.display = 'block';
           atualizarListaNomesEdicao();
+          break;
+        case 'gerenciar-admins':
+          document.getElementById('telaGerenciarAdmins').style.display = 'block';
+          atualizarListaAdminsEdicao();
           break;
       }
       console.log(`Tela atual: ${telaAtual}`);
@@ -472,9 +488,16 @@
         if (configDoc.exists) {
           const configData = configDoc.data();
           nomes = configData.nomes ?? ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b));
-          console.log('Lista de nomes carregada do Firestore:', nomes);
+          admins = configData.admins ?? [
+            "gonzagamezzomozaira@gmail.com",
+            "fabiana.martini@edu.sc.senai.br",
+            "beatriz_k_morais@estudante.sesisenai.org.br",
+            "nicolasgmbatista15@gmail.com",
+            "cassia.savi@edu.sc.senai.br"
+          ];
+          console.log('Config carregada do Firestore:', { nomes, admins });
         } else {
-          console.log('Nenhuma lista de nomes encontrada no Firestore, usando padrão');
+          console.log('Nenhuma config encontrada no Firestore, usando padrão');
         }
       } catch (error) {
         console.error("Erro ao carregar do Firestore:", error);
@@ -594,7 +617,6 @@
       alert("Escala resetada com sucesso!");
     });
 
-    // Modificado para usar Firebase Authentication
     document.getElementById('btnEntrar').addEventListener('click', function() {
       const email = document.getElementById('emailLogin').value.trim();
       const senha = document.getElementById('senhaLogin').value.trim();
@@ -605,7 +627,6 @@
         return;
       }
 
-      // Tenta autenticar com Firebase Authentication
       auth.signInWithEmailAndPassword(email, senha)
         .then((userCredential) => {
           const user = userCredential.user;
@@ -616,7 +637,7 @@
             mostrarTela('painel');
           } else {
             mensagemErro.textContent = 'Usuário não autorizado.';
-            auth.signOut(); // Desloga usuário não autorizado
+            auth.signOut();
           }
         })
         .catch((error) => {
@@ -647,7 +668,6 @@
       menuLateral.classList.remove('aberto');
     });
 
-    // Modificado para usar signOut do Firebase
     document.getElementById('btnSair').addEventListener('click', function() {
       auth.signOut()
         .then(() => {
@@ -816,7 +836,7 @@
           console.log(`Complemento da escala: ${nome} - ${tarefa}`);
         }
 
-        await db.collection('escala').doc('config').set({ nomes }, { merge: true });
+        await db.collection('escala').doc('config').set({ nomes, admins }, { merge: true });
         await salvarEscalaNoFirestore();
         console.log('Escala após substituição:', escalaAtual);
         console.log('Nomes removidos:', nomesRemovidos);
@@ -837,7 +857,7 @@
         try {
           escalaAtual = [];
           faltantesPendentes = [];
-          await db.collection('escala').doc('config').set({ nomes }, { merge: true });
+          await db.collection('escala').doc('config').set({ nomes, admins }, { merge: true });
           await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
           mostrarTela('painel');
@@ -850,7 +870,81 @@
       }
     });
 
-    // Carregar escala e nomes do Firestore ao iniciar app
+    // Funções de gerenciamento de administradores
+    document.getElementById('btnLiberarAcesso').addEventListener('click', function() {
+      if (isAdmin) {
+        mostrarTela('gerenciar-admins');
+      }
+    });
+
+    document.getElementById('btnVoltarAdmins').addEventListener('click', function() {
+      mostrarTela('painel');
+    });
+
+    function atualizarListaAdminsEdicao() {
+      const ul = document.getElementById('listaAdminsEdicao');
+      ul.innerHTML = '';
+      admins.forEach((email, idx) => {
+        const li = document.createElement('li');
+        li.textContent = email;
+        const btnRemover = document.createElement('button');
+        btnRemover.textContent = 'Remover';
+        btnRemover.className = 'removerAdminBtn';
+        btnRemover.addEventListener('click', () => {
+          if (admins.length <= 1) {
+            alert('Não é possível remover o último administrador!');
+            return;
+          }
+          if (usuarioLogado.email === email) {
+            alert('Você não pode remover seu próprio email!');
+            return;
+          }
+          admins.splice(idx, 1);
+          atualizarListaAdminsEdicao();
+        });
+        li.appendChild(btnRemover);
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById('btnAdicionarAdmin').addEventListener('click', function() {
+      const input = document.getElementById('novoAdminInput');
+      const novoEmail = input.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (novoEmail.length > 0 && emailRegex.test(novoEmail) && !admins.includes(novoEmail)) {
+        // Verifica se o email existe no Firebase Authentication
+        auth.fetchSignInMethodsForEmail(novoEmail)
+          .then((signInMethods) => {
+            if (signInMethods.length > 0) {
+              admins.push(novoEmail);
+              admins.sort((a, b) => a.localeCompare(b));
+              input.value = '';
+              atualizarListaAdminsEdicao();
+            } else {
+              alert('Este email não está registrado no sistema. O usuário precisa criar uma conta primeiro.');
+            }
+          })
+          .catch((error) => {
+            console.error('Erro ao verificar email:', error);
+            alert('Erro ao verificar o email. Verifique se é válido e tente novamente.');
+          });
+      } else {
+        alert('Email inválido ou já existe na lista de administradores!');
+      }
+    });
+
+    document.getElementById('btnSalvarAdmins').addEventListener('click', async function() {
+      try {
+        await db.collection('escala').doc('config').set({ admins, nomes }, { merge: true });
+        alert('Lista de administradores salva com sucesso!');
+        mostrarTela('painel');
+      } catch (error) {
+        console.error('Erro ao salvar administradores no Firestore:', error);
+        alert('Erro ao salvar administradores. Verifique sua conexão.');
+      }
+    });
+
+    // Carregar escala e configs do Firestore ao iniciar app
     lerEscalaDoFirestore().then(() => {
       if (usuarioLogado) {
         mostrarTela('painel');
