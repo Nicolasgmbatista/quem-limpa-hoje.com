@@ -197,6 +197,34 @@
       user-select: none;
     }
 
+    /* Modal editar nomes */
+    #modalEditarNomes {
+      display:none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      z-index: 1001;
+      width: 350px;
+      max-width: 90%;
+      text-align: left;
+    }
+    #modalEditarNomes textarea {
+      width: 100%;
+      font-size: 16px;
+      padding: 8px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+    #modalEditarNomes button {
+      width: auto;
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
@@ -247,6 +275,14 @@
       <button id="btnResetar">Resetar Escala</button>
       <button id="btnSair">Sair</button>
     </nav>
+
+    <!-- Modal editar nomes -->
+    <div id="modalEditarNomes">
+      <h3>Editar Nomes</h3>
+      <textarea id="listaNomes" rows="10"></textarea><br>
+      <button id="btnSalvarNomes">Salvar</button>
+      <button id="btnFecharModal">Fechar</button>
+    </div>
 
   </div>
 
@@ -325,9 +361,16 @@
 
       escalaAtual = [];
 
-      // Insere retornantes mantendo tarefa
+      // Insere retornantes trocando a tarefa da última vez
       retornantes.forEach(r => {
-        escalaAtual.push({ nome: r.nome, tarefa: r.tarefa });
+        // Pega última tarefa da pessoa
+        let tarefaAtual = historicoTarefa[r.nome] || 'mesa';
+        // Alterna tarefa para a oposta
+        tarefaAtual = alternarTarefa(tarefaAtual);
+        // Atualiza histórico
+        historicoTarefa[r.nome] = tarefaAtual;
+        // Adiciona à escala
+        escalaAtual.push({ nome: r.nome, tarefa: tarefaAtual });
         usados.push(r.nome);
       });
 
@@ -499,6 +542,37 @@
       faltantesPendentes = [];
       escalaAtual = [];
       mostrarTela('inicio');
+    };
+
+    // --- Modal editar nomes (botão e funções) ---
+    const btnEditarNomes = document.getElementById('btnEditarNomes');
+    const modalEditarNomes = document.getElementById('modalEditarNomes');
+    const listaNomesTextarea = document.getElementById('listaNomes');
+    const btnSalvarNomes = document.getElementById('btnSalvarNomes');
+    const btnFecharModal = document.getElementById('btnFecharModal');
+
+    btnEditarNomes.onclick = () => {
+      listaNomesTextarea.value = nomes.join('\n');
+      modalEditarNomes.style.display = 'block';
+    };
+
+    btnFecharModal.onclick = () => {
+      modalEditarNomes.style.display = 'none';
+    };
+
+    btnSalvarNomes.onclick = () => {
+      const novosNomes = listaNomesTextarea.value.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+      if(novosNomes.length === 0) {
+        alert('A lista de nomes não pode ficar vazia.');
+        return;
+      }
+      nomes.length = 0; // limpa array original
+      novosNomes.sort().forEach(n => nomes.push(n));
+      posicaoUltimaEscala = -1;
+      faltantesPendentes = [];
+      escalaAtual = [];
+      modalEditarNomes.style.display = 'none';
+      gerarEscala();
     };
 
     // Inicializa na tela inicial
