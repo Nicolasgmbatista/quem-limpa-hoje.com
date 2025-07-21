@@ -677,7 +677,7 @@
     }
 
     function adicionarPessoaNaEscala(novoNome) {
-      if (escalaAtual.length >= 2 || nomes.length === 0) {
+      if (nomes.length === 0) {
         return;
       }
 
@@ -686,18 +686,38 @@
         return;
       }
 
-      const idx = nomes.indexOf(novoNome);
-      if (idx === -1) {
+      const idxNovoNome = nomes.indexOf(novoNome);
+      if (idxNovoNome === -1) {
         return;
       }
 
-      const tarefa = escalaAtual.length === 0 
-        ? (historicoTarefa[novoNome] === 'chão' ? 'mesa' : 'chão')
-        : (escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
-      escalaAtual.push({ nome: novoNome, tarefa, index: idx });
-      historicoTarefa[novoNome] = tarefa;
-      posicaoUltimaEscala = idx;
-      console.log(`Adicionado ${novoNome} à escala - ${tarefa}`);
+      if (escalaAtual.length === 0) {
+        const tarefa = historicoTarefa[novoNome] === 'chão' ? 'mesa' : 'chão';
+        escalaAtual.push({ nome: novoNome, tarefa, index: idxNovoNome });
+        historicoTarefa[novoNome] = tarefa;
+        posicaoUltimaEscala = idxNovoNome;
+        console.log(`Adicionado ${novoNome} à escala (escala vazia) - ${tarefa}`);
+        return;
+      }
+
+      if (escalaAtual.length === 1) {
+        const tarefa = escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
+        escalaAtual.push({ nome: novoNome, tarefa, index: idxNovoNome });
+        historicoTarefa[novoNome] = tarefa;
+        posicaoUltimaEscala = idxNovoNome;
+        console.log(`Adicionado ${novoNome} à escala (1 pessoa) - ${tarefa}`);
+        return;
+      }
+
+      const idxPrimeiro = escalaAtual[0].index;
+      const proximaPessoaIdx = proximoIndice(idxPrimeiro, usados);
+      if (proximaPessoaIdx === idxNovoNome) {
+        const tarefa = escalaAtual[1].tarefa;
+        escalaAtual = [escalaAtual[0], { nome: novoNome, tarefa, index: idxNovoNome }];
+        historicoTarefa[novoNome] = tarefa;
+        posicaoUltimaEscala = idxNovoNome;
+        console.log(`Substituído ${escalaAtual[1].nome} por ${novoNome} - ${tarefa}`);
+      }
     }
 
     function atualizarResultadoEFormulario() {
@@ -981,9 +1001,7 @@
       if (novoNome.length > 0 && !nomes.some(n => n.toLowerCase() === novoNome.toLowerCase())) {
         nomes.push(novoNome);
         nomes.sort((a, b) => a.localeCompare(b));
-        if (escalaAtual.length < 2) {
-          adicionarPessoaNaEscala(novoNome);
-        }
+        adicionarPessoaNaEscala(novoNome);
         input.value = '';
         await salvarConfigNoFirestore();
         await salvarEscalaNoFirestore();
