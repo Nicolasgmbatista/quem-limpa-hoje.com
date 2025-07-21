@@ -162,7 +162,7 @@
 
     #formQuemLimpou {
       margin-top: 20px;
-      max-width: 320px;
+      max-width: 300px;
       margin-left: auto;
       margin-right: auto;
     }
@@ -200,6 +200,8 @@
       background-color: #27ae60;
       width: 100%;
       max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     #btnContinuar:hover {
@@ -396,9 +398,9 @@
     <!-- Menu lateral -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
+      <button id="btnMinhaConta">Minha Conta</button>
       <button id="btnEditarNomes">Editar Nomes</button>
       <button id="btnLiberarAcesso">Liberar Acesso</button>
-      <button id="btnMinhaConta">Minha Conta</button>
       <button id="btnResetar">Resetar Escala</button>
       <button id="btnSair">Sair</button>
     </nav>
@@ -411,7 +413,6 @@
         <input type="text" id="novoNomeInput" placeholder="Digite novo nome" />
         <button id="btnAdicionarNome">Adicionar</button>
       </div>
-      <button id="btnSalvarNomes">Salvar</button>
       <button id="btnZerarNomes">Zerar</button>
       <button id="btnVoltarEdicao">Voltar</button>
     </div>
@@ -932,19 +933,6 @@
       }
     });
 
-    document.getElementById('btnSalvarNomes').addEventListener('click', async function() {
-      try {
-        await salvarConfigNoFirestore();
-        await salvarEscalaNoFirestore();
-        alert('Nomes salvos com sucesso!');
-        mostrarTela('painel');
-        atualizarResultadoEFormulario();
-      } catch (error) {
-        console.error('Erro ao salvar no Firestore:', error);
-        alert('Erro ao salvar nomes. Verifique sua conexão.');
-      }
-    });
-
     document.getElementById('btnZerarNomes').addEventListener('click', async function() {
       if (confirm('Tem certeza que quer apagar todos os nomes?')) {
         nomes = [];
@@ -995,6 +983,7 @@
           }
           admins.splice(idx, 1);
           atualizarListaAdminsEdicao();
+          salvarConfigNoFirestore();
         });
         li.appendChild(btnRemover);
         ul.appendChild(li);
