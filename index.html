@@ -413,14 +413,15 @@
           document.getElementById('menuLateral').style.display = isAdmin ? 'flex' : 'none';
           document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
           document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
-          if (isAdmin) montarCheckboxFaltantes();
           atualizarResultadoEFormulario();
+          if (isAdmin) montarCheckboxFaltantes();
           break;
         case 'editar-nomes':
           document.getElementById('telaEditarNomes').style.display = 'block';
           atualizarListaNomesEdicao();
           break;
       }
+      console.log(`Tela atual: ${telaAtual}`);
     }
 
     // Inicializa app
@@ -435,6 +436,7 @@
           escalaAtual,
           faltantesPendentes
         });
+        console.log('Escala salva no Firestore:', { posicaoUltimaEscala, historicoTarefa, escalaAtual, faltantesPendentes });
       } catch (error) {
         console.error("Erro ao salvar no Firestore:", error);
         alert("Erro ao salvar a escala. Verifique sua conexão.");
@@ -450,8 +452,9 @@
           historicoTarefa = data.historicoTarefa ?? {};
           escalaAtual = data.escalaAtual ?? [];
           faltantesPendentes = data.faltantesPendentes ?? [];
+          console.log('Escala carregada do Firestore:', { posicaoUltimaEscala, historicoTarefa, escalaAtual, faltantesPendentes });
         } else {
-          // Se não houver dados, gera uma nova escala
+          console.log('Nenhum dado encontrado no Firestore, gerando nova escala');
           await gerarEscala();
         }
       } catch (error) {
@@ -467,6 +470,7 @@
         i = (i + 1) % nomes.length;
         if (!ignorados.includes(nomes[i])) return i;
       }
+      console.log('Nenhum índice disponível para substituição');
       return -1;
     }
 
@@ -477,39 +481,32 @@
         document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
         await salvarEscalaNoFirestore();
+        console.log('Nenhum nome cadastrado, escala vazia');
         return;
       }
 
-      // Inicia com faltantes pendentes, mantendo suas tarefas
+      console.log('Gerando nova escala, faltantes pendentes:', faltantesPendentes);
       escalaAtual = [...faltantesPendentes];
       let usados = escalaAtual.map(p => p.nome);
       let idx = posicaoUltimaEscala;
 
-      // Preenche até 2 pessoas (mesa e chão), se necessário
       while (escalaAtual.length < 2 && nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
         const nome = nomes[idx];
-        // Alterna tarefa com base no histórico
         const ultimaTarefa = historicoTarefa[nome];
-        let tarefa;
-        if (escalaAtual.length === 0) {
-          // Primeira pessoa: escolhe tarefa oposta à última ou "mesa" se não houver histórico
-          tarefa = ultimaTarefa === 'chão' ? 'mesa' : 'chão';
-        } else {
-          // Segunda pessoa: escolhe a tarefa oposta à da primeira pessoa
-          tarefa = escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
-        }
+        let tarefa = escalaAtual.length === 0 
+          ? (ultimaTarefa === 'chão' ? 'mesa' : 'chão')
+          : (escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
         escalaAtual.push({ nome, tarefa, index: idx });
         historicoTarefa[nome] = tarefa;
         usados.push(nome);
         posicaoUltimaEscala = idx;
+        console.log(`Adicionado à escala: ${nome} - ${tarefa}`);
       }
 
-      // Limpa faltantes pendentes após usá-los
+      // Limpa faltantes pendentes apenas quando gerando uma nova escala (via "Continuar")
       faltantesPendentes = [];
-
-      // Salva no Firestore e atualiza interface
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
     }
@@ -531,6 +528,7 @@
         document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
         if (isAdmin) montarCheckboxFaltantes();
       }
+      console.log('Interface atualizada, escala atual:', escalaAtual, 'Faltantes pendentes:', faltantesPendentes);
     }
 
     function montarCheckboxFaltantes() {
@@ -540,15 +538,17 @@
         const div = document.createElement('div');
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.id = 'chk_' + p.nome;
+        checkbox.id = `chk_${p.nome.replace(/\s+/g, '_')}`;
         checkbox.value = p.nome;
+        checkbox.name = 'faltante';
         const label = document.createElement('label');
         label.htmlFor = checkbox.id;
-        label.textContent = p.nome;
+        label.textContent = `${p.nome} (${p.tarefa})`;
         div.appendChild(checkbox);
         div.appendChild(label);
         container.appendChild(div);
       });
+      console.log('Checkboxes montados para:', escalaAtual.map(p => `${p.nome} (${p.tarefa})`));
     }
 
     // Botões e eventos
@@ -618,56 +618,58 @@
 
     document.getElementById('btnContinuar').addEventListener('click', async function() {
       if (isAdmin) {
-        faltantesPendentes = [];
+        console.log('Botão Continuar clicado, gerando nova escala');
         await gerarEscala();
       }
     });
 
     document.getElementById('formQuemLimpou').addEventListener('submit', async function(e) {
       e.preventDefault();
-      console.log('Evento submit disparado');
+      console.log('Evento submit disparado em formQuemLimpou');
 
       // Captura checkboxes marcados
-      const checkboxes = document.querySelectorAll('#checkboxContainer input[type="checkbox"]:checked');
+      const checkboxes = document.querySelectorAll('#checkboxContainer input[name="faltante"]:checked');
       console.log('Checkboxes marcados:', checkboxes.length, Array.from(checkboxes).map(cb => cb.value));
 
       if (checkboxes.length === 0) {
-        console.log('Nenhum faltante selecionado, avançando escala');
-        faltantesPendentes = [];
-        await gerarEscala();
+        console.log('Nenhum faltante selecionado, mantendo escala atual');
+        await salvarEscalaNoFirestore();
+        atualizarResultadoEFormulario();
         return;
       }
 
       // Salva faltantes com a mesma tarefa
+      const escalaAntes = [...escalaAtual];
       faltantesPendentes = [];
       checkboxes.forEach(cb => {
         const nome = cb.value;
-        const tarefa = escalaAtual.find(p => p.nome === nome)?.tarefa || 'mesa';
-        faltantesPendentes.push({ nome, tarefa });
+        const pessoa = escalaAtual.find(p => p.nome === nome);
+        if (pessoa) {
+          faltantesPendentes.push({ nome, tarefa: pessoa.tarefa });
+          console.log(`Faltante adicionado: ${nome} - ${pessoa.tarefa}`);
+        }
         cb.checked = false;
-        console.log(`Faltante adicionado: ${nome} - ${tarefa}`);
       });
 
       // Remove faltantes da escala atual
-      const tarefasFaltantes = faltantesPendentes.map(f => f.tarefa);
       escalaAtual = escalaAtual.filter(p => !faltantesPendentes.some(f => f.nome === p.nome));
       console.log('Escala após remover faltantes:', escalaAtual);
 
       // Preenche com substitutos
-      let usados = escalaAtual.map(p => p.nome);
+      let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
       let idx = posicaoUltimaEscala;
 
-      // Adiciona substitutos para cada tarefa faltante
-      for (let tarefa of tarefasFaltantes) {
+      for (let faltante of faltantesPendentes) {
         if (escalaAtual.length >= 2) break;
         idx = proximoIndice(idx, usados);
         if (idx === -1) {
-          console.log('Nenhum substituto disponível');
+          console.log('Nenhum substituto disponível para', faltante.nome);
           break;
         }
         const nome = nomes[idx];
+        const tarefa = faltante.tarefa; // Substituto assume a tarefa do faltante
         escalaAtual.push({ nome, tarefa, index: idx });
-        historicoTarefa[nome] = tarefa; // Atualiza histórico
+        historicoTarefa[nome] = tarefa;
         usados.push(nome);
         posicaoUltimaEscala = idx;
         console.log(`Substituto adicionado: ${nome} - ${tarefa}`);
@@ -686,10 +688,11 @@
         console.log(`Complemento da escala: ${nome} - ${tarefa}`);
       }
 
-      // Salva no Firestore e atualiza interface
       console.log('Escala final:', escalaAtual);
       console.log('Faltantes pendentes:', faltantesPendentes);
       console.log('Histórico de tarefas:', historicoTarefa);
+      console.log('Escala antes vs depois:', { antes: escalaAntes, depois: escalaAtual });
+
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
     });
