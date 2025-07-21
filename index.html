@@ -620,10 +620,10 @@
   });
 
   // Botão Continuar: pula para o próximo dia com a mesma função para quem faltou
-  document.getElementById('btnContinuar').addEventListener('click', () => {
-  gerarEscala();
+ document.getElementById('btnContinuar').addEventListener('click', async () => {
+  escalaAtual = [];
+  await gerarEscala();
 });
-
 
   // Formulário para marcar quem faltou
   document.getElementById('formQuemLimpou').addEventListener('submit', e => {
