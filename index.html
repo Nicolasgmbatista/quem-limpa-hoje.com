@@ -566,6 +566,26 @@
     gerarEscala();
   });
 
+    document.getElementById('btnResetar').addEventListener('click', async () => {
+  const confirmacao = confirm("Tem certeza que deseja resetar completamente a escala?");
+  if (!confirmacao) return;
+
+  posicaoUltimaEscala = -1;
+  historicoTarefa = {};
+  escalaAtual = [];
+  faltantesPendentes = [];
+
+  await db.collection('escala').doc('dados').set({
+    posicaoUltimaEscala,
+    historicoTarefa,
+    escalaAtual,
+    faltantesPendentes
+  });
+
+  atualizarResultadoEFormulario();
+  alert("Escala resetada com sucesso!");
+});
+
   document.getElementById('btnEntrar').addEventListener('click', () => {
     const email = document.getElementById('emailLogin').value.trim();
     const senha = document.getElementById('senhaLogin').value.trim();
