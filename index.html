@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quem limpa a sala hoje?</title>
   <style>
-    /* Seu CSS original aqui (mantive só o essencial pra brevidade) */
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      color: #2c3e50;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #d3d3d3;
+      color: #222;
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -19,35 +18,72 @@
     }
     #app {
       width: 420px;
-      background: #fff;
+      background: #fefefe;
       padding: 30px 40px;
       border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 20px rgb(0 0 0 / 0.15);
       text-align: center;
       position: relative;
-      border: 1px solid #dcdcdc;
+      border: 1px solid #ccc;
     }
     h1 {
       margin-bottom: 12px;
       font-weight: 700;
+      color: #222;
     }
-    button, input {
-      font-size: 16px;
+    #btnProfessor, #btnEstudante {
+      background-color: #222;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
       border-radius: 6px;
       border: none;
-      padding: 10px 18px;
-      margin: 10px 6px;
+      padding: 10px 20px;
+      margin: 10px 12px;
       cursor: pointer;
-      font-weight: bold;
       transition: background-color 0.3s ease;
       outline: none;
     }
-    button {
-      background-color: #2c3e50;
-      color: white;
+    #btnProfessor:hover, #btnEstudante:hover {
+      background-color: #444;
     }
-    button:hover {
-      background-color: #34495e;
+    input[type=email], input[type=password] {
+      font-size: 18px;
+      font-weight: 600;
+      width: 100%;
+      border-radius: 6px;
+      border: none;
+      padding: 14px 10px;
+      margin-bottom: 16px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    button[type=submit], #btnEntrar, #btnVoltarLogin, #btnContinuar {
+      background-color: #222;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      padding: 12px 24px;
+      margin: 12px 4px 0 4px;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+    button[type=submit]:hover, #btnEntrar:hover, #btnVoltarLogin:hover, #btnContinuar:hover {
+      background-color: #444;
+    }
+    #listaEscala {
+      text-align: left;
+      padding-left: 0;
+      margin-bottom: 20px;
+      font-weight: 700;
+      list-style-type: none;
+    }
+    #listaEscala li {
+      margin: 6px 0;
     }
     #checkboxContainer div {
       display: flex;
@@ -56,23 +92,17 @@
       margin-bottom: 8px;
       justify-content: flex-start;
     }
-    #formQuemLimpou button[type="submit"] {
-      margin-top: 20px;
-      width: 100%;
-    }
-    #btnContinuar {
-      margin-top: 10px;
-      background-color: #27ae60;
-      width: 100%;
-    }
-    #btnContinuar:hover {
-      background-color: #2ecc71;
+    #mensagemErro {
+      font-weight: 700;
+      color: red;
+      margin-bottom: 8px;
+      min-height: 24px;
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- Telas iniciais e login -->
+    <!-- Tela inicial -->
     <div id="telaInicial">
       <h1>Quem limpa a sala hoje?</h1>
       <p>Escolha seu perfil para continuar:</p>
@@ -80,36 +110,34 @@
       <button id="btnEstudante">Estudante</button>
     </div>
 
+    <!-- Tela de login -->
     <div id="telaLogin" style="display:none;">
       <h1>Login - Professor / Representante</h1>
-      <div id="mensagemErro" style="color:red; font-weight:bold;"></div>
+      <div id="mensagemErro"></div>
       <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
       <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
-      <div id="botoesLogin">
-        <button id="btnEntrar">Entrar</button>
-        <button id="btnVoltarLogin">Voltar</button>
-      </div>
+      <button id="btnEntrar">Entrar</button>
+      <button id="btnVoltarLogin">Voltar</button>
     </div>
 
     <!-- Tela principal da escala -->
     <div id="conteudoEscala" style="display:none;">
       <h1>Quem limpa a sala hoje?</h1>
-      <div id="resultado">
-        <h2>Escala de hoje:</h2>
-        <ul id="listaEscala"></ul>
-      </div>
-      <div id="pergunta" style="display:none;">
-        <p>Selecione quem <strong>faltou</strong> e clique em "Confirmar":</p>
-        <form id="formQuemLimpou">
-          <div id="checkboxContainer"></div>
-          <button type="submit">Confirmar</button>
-        </form>
-      </div>
-      <button id="btnContinuar" style="display:none;">Continuar</button>
+
+      <h2>Escala de hoje:</h2>
+      <ul id="listaEscala"></ul>
+
+      <p><strong>Selecione quem faltou e clique em "Confirmar":</strong></p>
+      <form id="formQuemLimpou">
+        <div id="checkboxContainer"></div>
+        <button type="submit">Confirmar</button>
+      </form>
+
+      <button id="btnContinuar" style="display:none; margin-top:16px;">Continuar</button>
     </div>
   </div>
 
-  <!-- Firebase (mesmo) -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -127,8 +155,8 @@
   const db = firebase.firestore();
 
   // Variáveis
-  let admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
-  let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
+  const admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
+  const nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
 
   let posicaoUltimaEscala = -1;
   let historicoTarefa = {};
@@ -138,37 +166,27 @@
   let usuarioLogado = null;
   let isAdmin = false;
 
-  // Funções para telas
-  function mostrarTela(t) {
+  // Mostrar telas
+  function mostrarTela(nomeTela) {
     document.getElementById('telaInicial').style.display = 'none';
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('conteudoEscala').style.display = 'none';
 
-    if (t === 'inicio') {
+    if (nomeTela === 'inicio') {
       document.getElementById('telaInicial').style.display = 'block';
-    } else if (t === 'login') {
+    } else if (nomeTela === 'login') {
       document.getElementById('telaLogin').style.display = 'block';
-    } else if (t === 'painel') {
+    } else if (nomeTela === 'painel') {
       document.getElementById('conteudoEscala').style.display = 'block';
     }
   }
 
-  // Inicializa com tela inicial
   mostrarTela('inicio');
 
-  // Leitura e salvamento Firestore
-  async function salvarEscalaNoFirestore() {
-    await db.collection('escala').doc('dados').set({
-      posicaoUltimaEscala,
-      historicoTarefa,
-      escalaAtual,
-      faltantesPendentes
-    });
-  }
-
+  // Ler dados do Firestore
   async function lerEscalaDoFirestore() {
     const doc = await db.collection('escala').doc('dados').get();
-    if (doc.exists) {
+    if(doc.exists) {
       const data = doc.data();
       posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
       historicoTarefa = data.historicoTarefa ?? {};
@@ -182,7 +200,17 @@
     }
   }
 
-  // Próximo índice ignorando nomes na lista ignorados
+  // Salvar dados no Firestore
+  async function salvarEscalaNoFirestore() {
+    await db.collection('escala').doc('dados').set({
+      posicaoUltimaEscala,
+      historicoTarefa,
+      escalaAtual,
+      faltantesPendentes
+    });
+  }
+
+  // Função auxiliar para pegar próximo índice válido
   function proximoIndice(atual, ignorados=[]) {
     let i = atual;
     for(let c=0; c<nomes.length; c++) {
@@ -204,7 +232,7 @@
     let usados = retornantes.map(f=>f.nome);
     let idx = posicaoUltimaEscala;
 
-    if (escalaAtual.length === 0) {
+    if(escalaAtual.length === 0) {
       const idx1 = proximoIndice(idx, usados);
       const n1 = nomes[idx1];
       const t1 = alternarTarefa(historicoTarefa[n1]||'mesa');
@@ -223,10 +251,10 @@
       return;
     }
 
-    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome === p.nome));
+    const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
     const substitutos = [];
-    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
-    for(let i=0; i<presentes.length; i++){
+    usados = escalaAtual.map(p => p.nome).concat(retornantes.map(f => f.nome));
+    for(let i=0; i<presentes.length; i++) {
       idx = proximoIndice(idx, usados);
       const n = nomes[idx];
       const t = i === 0 ? alternarTarefa(historicoTarefa[n]||'mesa') : substitutos[0].tarefa==='mesa'?'chão':'mesa';
@@ -240,43 +268,39 @@
     atualizarResultadoEFormulario();
   }
 
-  // Atualiza interface escala e formulário faltantes
+  // Atualizar escala na tela e montar o formulário de faltantes
   function atualizarResultadoEFormulario() {
-    const ulEscala = document.getElementById('listaEscala');
-    ulEscala.innerHTML = '';
+    const lista = document.getElementById('listaEscala');
+    lista.innerHTML = '';
     escalaAtual.forEach(p => {
       const li = document.createElement('li');
       li.textContent = `${p.nome} - ${p.tarefa}`;
-      ulEscala.appendChild(li);
+      lista.appendChild(li);
     });
 
     const container = document.getElementById('checkboxContainer');
     container.innerHTML = '';
-
     escalaAtual.forEach(p => {
       const div = document.createElement('div');
-      const input = document.createElement('input');
-      input.type = 'checkbox';
-      input.id = 'cb_' + p.nome.replace(/\s/g, '');
-      input.value = p.nome;
-      div.appendChild(input);
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = 'cb_' + p.nome.replace(/\s/g, '');
+      checkbox.value = p.nome;
 
       const label = document.createElement('label');
-      label.htmlFor = input.id;
+      label.htmlFor = checkbox.id;
       label.textContent = p.nome;
-      div.appendChild(label);
 
+      div.appendChild(checkbox);
+      div.appendChild(label);
       container.appendChild(div);
     });
 
-    // Mostrar sempre formulário para marcar faltantes
-    document.getElementById('pergunta').style.display = 'block';
-
-    // Mostrar botão continuar só para admins
-    document.getElementById('btnContinuar').style.display = isAdmin ? 'inline-block' : 'none';
+    // Mostrar botão continuar só se for admin
+    document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
   }
 
-  // Eventos botões
+  // Eventos botões da tela inicial
   document.getElementById('btnProfessor').onclick = () => mostrarTela('login');
   document.getElementById('btnEstudante').onclick = async () => {
     usuarioLogado = null;
@@ -286,19 +310,18 @@
   };
   document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('inicio');
 
-  // Login simples fake
+  // Login simples
   document.getElementById('btnEntrar').onclick = async () => {
     const email = document.getElementById('emailLogin').value.trim();
     const senha = document.getElementById('senhaLogin').value.trim();
     const erroEl = document.getElementById('mensagemErro');
     erroEl.textContent = '';
 
-    if(!email || !senha) {
+    if (!email || !senha) {
       erroEl.textContent = 'Preencha email e senha.';
       return;
     }
-
-    if(admins.includes(email)) {
+    if (admins.includes(email)) {
       usuarioLogado = email;
       isAdmin = true;
       mostrarTela('painel');
@@ -308,37 +331,35 @@
     }
   };
 
-  // Botão continuar - só admins usam para avançar escala
+  // Botão continuar (para admins)
   document.getElementById('btnContinuar').onclick = async () => {
     await gerarEscala();
   };
 
-  // Form confirmar faltantes
+  // Form confirmar quem faltou
   document.getElementById('formQuemLimpou').onsubmit = async (e) => {
     e.preventDefault();
     const checkboxes = document.querySelectorAll('#checkboxContainer input[type=checkbox]');
     const faltaram = [];
     checkboxes.forEach(cb => {
-      if(cb.checked) faltaram.push(cb.value);
+      if (cb.checked) faltaram.push(cb.value);
     });
 
     faltantesPendentes = faltaram.map(nome => {
       const pessoa = escalaAtual.find(p => p.nome === nome);
-      return pessoa ? {nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index} : null;
+      return pessoa ? { nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index } : null;
     }).filter(Boolean);
 
     await salvarEscalaNoFirestore();
 
     alert('Faltantes confirmados!');
-
     await carregarEscala();
   };
 
-  // Carrega escala
+  // Carregar escala (inicial ou atual)
   async function carregarEscala() {
     await lerEscalaDoFirestore();
-
-    if(escalaAtual.length === 0) {
+    if (escalaAtual.length === 0) {
       await gerarEscala();
     } else {
       atualizarResultadoEFormulario();
