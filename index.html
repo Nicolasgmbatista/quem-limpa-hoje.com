@@ -491,46 +491,65 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
   }
 
   async function gerarEscala() {
-    const retornantes = [...faltantesPendentes];
-    faltantesPendentes = [];
-    let usados = retornantes.map(f=>f.nome);
-    let idx = posicaoUltimaEscala;
+  // Traz de volta os faltantes pendentes (de ontem) para hoje
+  const retornantes = [...faltantesPendentes];
+  faltantesPendentes = [];
 
-    if(escalaAtual.length===0){
-      const idx1=proximoIndice(idx,usados);
-      const n1=nomes[idx1];
-      const t1=alternarTarefa(historicoTarefa[n1]||'mesa');
-      historicoTarefa[n1]=t1;
-      usados.push(n1);
+  let usados = retornantes.map(f => f.nome);
+  let idx = posicaoUltimaEscala;
 
-      const idx2=proximoIndice(idx1,usados);
-      const n2=nomes[idx2];
-      const t2=alternarTarefa(t1);
-      historicoTarefa[n2]=t2;
+  if (escalaAtual.length === 0) {
+    // Primeiro dia de escala
+    const idx1 = proximoIndice(idx, usados);
+    const nome1 = nomes[idx1];
+    const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
+    historicoTarefa[nome1] = tarefa1;
+    usados.push(nome1);
 
-      escalaAtual=[{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
-      posicaoUltimaEscala=idx2;
-      await salvarEscalaNoFirestore();
-      atualizarResultadoEFormulario();
-      return;
-    }
+    const idx2 = proximoIndice(idx1, usados);
+    const nome2 = nomes[idx2];
+    const tarefa2 = alternarTarefa(tarefa1);
+    historicoTarefa[nome2] = tarefa2;
 
-    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome===p.nome));
+    escalaAtual = [
+      { nome: nome1, tarefa: tarefa1, index: idx1 },
+      { nome: nome2, tarefa: tarefa2, index: idx2 }
+    ];
+    posicaoUltimaEscala = idx2;
+  } else {
+    // Já existe escala anterior
+    const nomesFaltaram = retornantes.map(f => f.nome);
+    const presentes = escalaAtual.filter(p => !nomesFaltaram.includes(p.nome));
+    const faltaram = escalaAtual.filter(p => nomesFaltaram.includes(p.nome));
+
     const substitutos = [];
-    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
-    for(let i=0;i<presentes.length;i++){
-      idx = proximoIndice(idx,usados);
-      const n=nomes[idx];
-      const t = i===0 ? alternarTarefa(historicoTarefa[presentes[i].nome]||'mesa') : alternarTarefa(substitutos[0].tarefa);
-      historicoTarefa[n]=t;
-      substitutos.push({nome:n,tarefa:t,index:idx});
-      usados.push(n);
+    usados = escalaAtual.map(p => p.nome).concat(nomesFaltaram);
+
+    for (let faltante of faltaram) {
+      const tarefaOriginal = faltante.tarefa;
+      idx = proximoIndice(idx, usados);
+      const novoNome = nomes[idx];
+      historicoTarefa[novoNome] = tarefaOriginal;
+      substitutos.push({ nome: novoNome, tarefa: tarefaOriginal, index: idx });
+      usados.push(novoNome);
     }
-    escalaAtual = [...retornantes, ...substitutos];
-    posicaoUltimaEscala = substitutos.length > 0 ? substitutos[substitutos.length-1].index : posicaoUltimaEscala;
-    await salvarEscalaNoFirestore();
-    atualizarResultadoEFormulario();
+
+    escalaAtual = [...presentes, ...substitutos];
+
+    // Mover os faltantes para o próximo dia com a mesma tarefa
+    faltantesPendentes = faltaram.map(p => ({
+      nome: p.nome,
+      tarefa: p.tarefa
+    }));
+
+    posicaoUltimaEscala = substitutos.length > 0
+      ? substitutos[substitutos.length - 1].index
+      : posicaoUltimaEscala;
   }
+
+  await salvarEscalaNoFirestore();
+  atualizarResultadoEFormulario();
+}
 
   function atualizarResultadoEFormulario() {
     const listaEscala = document.getElementById('listaEscala');
