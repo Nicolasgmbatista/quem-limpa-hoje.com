@@ -175,8 +175,14 @@
       background-color: #e74c3c;
     }
 
-    #mensagemErro {
+    #mensagemErro, #mensagemErroMinhaConta {
       color: #c0392b;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    #mensagemAviso {
+      color: #e67e22;
       font-weight: 700;
       margin-bottom: 12px;
     }
@@ -214,14 +220,14 @@
       text-align: center;
     }
 
-    #telaEditarNomes, #telaGerenciarAdmins {
+    #telaEditarNomes, #telaGerenciarAdmins, #telaMinhaConta {
       display: none;
       text-align: left;
       max-width: 360px;
       margin: 0 auto;
     }
 
-    #telaEditarNomes h2, #telaGerenciarAdmins h2 {
+    #telaEditarNomes h2, #telaGerenciarAdmins h2, #telaMinhaConta h2 {
       text-align: center;
       margin-bottom: 16px;
     }
@@ -267,14 +273,15 @@
       background-color: #e74c3c;
     }
 
-    #novoNomeContainer, #novoAdminContainer {
+    #novoNomeContainer, #novoAdminContainer, #alterarSenhaContainer {
       display: flex;
+      flex-direction: column;
       gap: 8px;
       margin-bottom: 15px;
       justify-content: center;
     }
 
-    #novoNomeInput, #novoAdminInput {
+    #novoNomeInput, #novoAdminInput, #novaSenhaInput, #confirmarSenhaInput {
       flex-grow: 1;
       padding: 10px 12px;
       font-size: 16px;
@@ -283,14 +290,27 @@
       transition: border-color 0.3s ease;
     }
 
-    #novoNomeInput:focus, #novoAdminInput:focus {
+    #novoNomeInput:focus, #novoAdminInput:focus, #novaSenhaInput:focus, #confirmarSenhaInput:focus {
       border-color: #2c3e50;
       outline: none;
     }
 
-    #telaEditarNomes button, #telaGerenciarAdmins button {
+    #telaEditarNomes button, #telaGerenciarAdmins button, #telaMinhaConta button {
       width: 100%;
       margin: 6px 0;
+    }
+
+    #btnEsqueciSenha {
+      background: transparent;
+      color: #2c3e50;
+      text-decoration: underline;
+      font-size: 14px;
+      padding: 5px;
+      margin-top: 0;
+    }
+
+    #btnEsqueciSenha:hover {
+      color: #34495e;
     }
   </style>
 </head>
@@ -312,6 +332,7 @@
       <div id="botoesLogin">
         <button id="btnEntrar">Entrar</button>
         <button id="btnVoltarLogin">Voltar</button>
+        <button id="btnEsqueciSenha">Esqueci minha senha</button>
       </div>
     </div>
 
@@ -338,6 +359,7 @@
       <button id="fecharMenu" title="Voltar">Voltar</button>
       <button id="btnEditarNomes">Editar Nomes</button>
       <button id="btnLiberarAcesso">Liberar Acesso</button>
+      <button id="btnMinhaConta">Minha Conta</button>
       <button id="btnResetar">Resetar Escala</button>
       <button id="btnSair">Sair</button>
     </nav>
@@ -355,16 +377,30 @@
       <button id="btnVoltarEdicao">Voltar</button>
     </div>
 
-    <!-- Nova tela para gerenciar administradores -->
+    <!-- Tela para gerenciar administradores -->
     <div id="telaGerenciarAdmins">
       <h2>Gerenciar Administradores</h2>
       <ul id="listaAdminsEdicao"></ul>
       <div id="novoAdminContainer">
         <input type="email" id="novoAdminInput" placeholder="Digite novo email" />
+        <input type="password" id="novaSenhaAdminInput" placeholder="Senha inicial" />
         <button id="btnAdicionarAdmin">Adicionar</button>
       </div>
       <button id="btnSalvarAdmins">Salvar</button>
       <button id="btnVoltarAdmins">Voltar</button>
+    </div>
+
+    <!-- Nova tela para minha conta -->
+    <div id="telaMinhaConta">
+      <h2>Minha Conta</h2>
+      <div id="mensagemAviso"></div>
+      <div id="mensagemErroMinhaConta"></div>
+      <div id="alterarSenhaContainer">
+        <input type="password" id="novaSenhaInput" placeholder="Nova senha" />
+        <input type="password" id="confirmarSenhaInput" placeholder="Confirmar nova senha" />
+        <button id="btnAlterarSenha">Alterar Senha</button>
+      </div>
+      <button id="btnVoltarMinhaConta">Voltar</button>
     </div>
   </div>
 
@@ -403,6 +439,7 @@
     let usuarioLogado = null;
     let isAdmin = false;
     let telaAtual = 'inicio';
+    let adminConfig = {}; // Para armazenar configurações como primeiroLogin
 
     // Funções para mostrar/ocultar telas
     function mostrarTela(t) {
@@ -412,6 +449,7 @@
       document.getElementById('conteudoEscala').style.display = 'none';
       document.getElementById('telaEditarNomes').style.display = 'none';
       document.getElementById('telaGerenciarAdmins').style.display = 'none';
+      document.getElementById('telaMinhaConta').style.display = 'none';
       document.getElementById('menuBtn').style.display = 'none';
       document.getElementById('menuLateral').classList.remove('aberto');
       document.getElementById('menuLateral').style.display = 'none';
@@ -444,6 +482,10 @@
         case 'gerenciar-admins':
           document.getElementById('telaGerenciarAdmins').style.display = 'block';
           atualizarListaAdminsEdicao();
+          break;
+        case 'minha-conta':
+          document.getElementById('telaMinhaConta').style.display = 'block';
+          atualizarTelaMinhaConta();
           break;
       }
       console.log(`Tela atual: ${telaAtual}`);
@@ -495,7 +537,8 @@
             "nicolasgmbatista15@gmail.com",
             "cassia.savi@edu.sc.senai.br"
           ];
-          console.log('Config carregada do Firestore:', { nomes, admins });
+          adminConfig = configData.adminConfig ?? {};
+          console.log('Config carregada do Firestore:', { nomes, admins, adminConfig });
         } else {
           console.log('Nenhuma config encontrada no Firestore, usando padrão');
         }
@@ -592,7 +635,7 @@
       console.log('Checkboxes montados para:', escalaAtual.map(p => p.nome));
     }
 
-    // Botões e eventos
+    // Funções de autenticação
     document.getElementById('btnProfessor').addEventListener('click', function() {
       mostrarTela('login');
     });
@@ -634,7 +677,12 @@
             usuarioLogado = { email: user.email, tipo: 'admin' };
             isAdmin = true;
             mensagemErro.textContent = '';
-            mostrarTela('painel');
+            // Verificar primeiro login
+            if (adminConfig[user.email]?.primeiroLogin) {
+              mostrarTela('minha-conta');
+            } else {
+              mostrarTela('painel');
+            }
           } else {
             mensagemErro.textContent = 'Usuário não autorizado.';
             auth.signOut();
@@ -654,6 +702,31 @@
 
     document.getElementById('btnVoltarLogin').addEventListener('click', function() {
       mostrarTela('inicio');
+    });
+
+    document.getElementById('btnEsqueciSenha').addEventListener('click', function() {
+      const email = document.getElementById('emailLogin').value.trim();
+      const mensagemErro = document.getElementById('mensagemErro');
+
+      if (!email) {
+        mensagemErro.textContent = 'Digite seu email para redefinir a senha!';
+        return;
+      }
+
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          mensagemErro.textContent = 'Email de redefinição de senha enviado! Verifique sua caixa de entrada.';
+        })
+        .catch((error) => {
+          console.error('Erro ao enviar email de redefinição:', error);
+          if (error.code === 'auth/invalid-email') {
+            mensagemErro.textContent = 'Email inválido.';
+          } else if (error.code === 'auth/user-not-found') {
+            mensagemErro.textContent = 'Email não registrado.';
+          } else {
+            mensagemErro.textContent = 'Erro ao enviar email de redefinição. Tente novamente.';
+          }
+        });
     });
 
     const menuBtn = document.getElementById('menuBtn');
@@ -836,7 +909,7 @@
           console.log(`Complemento da escala: ${nome} - ${tarefa}`);
         }
 
-        await db.collection('escala').doc('config').set({ nomes, admins }, { merge: true });
+        await db.collection('escala').doc('config').set({ nomes, admins, adminConfig }, { merge: true });
         await salvarEscalaNoFirestore();
         console.log('Escala após substituição:', escalaAtual);
         console.log('Nomes removidos:', nomesRemovidos);
@@ -857,7 +930,7 @@
         try {
           escalaAtual = [];
           faltantesPendentes = [];
-          await db.collection('escala').doc('config').set({ nomes, admins }, { merge: true });
+          await db.collection('escala').doc('config').set({ nomes, admins, adminConfig }, { merge: true });
           await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
           mostrarTela('painel');
@@ -908,39 +981,150 @@
     }
 
     document.getElementById('btnAdicionarAdmin').addEventListener('click', function() {
-      const input = document.getElementById('novoAdminInput');
-      const novoEmail = input.value.trim();
+      const inputEmail = document.getElementById('novoAdminInput');
+      const inputSenha = document.getElementById('novaSenhaAdminInput');
+      const novoEmail = inputEmail.value.trim();
+      const novaSenha = inputSenha.value.trim();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (novoEmail.length > 0 && emailRegex.test(novoEmail) && !admins.includes(novoEmail)) {
-        // Verifica se o email existe no Firebase Authentication
-        auth.fetchSignInMethodsForEmail(novoEmail)
-          .then((signInMethods) => {
-            if (signInMethods.length > 0) {
-              admins.push(novoEmail);
-              admins.sort((a, b) => a.localeCompare(b));
-              input.value = '';
-              atualizarListaAdminsEdicao();
-            } else {
-              alert('Este email não está registrado no sistema. O usuário precisa criar uma conta primeiro.');
-            }
-          })
-          .catch((error) => {
-            console.error('Erro ao verificar email:', error);
-            alert('Erro ao verificar o email. Verifique se é válido e tente novamente.');
-          });
-      } else {
-        alert('Email inválido ou já existe na lista de administradores!');
+
+      if (!novoEmail || !emailRegex.test(novoEmail)) {
+        alert('Digite um email válido!');
+        return;
       }
+      if (admins.includes(novoEmail)) {
+        alert('Este email já está na lista de administradores!');
+        return;
+      }
+      if (novaSenha.length < 6) {
+        alert('A senha deve ter pelo menos 6 caracteres!');
+        return;
+      }
+
+      auth.fetchSignInMethodsForEmail(novoEmail)
+        .then((signInMethods) => {
+          if (signInMethods.length > 0) {
+            admins.push(novoEmail);
+            admins.sort((a, b) => a.localeCompare(b));
+            adminConfig[novoEmail] = { primeiroLogin: true };
+            inputEmail.value = '';
+            inputSenha.value = '';
+            atualizarListaAdminsEdicao();
+          } else {
+            auth.createUserWithEmailAndPassword(novoEmail, novaSenha)
+              .then((userCredential) => {
+                admins.push(novoEmail);
+                admins.sort((a, b) => a.localeCompare(b));
+                adminConfig[novoEmail] = { primeiroLogin: true };
+                inputEmail.value = '';
+                inputSenha.value = '';
+                atualizarListaAdminsEdicao();
+                // Enviar email de verificação
+                userCredential.user.sendEmailVerification()
+                  .then(() => {
+                    console.log('Email de verificação enviado para:', novoEmail);
+                  })
+                  .catch((error) => {
+                    console.error('Erro ao enviar email de verificação:', error);
+                  });
+              })
+              .catch((error) => {
+                console.error('Erro ao criar usuário:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                  alert('Este email já está registrado, mas não como administrador.');
+                } else if (error.code === 'auth/invalid-email') {
+                  alert('Email inválido.');
+                } else {
+                  alert('Erro ao criar usuário. Tente novamente.');
+                }
+              });
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao verificar email:', error);
+          alert('Erro ao verificar o email. Verifique se é válido e tente novamente.');
+        });
     });
 
     document.getElementById('btnSalvarAdmins').addEventListener('click', async function() {
       try {
-        await db.collection('escala').doc('config').set({ admins, nomes }, { merge: true });
+        await db.collection('escala').doc('config').set({ admins, nomes, adminConfig }, { merge: true });
         alert('Lista de administradores salva com sucesso!');
         mostrarTela('painel');
       } catch (error) {
         console.error('Erro ao salvar administradores no Firestore:', error);
         alert('Erro ao salvar administradores. Verifique sua conexão.');
+      }
+    });
+
+    // Funções de Minha Conta
+    document.getElementById('btnMinhaConta').addEventListener('click', function() {
+      if (isAdmin) {
+        mostrarTela('minha-conta');
+      }
+    });
+
+    document.getElementById('btnVoltarMinhaConta').addEventListener('click', function() {
+      mostrarTela('painel');
+    });
+
+    function atualizarTelaMinhaConta() {
+      const mensagemAviso = document.getElementById('mensagemAviso');
+      const mensagemErro = document.getElementById('mensagemErroMinhaConta');
+      mensagemErro.textContent = '';
+      document.getElementById('novaSenhaInput').value = '';
+      document.getElementById('confirmarSenhaInput').value = '';
+      if (adminConfig[usuarioLogado.email]?.primeiroLogin) {
+        mensagemAviso.textContent = 'Bem-vindo! Por favor, defina uma nova senha para sua conta.';
+      } else {
+        mensagemAviso.textContent = '';
+      }
+    }
+
+    document.getElementById('btnAlterarSenha').addEventListener('click', function() {
+      const novaSenha = document.getElementById('novaSenhaInput').value.trim();
+      const confirmarSenha = document.getElementById('confirmarSenhaInput').value.trim();
+      const mensagemErro = document.getElementById('mensagemErroMinhaConta');
+
+      if (!novaSenha || !confirmarSenha) {
+        mensagemErro.textContent = 'Preencha ambos os campos de senha!';
+        return;
+      }
+      if (novaSenha !== confirmarSenha) {
+        mensagemErro.textContent = 'As senhas não coincidem!';
+        return;
+      }
+      if (novaSenha.length < 6) {
+        mensagemErro.textContent = 'A senha deve ter pelo menos 6 caracteres!';
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (user) {
+        user.updatePassword(novaSenha)
+          .then(() => {
+            adminConfig[usuarioLogado.email] = { primeiroLogin: false };
+            db.collection('escala').doc('config').set({ admins, nomes, adminConfig }, { merge: true })
+              .then(() => {
+                alert('Senha alterada com sucesso!');
+                mostrarTela('painel');
+              })
+              .catch((error) => {
+                console.error('Erro ao salvar config no Firestore:', error);
+                mensagemErro.textContent = 'Erro ao salvar alterações. Tente novamente.';
+              });
+          })
+          .catch((error) => {
+            console.error('Erro ao alterar senha:', error);
+            if (error.code === 'auth/requires-recent-login') {
+              mensagemErro.textContent = 'Por favor, faça login novamente para alterar a senha.';
+              auth.signOut().then(() => mostrarTela('login'));
+            } else {
+              mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
+            }
+          });
+      } else {
+        mensagemErro.textContent = 'Usuário não autenticado. Faça login novamente.';
+        auth.signOut().then(() => mostrarTela('login'));
       }
     });
 
