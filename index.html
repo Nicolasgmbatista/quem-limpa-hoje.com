@@ -521,82 +521,101 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
     for(let i=0;i<presentes.length;i++){
       idx = proximoIndice(idx,usados);
       const n=nomes[idx];
-      const t = i===0 ? alternarTarefa(historicoTarefa[n]||'mesa') : substitutos[0].tarefa==='mesa'?'chão':'mesa';
+      const t = i===0 ? alternarTarefa(historicoTarefa[presentes[i].nome]||'mesa') : alternarTarefa(substitutos[0].tarefa);
       historicoTarefa[n]=t;
       substitutos.push({nome:n,tarefa:t,index:idx});
       usados.push(n);
     }
-
-    escalaAtual=[...retornantes,...substitutos].slice(0,2);
-    if(escalaAtual.length===2 && escalaAtual[0].tarefa===escalaAtual[1].tarefa){
-      escalaAtual[1].tarefa=alternarTarefa(escalaAtual[0].tarefa);
-      historicoTarefa[escalaAtual[1].nome]=escalaAtual[1].tarefa;
-    }
-    if(escalaAtual.length===2) posicaoUltimaEscala=escalaAtual[1].index;
+    escalaAtual = [...retornantes, ...substitutos];
+    posicaoUltimaEscala = substitutos.length > 0 ? substitutos[substitutos.length-1].index : posicaoUltimaEscala;
     await salvarEscalaNoFirestore();
     atualizarResultadoEFormulario();
   }
 
-  // Confirmar faltas e atualiza escala
-  async function confirmarFaltas(){
-    const faltaram=[], presentes=[];
-    escalaAtual.forEach(p=>{
-      const c=document.getElementById(p.nome);
-      if(c && c.checked) faltaram.push(p); else presentes.push(p);
-    });
-    faltantesPendentes = faltantesPendentes.concat(faltaram);
-    const novosSubstitutos = [];
-    let usados = escalaAtual.map(p=>p.nome).concat(faltantesPendentes.map(f=>f.nome));
-    let idx = posicaoUltimaEscala;
-    for(let f of faltaram){
-      idx = proximoIndice(idx, usados);
-      const n = nomes[idx];
-      historicoTarefa[f.nome] = f.tarefa;
-      novosSubstitutos.push({nome:n,tarefa:f.tarefa,index:idx});
-      usados.push(n);
-    }
-    presentes.forEach(p => historicoTarefa[p.nome] = p.tarefa);
-    escalaAtual = [...presentes, ...novosSubstitutos].slice(0,2);
-    if(escalaAtual.length===2 && escalaAtual[0].tarefa === escalaAtual[1].tarefa){
-      escalaAtual[1].tarefa = alternarTarefa(escalaAtual[0].tarefa);
-      historicoTarefa[escalaAtual[1].nome] = escalaAtual[1].tarefa;
-    }
-    if(escalaAtual.length===2) posicaoUltimaEscala = escalaAtual[1].index;
-    await salvarEscalaNoFirestore();
-    atualizarResultadoEFormulario();
-  }
-
-  // Atualizar UI
-  function atualizarResultadoEFormulario(){
-    const lista = document.getElementById('listaEscala');
-    lista.innerHTML = '';
+  function atualizarResultadoEFormulario() {
+    const listaEscala = document.getElementById('listaEscala');
+    listaEscala.innerHTML = '';
     escalaAtual.forEach(p => {
       const li = document.createElement('li');
-      li.textContent = p.nome;
-      const span = document.createElement('span');
-      span.textContent = p.tarefa;
-      span.style.fontWeight = 'bold';
-      li.appendChild(span);
-      lista.appendChild(li);
+      li.textContent = `${p.nome} - ${p.tarefa}`;
+      listaEscala.appendChild(li);
     });
 
-    if(isAdmin){
-      document.getElementById('pergunta').style.display = 'block';
-      const c = document.getElementById('checkboxContainer');
-      c.innerHTML = '';
-      escalaAtual.forEach(p => {
-        const d = document.createElement('div');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox'; cb.id = p.nome; cb.name = 'faltou'; cb.value = p.nome;
-        const l = document.createElement('label');
-        l.htmlFor = p.nome; l.textContent = p.nome;
-        d.appendChild(cb); d.appendChild(l);
-        c.appendChild(d);
-      });
-    } else {
-      document.getElementById('pergunta').style.display = 'none';
-    }
+    // Mostrar o formulário para marcar faltas só se for admin
+    document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
+    montarCheckboxFaltantes();
   }
+
+  function montarCheckboxFaltantes() {
+    const container = document.getElementById('checkboxContainer');
+    container.innerHTML = '';
+
+    escalaAtual.forEach(p => {
+      const div = document.createElement('div');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = 'chk_' + p.nome;
+      checkbox.value = p.nome;
+      const label = document.createElement('label');
+      label.htmlFor = checkbox.id;
+      label.textContent = p.nome;
+      div.appendChild(checkbox);
+      div.appendChild(label);
+      container.appendChild(div);
+    });
+  }
+
+  // Botões e eventos
+
+  document.getElementById('btnProfessor').addEventListener('click', () => {
+    mostrarTela('login');
+  });
+
+  document.getElementById('btnEstudante').addEventListener('click', () => {
+    usuarioLogado = { email: null, tipo: 'estudante' };
+    isAdmin = false;
+    mostrarTela('painel');
+    gerarEscala();
+  });
+
+    document.getElementById('btnResetar').addEventListener('click', async () => {
+  const confirmacao = confirm("Tem certeza que deseja resetar completamente a escala?");
+  if (!confirmacao) return;
+
+  posicaoUltimaEscala = -1;
+  historicoTarefa = {};
+  escalaAtual = [];
+  faltantesPendentes = [];
+
+  await db.collection('escala').doc('dados').set({
+    posicaoUltimaEscala,
+    historicoTarefa,
+    escalaAtual,
+    faltantesPendentes
+  });
+
+  atualizarResultadoEFormulario();
+  alert("Escala resetada com sucesso!");
+});
+
+  document.getElementById('btnEntrar').addEventListener('click', () => {
+    const email = document.getElementById('emailLogin').value.trim();
+    const senha = document.getElementById('senhaLogin').value.trim();
+
+    if(email.length === 0 || senha.length === 0){
+      document.getElementById('mensagemErro').textContent = 'Preencha email e senha!';
+      return;
+    }
+    if(admins.includes(email)){
+      usuarioLogado = { email, tipo: 'admin' };
+      isAdmin = true;
+      document.getElementById('mensagemErro').textContent = '';
+      mostrarTela('painel');
+      gerarEscala();
+    } else {
+      document.getElementById('mensagemErro').textContent = 'Usuário não autorizado.';
+    }
+  });
 
   document.getElementById('btnVoltarLogin').addEventListener('click', () => {
     mostrarTela('inicio');
