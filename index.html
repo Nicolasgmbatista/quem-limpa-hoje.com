@@ -201,14 +201,6 @@
     #checkboxContainer div label {
       font-size: 16px;
     }
-
-    #avisoReset {
-      margin-top: 20px;
-      color: #e74c3c;
-      font-weight: bold;
-      font-size: 14px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -250,7 +242,7 @@
 
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
-      <button id="btnLiberarAcesso">Liberar Acesso</button>
+      <button id="btnLiberarAcesso">Editar</button>
       <button id="btnResetar">Resetar Escala</button>
       <button id="btnSair">Sair</button>
     </nav>
@@ -441,18 +433,6 @@
           document.getElementById('menuLateral').style.display = 'flex';
           document.getElementById('btnContinuar').style.display = 'block';
           document.getElementById('pergunta').style.display = 'block';
-
-          if(!document.getElementById('avisoReset')){
-            const aviso = document.createElement('div');
-            aviso.id = 'avisoReset';
-            aviso.style.marginTop = '20px';
-            aviso.style.color = '#e74c3c';
-            aviso.style.fontWeight = 'bold';
-            aviso.style.fontSize = '14px';
-            aviso.style.textAlign = 'center';
-            aviso.textContent = '⚠️ Cuidado: o botão resetar apaga TODOS os dados!';
-            document.getElementById('formQuemLimpou').appendChild(aviso);
-          }
         } else {
           document.getElementById('menuBtn').style.display = 'none';
           document.getElementById('menuLateral').style.display = 'none';
