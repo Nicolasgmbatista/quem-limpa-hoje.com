@@ -98,18 +98,21 @@
     <div id="conteudoEscala" style="display:none;">
       <button id="menuBtn" title="Abrir menu">☰</button>
       <h1>Quem limpa a sala hoje?</h1>
-      <div id="resultado">
-        <h2>Escala de hoje:</h2>
-        <ul id="listaEscala"></ul>
-        <button id="btnContinuar">Continuar</button>
-      </div>
-      <div id="pergunta" style="display:none;">
-        <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
-        <form id="formQuemLimpou">
-          <div id="checkboxContainer"></div>
-          <button type="submit">Confirmar</button>
-        </form>
-      </div>
+     <div id="resultado">
+  <h2>Escala de hoje:</h2>
+  <ul id="listaEscala"></ul>
+  
+  <!-- Botão Continuar só para admins -->
+  <button id="btnContinuar" style="display:none;">Continuar</button>
+</div>
+
+<div id="pergunta" style="display:none;">
+  <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
+  <form id="formQuemLimpou">
+    <div id="checkboxContainer"></div>
+    <button type="submit">Confirmar</button>
+  </form>
+</div>
     </div>
 
     <nav id="menuLateral">
