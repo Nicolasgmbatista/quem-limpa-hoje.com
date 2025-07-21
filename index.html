@@ -626,18 +626,19 @@
 });
 
   // Formulário para marcar quem faltou
-  document.getElementById('formQuemLimpou').addEventListener('submit', e => {
-    e.preventDefault();
-    const checkboxes = document.querySelectorAll('#checkboxContainer input[type=checkbox]');
-    faltantesPendentes = [];
-    checkboxes.forEach(cb => {
-      if(cb.checked) {
-        const nome = cb.value;
-        faltantesPendentes.push({ nome, tarefa: escalaAtual.find(p => p.nome === nome)?.tarefa || 'mesa' });
-      }
-    });
-    gerarEscala();
+ document.getElementById('formQuemLimpou').addEventListener('submit', e => {
+  e.preventDefault();
+  const checkboxes = document.querySelectorAll('#checkboxContainer input[type=checkbox]');
+  faltantesPendentes = [];
+  checkboxes.forEach(cb => {
+    if(cb.checked) {
+      const nome = cb.value;
+      faltantesPendentes.push({ nome, tarefa: escalaAtual.find(p => p.nome === nome)?.tarefa || 'mesa' });
+    }
   });
+  gerarEscala();
+});
+
 
   // Funções de edição de nomes
 
