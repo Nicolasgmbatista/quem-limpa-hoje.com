@@ -78,7 +78,7 @@
       user-select: none;
       padding: 0;
       line-height: 1;
-      display: none; /* por padrão escondido */
+      display: none; /* só para admins */
       z-index: 1500;
     }
 
@@ -96,7 +96,7 @@
       gap: 20px;
       transition: right 0.3s ease;
       z-index: 1000;
-      display: none; /* por padrão escondido */
+      display: none;
     }
 
     #menuLateral.aberto {
@@ -183,7 +183,7 @@
       margin-top: 10px;
       background-color: #27ae60;
       width: 100%;
-      display: none; /* será exibido só para admins na tela painel */
+      display: none; /* só admins, aparece na tela painel */
     }
 
     #btnContinuar:hover {
@@ -213,7 +213,7 @@
       text-align: center;
     }
 
-    /* Nova tela de edição de nomes */
+    /* Tela edição nomes */
     #telaEditarNomes {
       display: none;
       text-align: left;
@@ -344,7 +344,7 @@
       <button id="btnSair">Sair</button>
     </nav>
 
-    <!-- Nova tela para edição dos nomes -->
+    <!-- Tela editar nomes -->
     <div id="telaEditarNomes">
       <h2>Editar Nomes</h2>
       <ul id="listaNomesEdicao"></ul>
@@ -413,11 +413,11 @@
       document.getElementById('conteudoEscala').style.display = 'block';
 
       if(isAdmin){
-        // Admin vê só botão continuar (escala aparece após clicar)
+        // Admin vê só botão continuar inicialmente, escala aparece após clicar
         document.getElementById('btnContinuar').style.display = 'block';
         document.getElementById('pergunta').style.display = 'none';
         document.getElementById('listaEscala').innerHTML = '';
-        // Mostra botão menu para abrir menu lateral
+        // Mostrar botão menu para admin
         document.getElementById('menuBtn').style.display = 'block';
       } else {
         // Estudante vê escala direto, sem botão continuar e sem formulário
@@ -575,7 +575,7 @@
     document.getElementById('mensagemErro').textContent = '';
   });
 
-  // Login e autenticação
+  // Login e autenticação Firebase
   async function validarLoginFirebase(email, senha) {
     try {
       const doc = await db.collection('usuarios').doc(email).get();
@@ -592,6 +592,7 @@
     const email = document.getElementById('emailLogin').value.trim().toLowerCase();
     const senha = document.getElementById('senhaLogin').value;
 
+    // Verifica admins hardcoded com senha 'senha123'
     if(admins.includes(email) && senha === 'senha123'){
       usuarioLogado = {email, perfil:'admin'};
       isAdmin = true;
