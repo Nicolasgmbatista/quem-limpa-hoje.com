@@ -81,21 +81,22 @@
     }
 
     #menuLateral {
-      position: fixed;
-      top: 0;
-      right: -280px;
-      width: 280px;
-      height: 100vh;
-      background: #2c3e50;
-      color: white;
-      box-shadow: -3px 0 8px rgba(0,0,0,0.15);
-      padding: 30px 20px;
-      flex-direction: column;
-      gap: 20px;
-      transition: right 0.3s ease;
-      z-index: 1000;
-      display: none;
-    }
+  position: fixed;
+  top: 0;
+  right: -280px; /* fica fora da tela à direita */
+  width: 280px;
+  height: 100vh;
+  background: #2c3e50;
+  color: white;
+  box-shadow: -3px 0 8px rgba(0,0,0,0.15);
+  padding: 30px 20px;
+  flex-direction: column;
+  gap: 20px;
+  transition: right 0.3s ease;
+  z-index: 1000;
+  display: flex; /* manter como flex para os filhos funcionarem */
+}
+
 
     #menuLateral.aberto {
       right: 0;
@@ -609,20 +610,20 @@
     mostrarTela('inicio');
   });
 
-  document.getElementById('menuBtn').addEventListener('click', () => {
-    const menu = document.getElementById('menuLateral');
-    if(menu.classList.contains('aberto')){
-      menu.classList.remove('aberto');
-    } else {
-      menu.classList.add('aberto');
-      menu.style.display = 'flex';
-    }
-  });
+  const menuBtn = document.getElementById('menuBtn');
+const menuLateral = document.getElementById('menuLateral');
+const fecharMenu = document.getElementById('fecharMenu');
 
-  document.getElementById('fecharMenu').addEventListener('click', () => {
-    const menu = document.getElementById('menuLateral');
-    menu.classList.remove('aberto');
-  });
+menuBtn.addEventListener('click', () => {
+  menuLateral.classList.toggle('aberto'); // abre ou fecha o menu
+});
+
+fecharMenu.addEventListener('click', () => {
+  menuLateral.classList.remove('aberto'); // fecha o menu
+});
+
+
+
 
   document.getElementById('btnSair').addEventListener('click', () => {
     usuarioLogado = null;
