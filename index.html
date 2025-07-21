@@ -33,7 +33,7 @@
       font-weight: 700;
     }
 
-    button, input {
+    button, input, textarea {
       font-size: 16px;
       border-radius: 6px;
       border: none;
@@ -43,6 +43,7 @@
       font-weight: bold;
       transition: background-color 0.3s ease;
       outline: none;
+      box-sizing: border-box;
     }
 
     button {
@@ -54,15 +55,18 @@
       background-color: #34495e;
     }
 
-    input[type="email"], input[type="password"] {
-      width: 260px;
+    input[type="email"], input[type="password"], textarea {
+      width: 100%;
       border: 2px solid #ccc;
       transition: border-color 0.3s ease;
       margin-bottom: 15px;
       padding: 10px;
+      resize: vertical;
+      font-family: inherit;
+      font-weight: normal;
     }
 
-    input[type="email"]:focus, input[type="password"]:focus {
+    input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
       border-color: #2c3e50;
     }
 
@@ -209,10 +213,40 @@
       font-size: 14px;
       text-align: center;
     }
+
+    /* Estilos tela Editar Nomes */
+    #telaEditarNomes {
+      display: none;
+      text-align: left;
+    }
+
+    #telaEditarNomes h1 {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    #inputNomes {
+      height: 180px;
+      font-size: 15px;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 6px;
+      border: 2px solid #ccc;
+      resize: vertical;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #btnSalvarNomes, #btnCancelarNomes {
+      width: 48%;
+      margin: 5px 1%;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div id="app">
+    <!-- Tela Inicial -->
     <div id="telaInicial">
       <h1>Quem limpa a sala hoje?</h1>
       <p>Escolha seu perfil para continuar:</p>
@@ -220,6 +254,7 @@
       <button id="btnEstudante">Estudante</button>
     </div>
 
+    <!-- Tela Login -->
     <div id="telaLogin" style="display:none;">
       <h1>Login - Professor / Representante</h1>
       <div id="mensagemErro"></div>
@@ -231,6 +266,7 @@
       </div>
     </div>
 
+    <!-- Tela Escala -->
     <div id="conteudoEscala" style="display:none;">
       <button id="menuBtn" title="Abrir menu">☰</button>
       <h1>Quem limpa a sala hoje?</h1>
@@ -248,6 +284,18 @@
       </div>
     </div>
 
+    <!-- Tela Editar Nomes -->
+    <div id="telaEditarNomes" style="display:none;">
+      <h1>Editar Nomes</h1>
+      <p>Edite os nomes abaixo, um por linha. Mínimo 2 nomes.</p>
+      <textarea id="inputNomes" placeholder="Ana&#10;Beatriz&#10;Bernardo"></textarea>
+      <div>
+        <button id="btnSalvarNomes">Salvar</button>
+        <button id="btnCancelarNomes">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Menu lateral -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
       <button id="btnLiberarAcesso">Liberar Acesso</button>
@@ -260,7 +308,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script>
-    // Configuração do Firebase - substitua pelas suas configurações
     const firebaseConfig = {
       apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
       authDomain: "quem-limpa-hoje.firebaseapp.com",
@@ -424,10 +471,12 @@
         escalaAtual.forEach(p => {
           const d = document.createElement('div');
           const cb = document.createElement('input');
-          cb.type = 'checkbox'; cb.id = p.nome; cb.name = 'faltou'; cb.value = p.nome;
-          const l = document.createElement('label');
-          l.htmlFor = p.nome; l.textContent = p.nome;
-          d.appendChild(cb); d.appendChild(l);
+          cb.type = 'checkbox'; cb.id = p.nome; cb.name = 'faltou';
+          const lb = document.createElement('label');
+          lb.htmlFor = p.nome;
+          lb.textContent = p.nome;
+          d.appendChild(cb);
+          d.appendChild(lb);
           c.appendChild(d);
         });
       } else {
@@ -435,52 +484,26 @@
       }
     }
 
-    // Mostrar telas
-    async function mostrarTela(t){
-      document.getElementById('telaInicial').style.display = 'none';
-      document.getElementById('telaLogin').style.display = 'none';
-      document.getElementById('conteudoEscala').style.display = 'none';
-      document.getElementById(t).style.display = 'block';
-
-      if(t === 'conteudoEscala'){
-        if(isAdmin){
-          document.getElementById('menuBtn').style.display = 'block';
-          document.getElementById('menuLateral').style.display = 'flex';
-          document.getElementById('btnContinuar').style.display = 'block';
-          document.getElementById('pergunta').style.display = 'block';
-
-          if(!document.getElementById('avisoReset')){
-            const aviso = document.createElement('div');
-            aviso.id = 'avisoReset';
-            aviso.style.marginTop = '20px';
-            aviso.style.color = '#e74c3c';
-            aviso.style.fontWeight = 'bold';
-            aviso.style.fontSize = '14px';
-            aviso.style.textAlign = 'center';
-            aviso.textContent = '⚠️ Cuidado: o botão resetar apaga TODOS os dados!';
-            document.getElementById('formQuemLimpou').appendChild(aviso);
-          }
-        } else {
-          document.getElementById('menuBtn').style.display = 'none';
-          document.getElementById('menuLateral').style.display = 'none';
-          document.getElementById('btnContinuar').style.display = 'none';
-          document.getElementById('pergunta').style.display = 'none';
-        }
-        await lerEscalaDoFirestore();
-        if(!escalaAtual || escalaAtual.length === 0) {
-          await gerarEscala();
-        } else {
-          atualizarResultadoEFormulario();
-        }
-      }
+    // Mostrar uma tela
+    function mostrarTela(nomeTela){
+      const telas = ['telaInicial', 'telaLogin', 'conteudoEscala', 'telaEditarNomes'];
+      telas.forEach(t => {
+        document.getElementById(t).style.display = t === nomeTela ? 'block' : 'none';
+      });
     }
 
-    // Eventos
-    document.getElementById('btnEstudante').onclick = async () => {
-      usuarioLogado = null;
-      isAdmin = false;
-      await mostrarTela('conteudoEscala');
-    };
+    // Mostrar menu lateral
+    function abrirMenu(){
+      document.getElementById('menuLateral').classList.add('aberto');
+    }
+
+    // Fechar menu lateral
+    function fecharMenu(){
+      document.getElementById('menuLateral').classList.remove('aberto');
+    }
+
+    // *** Eventos ***
+
     document.getElementById('btnProfessor').onclick = () => mostrarTela('telaLogin');
     document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('telaInicial');
 
@@ -491,26 +514,19 @@
         document.getElementById('mensagemErro').textContent = 'Preencha email e senha.';
         return;
       }
-      // Aqui você pode implementar autenticação real, por enquanto só verifica admins hardcoded
       if (admins.includes(email)) {
         usuarioLogado = email;
         isAdmin = true;
         document.getElementById('mensagemErro').textContent = '';
         await mostrarTela('conteudoEscala');
+        atualizarResultadoEFormulario();
       } else {
         document.getElementById('mensagemErro').textContent = 'Usuário não autorizado.';
       }
     };
 
-    document.getElementById('menuBtn').onclick = () => {
-      const menu = document.getElementById('menuLateral');
-      menu.classList.add('aberto');
-    };
-
-    document.getElementById('fecharMenu').onclick = () => {
-      const menu = document.getElementById('menuLateral');
-      menu.classList.remove('aberto');
-    };
+    document.getElementById('menuBtn').onclick = () => abrirMenu();
+    document.getElementById('fecharMenu').onclick = () => fecharMenu();
 
     document.getElementById('btnSair').onclick = () => {
       usuarioLogado = null;
@@ -518,7 +534,7 @@
       document.getElementById('emailLogin').value = '';
       document.getElementById('senhaLogin').value = '';
       mostrarTela('telaInicial');
-      document.getElementById('menuLateral').classList.remove('aberto');
+      fecharMenu();
     };
 
     document.getElementById('btnResetar').onclick = async () => {
@@ -530,42 +546,54 @@
         await salvarEscalaNoFirestore();
         await gerarEscala();
         alert('Escala resetada com sucesso!');
-        document.getElementById('menuLateral').classList.remove('aberto');
+        fecharMenu();
       }
     };
 
     document.getElementById('btnLiberarAcesso').onclick = () => {
       alert('Liberar Acesso - função ainda não implementada.');
-      document.getElementById('menuLateral').classList.remove('aberto');
+      fecharMenu();
     };
 
-    // *** AQUI: Botão Editar Nomes (adicionado) ***
-    document.getElementById('btnEditarNomes').onclick = async () => {
-      const listaAtual = nomes.join(', ');
-      const novosNomes = prompt('Edite os nomes separados por vírgula:', listaAtual);
-      if (novosNomes !== null) {
-        const arrNomes = novosNomes.split(',')
-          .map(n => n.trim())
-          .filter(n => n.length > 0);
-        if (arrNomes.length < 2) {
-          alert('Você deve informar pelo menos 2 nomes para a escala funcionar.');
-          return;
-        }
-        // Atualiza o array nomes (limpa e insere)
-        nomes.length = 0;
-        arrNomes.sort((a,b) => a.localeCompare(b)).forEach(n => nomes.push(n));
-        // Reseta a escala para aplicar a nova lista
-        posicaoUltimaEscala = -1;
-        historicoTarefa = {};
-        escalaAtual = [];
-        faltantesPendentes = [];
-        await salvarEscalaNoFirestore();
-        await gerarEscala();
-        alert('Lista de nomes atualizada com sucesso!');
-        document.getElementById('menuLateral').classList.remove('aberto');
+    // Botão editar nomes abre tela de edição
+    document.getElementById('btnEditarNomes').onclick = () => {
+      fecharMenu();
+      // Carregar nomes atuais no textarea, um por linha
+      document.getElementById('inputNomes').value = nomes.join('\n');
+      mostrarTela('telaEditarNomes');
+    };
+
+    // Botão salvar nomes
+    document.getElementById('btnSalvarNomes').onclick = async () => {
+      const texto = document.getElementById('inputNomes').value.trim();
+      if(!texto) {
+        alert('Informe ao menos 2 nomes.');
+        return;
       }
+      const listaNovos = texto.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+      if(listaNovos.length < 2) {
+        alert('Informe ao menos 2 nomes.');
+        return;
+      }
+      // Atualizar array nomes (limpar e colocar ordenado)
+      nomes.length = 0;
+      listaNovos.sort((a,b) => a.localeCompare(b)).forEach(n => nomes.push(n));
+      posicaoUltimaEscala = -1;
+      historicoTarefa = {};
+      escalaAtual = [];
+      faltantesPendentes = [];
+      await salvarEscalaNoFirestore();
+      await gerarEscala();
+      alert('Lista de nomes atualizada com sucesso!');
+      mostrarTela('conteudoEscala');
     };
 
+    // Botão cancelar nomes volta para escala sem alterações
+    document.getElementById('btnCancelarNomes').onclick = () => {
+      mostrarTela('conteudoEscala');
+    };
+
+    // Form confirmar faltas
     document.getElementById('formQuemLimpou').onsubmit = async (e) => {
       e.preventDefault();
       if(!isAdmin) return;
