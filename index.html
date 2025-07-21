@@ -433,6 +433,7 @@
   mostrarTela('inicio');
 
   // Firestore funções
+// Firestore funções
 async function salvarEscalaNoFirestore() {
   await db.collection('escala').doc('dados').set({
     posicaoUltimaEscala,
@@ -477,26 +478,25 @@ async function gerarEscala() {
   let novaEscala = [];
 
   // Se for a primeira escala
-  if (escalaAtual.length === 0) {
+  if (posicaoUltimaEscala === -1 || escalaAtual.length === 0) {
     for (let i = 0; i < 2; i++) {
       idx = proximoIndice(idx, usados);
       const nome = nomes[idx];
       const tarefa = i === 0
-        ? alternarTarefa(historicoTarefa[nome] || 'mesa')
+        ? 'mesa'
         : alternarTarefa(novaEscala[0].tarefa);
       historicoTarefa[nome] = tarefa;
-      usados.push(nome);
       novaEscala.push({ nome, tarefa, index: idx });
+      usados.push(nome);
     }
   } else {
-    // Se já existe uma escala
-    // Adiciona os faltantes pendentes primeiro (com a mesma tarefa)
+    // Adiciona os que faltaram no dia anterior com a mesma tarefa
     for (const f of faltantesPendentes) {
       novaEscala.push({ nome: f.nome, tarefa: f.tarefa });
       usados.push(f.nome);
     }
 
-    // Adiciona novas pessoas para completar
+    // Completa com novos nomes se necessário
     while (novaEscala.length < 2) {
       idx = proximoIndice(idx, usados);
       if (idx === -1) break;
@@ -512,12 +512,11 @@ async function gerarEscala() {
 
   escalaAtual = novaEscala;
   faltantesPendentes = [];
-  posicaoUltimaEscala = escalaAtual.length > 0 ? escalaAtual[escalaAtual.length - 1].index : posicaoUltimaEscala;
+  posicaoUltimaEscala = novaEscala.length > 0 ? novaEscala[novaEscala.length - 1].index : posicaoUltimaEscala;
 
   await salvarEscalaNoFirestore();
   atualizarResultadoEFormulario();
 }
-
 
     const faltantesHoje = [...faltantesPendentes];
     faltantesPendentes = [];
