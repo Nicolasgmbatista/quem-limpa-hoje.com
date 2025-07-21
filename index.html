@@ -545,19 +545,22 @@ async function gerarEscala() {
   }
 }
 
-// Eventos dos botões iniciais com console.log para debug
+document.addEventListener('DOMContentLoaded', () => {
+  // Botões iniciais
+  document.getElementById('btnProfessor').addEventListener('click', () => {
+    console.log('Clique no botão Professor detectado');
+    mostrarTela('login');
+  });
 
-document.getElementById('btnProfessor').addEventListener('click', () => {
-  console.log('Clique no botão Professor detectado');
-  mostrarTela('login');
-});
+  document.getElementById('btnEstudante').addEventListener('click', async () => {
+    console.log('Clique no botão Estudante detectado');
+    usuarioLogado = { email: null, tipo: 'estudante' };
+    isAdmin = false;
+    mostrarTela('painel');
+    await gerarEscala();
+  });
 
-document.getElementById('btnEstudante').addEventListener('click', async () => {
-  console.log('Clique no botão Estudante detectado');
-  usuarioLogado = { email: null, tipo: 'estudante' };
-  isAdmin = false;
-  mostrarTela('painel');
-  await gerarEscala();
+  // Aqui você pode adicionar mais botões se quiser
 });
 
 
