@@ -490,40 +490,75 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
     return -1;
   }
 
-  async function gerarEscala() {
-  // Guardar os faltantes para o próximo dia e limpar a lista atual
-  const faltantes = [...faltantesPendentes];
-  faltantesPendentes = [];
-
-  // Lista de nomes já usados para evitar repetição no dia atual
-  let usadosHoje = [];
-
-  // Se ainda não tem escala, iniciar escala com duas pessoas, alternando tarefas
-  if (escalaAtual.length === 0) {
+  // Função gerarEscala com try-catch para evitar erros travando a UI
+async function gerarEscala() {
+  try {
+    const retornantes = [...faltantesPendentes];
+    faltantesPendentes = [];
+    let usados = retornantes.map(f => f.nome);
     let idx = posicaoUltimaEscala;
 
-    const idx1 = proximoIndice(idx, usadosHoje);
-    const nome1 = nomes[idx1];
-    const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
-    historicoTarefa[nome1] = tarefa1;
-    usadosHoje.push(nome1);
+    if (escalaAtual.length === 0) {
+      const idx1 = proximoIndice(idx, usados);
+      const n1 = nomes[idx1];
+      const t1 = alternarTarefa(historicoTarefa[n1] || 'mesa');
+      historicoTarefa[n1] = t1;
+      usados.push(n1);
 
-    const idx2 = proximoIndice(idx1, usadosHoje);
-    const nome2 = nomes[idx2];
-    const tarefa2 = alternarTarefa(tarefa1);
-    historicoTarefa[nome2] = tarefa2;
-    usadosHoje.push(nome2);
+      const idx2 = proximoIndice(idx1, usados);
+      const n2 = nomes[idx2];
+      const t2 = alternarTarefa(t1);
+      historicoTarefa[n2] = t2;
 
-    escalaAtual = [
-      { nome: nome1, tarefa: tarefa1, index: idx1 },
-      { nome: nome2, tarefa: tarefa2, index: idx2 }
-    ];
-    posicaoUltimaEscala = idx2;
+      escalaAtual = [
+        { nome: n1, tarefa: t1, index: idx1 },
+        { nome: n2, tarefa: t2, index: idx2 }
+      ];
+      posicaoUltimaEscala = idx2;
+      await salvarEscalaNoFirestore();
+      atualizarResultadoEFormulario();
+      return;
+    }
 
+    const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
+    const substitutos = [];
+    usados = escalaAtual.map(p => p.nome).concat(retornantes.map(f => f.nome));
+    for (let i = 0; i < presentes.length; i++) {
+      idx = proximoIndice(idx, usados);
+      const n = nomes[idx];
+      const t = i === 0
+        ? alternarTarefa(historicoTarefa[presentes[i].nome] || 'mesa')
+        : alternarTarefa(substitutos[0].tarefa);
+      historicoTarefa[n] = t;
+      substitutos.push({ nome: n, tarefa: t, index: idx });
+      usados.push(n);
+    }
+    escalaAtual = [...retornantes, ...substitutos];
+    posicaoUltimaEscala = substitutos.length > 0
+      ? substitutos[substitutos.length - 1].index
+      : posicaoUltimaEscala;
     await salvarEscalaNoFirestore();
     atualizarResultadoEFormulario();
-    return;
+
+  } catch (e) {
+    console.error('Erro em gerarEscala:', e);
   }
+}
+
+// Eventos dos botões iniciais com console.log para debug
+
+document.getElementById('btnProfessor').addEventListener('click', () => {
+  console.log('Clique no botão Professor detectado');
+  mostrarTela('login');
+});
+
+document.getElementById('btnEstudante').addEventListener('click', async () => {
+  console.log('Clique no botão Estudante detectado');
+  usuarioLogado = { email: null, tipo: 'estudante' };
+  isAdmin = false;
+  mostrarTela('painel');
+  await gerarEscala();
+});
 
   // Para dia seguinte, vamos montar a escala:
   // - quem faltou é removido do dia atual e ficará para o próximo dia
