@@ -337,7 +337,6 @@
     <!-- Menu lateral -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
-      <!-- Botão Editar Nomes inserido acima dos outros -->
       <button id="btnEditarNomes">Editar Nomes</button>
       <button id="btnLiberarAcesso">Liberar Acesso</button>
       <button id="btnResetar">Resetar Escala</button>
@@ -378,7 +377,6 @@
 
   // Variáveis globais
   let admins = ["gonzagamezzomozaira@gmail.com", "fabiana.martini@edu.sc.senai.br", "beatriz_k_morais@estudante.sesisenai.org.br", "nicolasgmbatista15@gmail.com", "cassia.savi@edu.sc.senai.br"];
-
   let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
 
   let posicaoUltimaEscala = -1;
@@ -415,12 +413,17 @@
         document.getElementById('conteudoEscala').style.display = 'block';
         document.getElementById('menuBtn').style.display = isAdmin ? 'block' : 'none';
         if(isAdmin) {
-          // O menu lateral inicia escondido e só aparece ao clicar no botão
           document.getElementById('menuLateral').style.display = 'none';
           document.getElementById('menuLateral').classList.remove('aberto');
+          // Mostrar pergunta e botão continuar ao entrar
+          document.getElementById('btnContinuar').style.display = 'block';
+          document.getElementById('pergunta').style.display = 'block';
         } else {
           document.getElementById('menuLateral').classList.remove('aberto');
           document.getElementById('menuLateral').style.display = 'none';
+          // Para estudantes, ocultar continuar e pergunta
+          document.getElementById('btnContinuar').style.display = 'none';
+          document.getElementById('pergunta').style.display = 'none';
         }
         break;
       case 'editar-nomes':
@@ -496,19 +499,21 @@
       return;
     }
 
-    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome===p.nome));
+    const presentes = escalaAtual.filter(p=>!faltantesPendentes.some(f=>f.nome===p.nome));
     const substitutos = [];
-    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
-    for(let i=0;i<presentes.length;i++){
-      idx = proximoIndice(idx,usados);
+
+    while(substitutos.length+presentes.length < 2) {
+      idx=proximoIndice(idx,usados);
+      if(idx===-1) break;
       const n=nomes[idx];
-      const t = i===0 ? alternarTarefa(historicoTarefa[n]||'mesa') : substitutos[0].tarefa==='mesa'?'chão':'mesa';
+      const t=alternarTarefa(historicoTarefa[n]||'mesa');
       historicoTarefa[n]=t;
       substitutos.push({nome:n,tarefa:t,index:idx});
       usados.push(n);
     }
-    escalaAtual = substitutos.concat(retornantes);
-    posicaoUltimaEscala = substitutos.length>0 ? substitutos[substitutos.length-1].index : posicaoUltimaEscala;
+
+    escalaAtual = presentes.concat(substitutos);
+    posicaoUltimaEscala = escalaAtual.length>0 ? escalaAtual[escalaAtual.length-1].index : posicaoUltimaEscala;
     faltantesPendentes = [];
     await salvarEscalaNoFirestore();
     atualizarResultadoEFormulario();
@@ -519,7 +524,7 @@
     lista.innerHTML = '';
     for(let pessoa of escalaAtual) {
       const li = document.createElement('li');
-      li.textContent = pessoa.nome + ' - ' + pessoa.tarefa;
+      li.textContent = pessoa.nome + ' (' + pessoa.tarefa + ')';
       lista.appendChild(li);
     }
 
@@ -541,22 +546,21 @@
 
     // Mostrar ou ocultar o botão continuar só para admin
     document.getElementById('btnContinuar').style.display = isAdmin ? 'block' : 'none';
+
+    // Para admin, se estamos na tela painel, mostrar pergunta junto
+    if(isAdmin && telaAtual === 'painel'){
+      document.getElementById('pergunta').style.display = 'block';
+    } else {
+      document.getElementById('pergunta').style.display = 'none';
+    }
   }
 
-  function mostrarPergunta() {
-    document.getElementById('pergunta').style.display = 'block';
-  }
-
-  function esconderPergunta() {
-    document.getElementById('pergunta').style.display = 'none';
-  }
-
-  // Manipular evento do botão continuar
+  // Mostrar pergunta ao clicar no botão continuar (só admin)
   document.getElementById('btnContinuar').addEventListener('click', () => {
-    mostrarPergunta();
+    document.getElementById('pergunta').style.display = 'block';
   });
 
-  // Confirmar faltantes
+  // Confirmar quem faltou ou limpou
   document.getElementById('formQuemLimpou').addEventListener('submit', async (e) => {
     e.preventDefault();
     const checkboxes = document.querySelectorAll('#checkboxContainer input[type=checkbox]');
@@ -569,7 +573,8 @@
       }
     });
     faltantesPendentes = faltantes;
-    esconderPergunta();
+    document.getElementById('pergunta').style.display = 'none';
+
     escalaAtual = escalaAtual.filter(p => !faltantes.some(f => f.nome === p.nome));
     await gerarEscala();
   });
@@ -728,25 +733,23 @@
   });
 
   // Botão entrar - login simplificado
-  document.getElementById('btnEntrar').addEventListener('click', () => {
+  document.getElementById('btnEntrar').addEventListener('click', async () => {
     const email = document.getElementById('emailLogin').value.trim().toLowerCase();
     const senha = document.getElementById('senhaLogin').value.trim();
 
-    // Exemplo simples: aceita qualquer senha, apenas verifica se email está na lista admins
     if(admins.includes(email)) {
       usuarioLogado = email;
       isAdmin = true;
       document.getElementById('mensagemErro').textContent = '';
-      lerEscalaDoFirestore().then(() => {
-        mostrarTela('painel');
-        atualizarResultadoEFormulario();
-      });
+      await lerEscalaDoFirestore();
+      mostrarTela('painel');
+      atualizarResultadoEFormulario();
     } else {
       document.getElementById('mensagemErro').textContent = 'Usuário ou senha inválidos.';
     }
   });
 
-  // Inicializar
+  // Inicialização
   mostrarTela('inicio');
   </script>
 </body>
