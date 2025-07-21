@@ -543,12 +543,12 @@
         checkbox.name = 'faltante';
         const label = document.createElement('label');
         label.htmlFor = checkbox.id;
-        label.textContent = `${p.nome} (${p.tarefa})`;
+        label.textContent = p.nome; // Apenas o nome, sem a tarefa
         div.appendChild(checkbox);
         div.appendChild(label);
         container.appendChild(div);
       });
-      console.log('Checkboxes montados para:', escalaAtual.map(p => `${p.nome} (${p.tarefa})`));
+      console.log('Checkboxes montados para:', escalaAtual.map(p => p.nome));
     }
 
     // Botões e eventos
