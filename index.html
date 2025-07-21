@@ -433,65 +433,91 @@
   mostrarTela('inicio');
 
   // Firestore funções
-  async function salvarEscalaNoFirestore() {
-    await db.collection('escala').doc('dados').set({
-      posicaoUltimaEscala,
-      historicoTarefa,
-      escalaAtual,
-      faltantesPendentes
-    });
-  }
+async function salvarEscalaNoFirestore() {
+  await db.collection('escala').doc('dados').set({
+    posicaoUltimaEscala,
+    historicoTarefa,
+    escalaAtual,
+    faltantesPendentes
+  });
+}
 
-  async function lerEscalaDoFirestore() {
-    const doc = await db.collection('escala').doc('dados').get();
-    if(doc.exists) {
-      const data = doc.data();
-      posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
-      historicoTarefa = data.historicoTarefa ?? {};
-      escalaAtual = data.escalaAtual ?? [];
-      faltantesPendentes = data.faltantesPendentes ?? [];
-    } else {
-      posicaoUltimaEscala = -1;
-      historicoTarefa = {};
-      escalaAtual = [];
-      faltantesPendentes = [];
+async function lerEscalaDoFirestore() {
+  const doc = await db.collection('escala').doc('dados').get();
+  if (doc.exists) {
+    const data = doc.data();
+    posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
+    historicoTarefa = data.historicoTarefa ?? {};
+    escalaAtual = data.escalaAtual ?? [];
+    faltantesPendentes = data.faltantesPendentes ?? [];
+  } else {
+    posicaoUltimaEscala = -1;
+    historicoTarefa = {};
+    escalaAtual = [];
+    faltantesPendentes = [];
+  }
+}
+
+function alternarTarefa(tarefa) {
+  return tarefa === 'mesa' ? 'chão' : 'mesa';
+}
+
+function proximoIndice(atual, ignorados = []) {
+  let i = atual;
+  for (let c = 0; c < nomes.length; c++) {
+    i = (i + 1) % nomes.length;
+    if (!ignorados.includes(nomes[i])) return i;
+  }
+  return -1;
+}
+
+async function gerarEscala() {
+  let idx = posicaoUltimaEscala;
+  let usados = [];
+  let novaEscala = [];
+
+  // Se for a primeira escala
+  if (escalaAtual.length === 0) {
+    for (let i = 0; i < 2; i++) {
+      idx = proximoIndice(idx, usados);
+      const nome = nomes[idx];
+      const tarefa = i === 0
+        ? alternarTarefa(historicoTarefa[nome] || 'mesa')
+        : alternarTarefa(novaEscala[0].tarefa);
+      historicoTarefa[nome] = tarefa;
+      usados.push(nome);
+      novaEscala.push({ nome, tarefa, index: idx });
+    }
+  } else {
+    // Se já existe uma escala
+    // Adiciona os faltantes pendentes primeiro (com a mesma tarefa)
+    for (const f of faltantesPendentes) {
+      novaEscala.push({ nome: f.nome, tarefa: f.tarefa });
+      usados.push(f.nome);
+    }
+
+    // Adiciona novas pessoas para completar
+    while (novaEscala.length < 2) {
+      idx = proximoIndice(idx, usados);
+      if (idx === -1) break;
+      const nome = nomes[idx];
+      const tarefa = novaEscala.length === 0
+        ? alternarTarefa(historicoTarefa[nome] || 'mesa')
+        : alternarTarefa(novaEscala[0].tarefa);
+      historicoTarefa[nome] = tarefa;
+      novaEscala.push({ nome, tarefa, index: idx });
+      usados.push(nome);
     }
   }
 
-  function alternarTarefa(tarefa) {
-    return tarefa === 'mesa' ? 'chão' : 'mesa';
-  }
+  escalaAtual = novaEscala;
+  faltantesPendentes = [];
+  posicaoUltimaEscala = escalaAtual.length > 0 ? escalaAtual[escalaAtual.length - 1].index : posicaoUltimaEscala;
 
-  function proximoIndice(atual, ignorados=[]) {
-    let i = atual;
-    for(let c=0;c<nomes.length;c++) {
-      i = (i+1)%nomes.length;
-      if(!ignorados.includes(nomes[i])) return i;
-    }
-    return -1;
-  }
+  await salvarEscalaNoFirestore();
+  atualizarResultadoEFormulario();
+}
 
-  async function gerarEscala() {
-    if (escalaAtual.length === 0) {
-      let idx = posicaoUltimaEscala;
-      let usados = [];
-      let escala = [];
-
-      for (let i = 0; i < 2; i++) {
-        idx = proximoIndice(idx, usados);
-        const nome = nomes[idx];
-        const tarefa = i === 0 ? alternarTarefa(historicoTarefa[nome] || 'mesa') : alternarTarefa(escala[0].tarefa);
-        historicoTarefa[nome] = tarefa;
-        usados.push(nome);
-        escala.push({ nome, tarefa, index: idx });
-      }
-
-      escalaAtual = escala;
-      posicaoUltimaEscala = idx;
-      await salvarEscalaNoFirestore();
-      atualizarResultadoEFormulario();
-      return;
-    }
 
     const faltantesHoje = [...faltantesPendentes];
     faltantesPendentes = [];
