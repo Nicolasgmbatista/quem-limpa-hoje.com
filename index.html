@@ -1,366 +1,327 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quem limpa a sala hoje?</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      color: #2c3e50;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-    }
-
-    #app {
-      width: 420px;
-      background: #fff;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      text-align: center;
-      position: relative;
-      border: 1px solid #dcdcdc;
-    }
-
-    h1 {
-      margin-bottom: 12px;
-      font-weight: 700;
-    }
-
-    button, input {
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      padding: 10px 18px;
-      margin: 10px 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-      outline: none;
-    }
-
-    button {
-      background-color: #2c3e50;
-      color: white;
-    }
-
-    button:hover {
-      background-color: #34495e;
-    }
-
-    input[type="email"], input[type="password"], input[type="text"] {
-      width: 260px;
-      border: 2px solid #ccc;
-      transition: border-color 0.3s ease;
-      margin-bottom: 15px;
-      padding: 10px;
-    }
-
-    input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
-      border-color: #2c3e50;
-    }
-
-    #menuBtn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      background: transparent;
-      font-size: 28px;
-      color: #2c3e50;
-      border: none;
-      cursor: pointer;
-      user-select: none;
-      padding: 0;
-      line-height: 1;
-    }
-
-    #menuLateral {
-      position: fixed;
-      top: 0;
-      right: -280px;
-      width: 280px;
-      height: 100vh;
-      background: #2c3e50;
-      color: white;
-      box-shadow: -3px 0 8px rgba(0,0,0,0.15);
-      padding: 30px 20px;
-      flex-direction: column;
-      gap: 20px;
-      transition: right 0.3s ease;
-      z-index: 1000;
-      display: none;
-    }
-
-    #menuLateral.aberto {
-      right: 0;
-      display: flex;
-    }
-
-    #menuLateral button,
-    #fecharMenu {
-      background: #34495e;
-      width: 100%;
-      padding: 12px 0;
-      border: none;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: background-color 0.3s ease;
-    }
-
-    #menuLateral button:hover,
-    #fecharMenu:hover {
-      background: #3c5a7a;
-    }
-
-    #resultado h2 {
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
-    #resultado ul {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 15px 0;
-      text-align: left;
-    }
-
-    #resultado li {
-      background: #ecf0f1;
-      margin-bottom: 10px;
-      padding: 12px 15px;
-      border-radius: 8px;
-      color: #2c3e50;
-      font-weight: 600;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    #checkboxContainer {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px 30px;
-      justify-content: center;
-      margin-top: 10px;
-    }
-
-    #checkboxContainer div {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    #formQuemLimpou button[type="submit"] {
-      margin-top: 20px;
-      width: 100%;
-    }
-
-    #btnReset {
-      background-color: #c0392b;
-    }
-
-    #btnReset:hover {
-      background-color: #e74c3c;
-    }
-
-    #mensagemErro {
-      color: #c0392b;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-
-    #btnContinuar {
-      margin-top: 10px;
-      background-color: #27ae60;
-      width: 100%;
-    }
-
-    #btnContinuar:hover {
-      background-color: #2ecc71;
-    }
-
-    #telaInicial button {
-      width: 180px;
-    }
-
-    #formQuemLimpou {
-      margin-top: 20px;
-      max-width: 320px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #checkboxContainer div label {
-      font-size: 16px;
-    }
-
-    #avisoReset {
-      margin-top: 20px;
-      color: #e74c3c;
-      font-weight: bold;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    /* Nova tela de edição de nomes */
-    #telaEditarNomes {
-      display: none;
-      text-align: left;
-      max-width: 360px;
-      margin: 0 auto;
-    }
-
-    #telaEditarNomes h2 {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-
-    #listaNomesEdicao {
-      list-style: none;
-      padding: 0;
-      max-height: 280px;
-      overflow-y: auto;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #f7f7f7;
-    }
-
-    #listaNomesEdicao li {
-      padding: 10px 14px;
-      border-bottom: 1px solid #ddd;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: #2c3e50;
-    }
-
-    #listaNomesEdicao li:last-child {
-      border-bottom: none;
-    }
-
-    #listaNomesEdicao button.removerNomeBtn {
-      background-color: #c0392b;
-      padding: 6px 12px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      color: white;
-      transition: background-color 0.3s ease;
-    }
-
-    #listaNomesEdicao button.removerNomeBtn:hover {
-      background-color: #e74c3c;
-    }
-
-    #novoNomeContainer {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 15px;
-      justify-content: center;
-    }
-
-    #novoNomeInput {
-      flex-grow: 1;
-      padding: 10px 12px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 2px solid #ccc;
-      transition: border-color 0.3s ease;
-    }
-
-    #novoNomeInput:focus {
-      border-color: #2c3e50;
-      outline: none;
-    }
-
-    #telaEditarNomes button {
-      width: 100%;
-      margin: 6px 0;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quem limpa a sala hoje?</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    color: #2c3e50;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+  #app {
+    width: 420px;
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    position: relative;
+    border: 1px solid #dcdcdc;
+  }
+  h1 {
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  button, input {
+    font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    padding: 10px 18px;
+    margin: 10px 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    outline: none;
+  }
+  button {
+    background-color: #2c3e50;
+    color: white;
+  }
+  button:hover {
+    background-color: #34495e;
+  }
+  input[type="email"], input[type="password"], input[type="text"] {
+    width: 260px;
+    border: 2px solid #ccc;
+    transition: border-color 0.3s ease;
+    margin-bottom: 15px;
+    padding: 10px;
+  }
+  input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
+    border-color: #2c3e50;
+  }
+  #menuBtn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: transparent;
+    font-size: 28px;
+    color: #2c3e50;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+    padding: 0;
+    line-height: 1;
+  }
+  #menuLateral {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100vh;
+    background: #2c3e50;
+    color: white;
+    box-shadow: -3px 0 8px rgba(0,0,0,0.15);
+    padding: 30px 20px;
+    flex-direction: column;
+    gap: 20px;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    display: none;
+  }
+  #menuLateral.aberto {
+    right: 0;
+    display: flex;
+  }
+  #menuLateral button,
+  #fecharMenu {
+    background: #34495e;
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+  }
+  #menuLateral button:hover,
+  #fecharMenu:hover {
+    background: #3c5a7a;
+  }
+  #resultado h2 {
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  #resultado ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+    text-align: left;
+  }
+  #resultado li {
+    background: #ecf0f1;
+    margin-bottom: 10px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+  }
+  #checkboxContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px 30px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  #checkboxContainer div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #formQuemLimpou button[type="submit"] {
+    margin-top: 20px;
+    width: 100%;
+  }
+  #btnReset {
+    background-color: #c0392b;
+  }
+  #btnReset:hover {
+    background-color: #e74c3c;
+  }
+  #mensagemErro {
+    color: #c0392b;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  #btnContinuar {
+    margin-top: 10px;
+    background-color: #27ae60;
+    width: 100%;
+  }
+  #btnContinuar:hover {
+    background-color: #2ecc71;
+  }
+  #telaInicial button {
+    width: 180px;
+  }
+  #formQuemLimpou {
+    margin-top: 20px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #checkboxContainer div label {
+    font-size: 16px;
+  }
+  #avisoReset {
+    margin-top: 20px;
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+  }
+  /* Tela edição nomes */
+  #telaEditarNomes {
+    display: none;
+    text-align: left;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+  #telaEditarNomes h2 {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  #listaNomesEdicao {
+    list-style: none;
+    padding: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f7f7f7;
+  }
+  #listaNomesEdicao li {
+    padding: 10px 14px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  #listaNomesEdicao li:last-child {
+    border-bottom: none;
+  }
+  #listaNomesEdicao button.removerNomeBtn {
+    background-color: #c0392b;
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  #listaNomesEdicao button.removerNomeBtn:hover {
+    background-color: #e74c3c;
+  }
+  #novoNomeContainer {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    justify-content: center;
+  }
+  #novoNomeInput {
+    flex-grow: 1;
+    padding: 10px 12px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 2px solid #ccc;
+    transition: border-color 0.3s ease;
+  }
+  #novoNomeInput:focus {
+    border-color: #2c3e50;
+    outline: none;
+  }
+  #telaEditarNomes button {
+    width: 100%;
+    margin: 6px 0;
+  }
+</style>
 </head>
 <body>
-  <div id="app">
+<div id="app">
 
-    <!-- Telas iniciais e login -->
-    <div id="telaInicial">
-      <h1>Quem limpa a sala hoje?</h1>
-      <p>Escolha seu perfil para continuar:</p>
-      <button id="btnProfessor">Professor / Representante</button>
-      <button id="btnEstudante">Estudante</button>
-    </div>
-
-    <div id="telaLogin" style="display:none;">
-      <h1>Login - Professor / Representante</h1>
-      <div id="mensagemErro"></div>
-      <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
-      <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
-      <div id="botoesLogin">
-        <button id="btnEntrar">Entrar</button>
-        <button id="btnVoltarLogin">Voltar</button>
-      </div>
-    </div>
-
-    <!-- Tela principal da escala -->
-    <div id="conteudoEscala" style="display:none;">
-      <button id="menuBtn" title="Abrir menu">☰</button>
-      <h1>Quem limpa a sala hoje?</h1>
-      <div id="resultado">
-        <h2>Escala de hoje:</h2>
-        <ul id="listaEscala"></ul>
-        <button id="btnContinuar">Continuar</button>
-      </div>
-      <div id="pergunta" style="display:none;">
-        <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
-        <form id="formQuemLimpou">
-          <div id="checkboxContainer"></div>
-          <button type="submit">Confirmar</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Menu lateral -->
-    <nav id="menuLateral">
-      <button id="fecharMenu" title="Voltar">Voltar</button>
-      <!-- Botão Editar Nomes inserido acima dos outros -->
-      <button id="btnEditarNomes">Editar Nomes</button>
-      <button id="btnLiberarAcesso">Liberar Acesso</button>
-      <button id="btnResetar">Resetar Escala</button>
-      <button id="btnSair">Sair</button>
-    </nav>
-
-    <!-- Nova tela para edição dos nomes -->
-    <div id="telaEditarNomes">
-      <h2>Editar Nomes</h2>
-      <ul id="listaNomesEdicao"></ul>
-      <div id="novoNomeContainer">
-        <input type="text" id="novoNomeInput" placeholder="Digite novo nome" />
-        <button id="btnAdicionarNome">Adicionar</button>
-      </div>
-      <button id="btnSalvarNomes">Salvar</button>
-      <button id="btnZerarNomes">Zerar</button>
-      <button id="btnVoltarEdicao">Voltar</button>
-    </div>
-
+  <!-- Telas iniciais e login -->
+  <div id="telaInicial">
+    <h1>Quem limpa a sala hoje?</h1>
+    <p>Escolha seu perfil para continuar:</p>
+    <button id="btnProfessor">Professor / Representante</button>
+    <button id="btnEstudante">Estudante</button>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  
-  <script>
+  <div id="telaLogin" style="display:none;">
+    <h1>Login - Professor / Representante</h1>
+    <div id="mensagemErro"></div>
+    <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
+    <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
+    <div id="botoesLogin">
+      <button id="btnEntrar">Entrar</button>
+      <button id="btnVoltarLogin">Voltar</button>
+    </div>
+  </div>
+
+  <!-- Tela principal da escala -->
+  <div id="conteudoEscala" style="display:none;">
+    <button id="menuBtn" title="Abrir menu">☰</button>
+    <h1>Quem limpa a sala hoje?</h1>
+    <div id="resultado">
+      <h2>Escala de hoje:</h2>
+      <ul id="listaEscala"></ul>
+      <button id="btnContinuar">Continuar</button>
+    </div>
+    <div id="pergunta" style="display:none;">
+      <p>Selecione quem <strong>faltou</strong> ou <strong>limpou o laboratório</strong> e "CONFIRMAR" para atualizar:</p>
+      <form id="formQuemLimpou">
+        <div id="checkboxContainer"></div>
+        <button type="submit">Confirmar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Menu lateral -->
+  <nav id="menuLateral">
+    <button id="fecharMenu" title="Voltar">Voltar</button>
+    <button id="btnEditarNomes">Editar Nomes</button>
+    <button id="btnLiberarAcesso">Liberar Acesso</button>
+    <button id="btnResetar">Resetar Escala</button>
+    <button id="btnSair">Sair</button>
+  </nav>
+
+  <!-- Tela edição nomes -->
+  <div id="telaEditarNomes">
+    <h2>Editar Nomes</h2>
+    <ul id="listaNomesEdicao"></ul>
+    <div id="novoNomeContainer">
+      <input type="text" id="novoNomeInput" placeholder="Digite novo nome" />
+      <button id="btnAdicionarNome">Adicionar</button>
+    </div>
+    <button id="btnSalvarNomes">Salvar</button>
+    <button id="btnZerarNomes">Zerar</button>
+    <button id="btnVoltarEdicao">Voltar</button>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
   // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
@@ -376,10 +337,10 @@
   // Variáveis globais
   let admins = ["prof1@escola.com", "prof2@escola.com", "nicolasgmbatista15@gmail.com"];
 
-  // variável nomes será gerida dinamicamente na tela de edição
-  // para manter a compatibilidade com o código existente, vamos criar uma variável local que será atualizada ao salvar:
+  // Lista nomes padrão (se Firebase estiver vazio)
   let nomes = ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a,b) => a.localeCompare(b));
 
+  // Variáveis da escala
   let posicaoUltimaEscala = -1;
   let historicoTarefa = {};
   let escalaAtual = [];
@@ -388,13 +349,12 @@
   let usuarioLogado = null;
   let isAdmin = false;
 
-  // Controle de telas - 'painel' será o conteudoEscala, 'editar-nomes' a telaEditarNomes
+  // Controle de telas
   let telaAtual = 'inicio'; // 'inicio', 'login', 'painel', 'editar-nomes'
 
-  // Funções para mostrar/ocultar telas
+  // Mostrar tela
   function mostrarTela(t) {
     telaAtual = t;
-    // Ocultar todas as telas
     document.getElementById('telaInicial').style.display = 'none';
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('conteudoEscala').style.display = 'none';
@@ -433,10 +393,9 @@
     }
   }
 
-  // Inicializa app
   mostrarTela('inicio');
 
-  // --- Código existente para escala ---
+  // --- Escala: mesma lógica que antes ---
 
   async function salvarEscalaNoFirestore() {
     await db.collection('escala').doc('dados').set({
@@ -519,7 +478,6 @@
   }
 
   function atualizarResultadoEFormulario() {
-    // Atualiza a lista da escala
     const ul = document.getElementById('listaEscala');
     ul.innerHTML = '';
     escalaAtual.forEach(p => {
@@ -528,7 +486,6 @@
       ul.appendChild(li);
     });
 
-    // Atualiza os checkboxes para "quem limpou"
     const container = document.getElementById('checkboxContainer');
     container.innerHTML = '';
     escalaAtual.forEach((p, i) => {
@@ -546,17 +503,13 @@
       container.appendChild(div);
     });
 
-    // Mostrar botões e perguntas
     document.getElementById('pergunta').style.display = 'block';
   }
 
-  // Quando clicar no botão Continuar
   document.getElementById('btnContinuar').onclick = () => {
-    // Mostrar pergunta para selecionar quem faltou (admin)
     document.getElementById('pergunta').style.display = 'block';
   };
 
-  // Formulário para confirmar quem limpou/faltou
   document.getElementById('formQuemLimpou').onsubmit = async e => {
     e.preventDefault();
     const selecionados = [...document.querySelectorAll('input[name="limpou"]:checked')].map(i => i.value);
@@ -564,13 +517,11 @@
       alert('Selecione pelo menos uma pessoa que limpou.');
       return;
     }
-    // Atualizar escala, remover faltantes e avançar escala
     faltantesPendentes = escalaAtual.filter(p => !selecionados.includes(p.nome));
     escalaAtual = escalaAtual.filter(p => selecionados.includes(p.nome));
     await gerarEscala();
   };
 
-  // Botão Resetar escala
   document.getElementById('btnResetar').onclick = async () => {
     if(confirm('Tem certeza que deseja resetar toda a escala?')) {
       posicaoUltimaEscala = -1;
@@ -583,18 +534,16 @@
     }
   };
 
-  // Botões da tela inicial
+  // Botões tela inicial
   document.getElementById('btnProfessor').onclick = () => mostrarTela('login');
   document.getElementById('btnEstudante').onclick = async () => {
-    // Só mostrar escala para estudantes se estiver logado como admin?
-    // Ou mostrar escala pública?
     await lerEscalaDoFirestore();
     if(escalaAtual.length===0) await gerarEscala();
     atualizarResultadoEFormulario();
     mostrarTela('painel');
   };
 
-  // Botões login
+  // Login
   document.getElementById('btnVoltarLogin').onclick = () => mostrarTela('inicio');
   document.getElementById('btnEntrar').onclick = () => {
     const email = document.getElementById('emailLogin').value.trim();
@@ -603,7 +552,6 @@
       document.getElementById('mensagemErro').textContent = 'Preencha email e senha.';
       return;
     }
-    // Para simplificar, só validar email entre admins, e senha "123456"
     if(admins.includes(email.toLowerCase()) && senha === '123456') {
       usuarioLogado = email.toLowerCase();
       isAdmin = true;
@@ -618,7 +566,7 @@
     }
   };
 
-  // Botão sair
+  // Sair
   document.getElementById('btnSair').onclick = () => {
     usuarioLogado = null;
     isAdmin = false;
@@ -638,12 +586,17 @@
     menuLateral.classList.remove('aberto');
   };
 
-  // Botão Editar Nomes: abre tela de edição
   document.getElementById('btnEditarNomes').onclick = () => {
     mostrarTela('editar-nomes');
   };
 
-  // Funções da tela de edição de nomes
+  document.getElementById('btnLiberarAcesso').onclick = () => {
+    alert('Funcionalidade Liberar Acesso não implementada ainda.');
+    menuLateral.classList.remove('aberto');
+  };
+
+  // --- Tela edição nomes ---
+
   async function carregarNomesDoFirebase() {
     const doc = await db.collection('config').doc('nomes').get();
     if (doc.exists) {
@@ -714,18 +667,12 @@
     mostrarTela('painel');
   };
 
-  // Botão Liberar Acesso (funcionalidade não implementada, só esconder menu)
-  document.getElementById('btnLiberarAcesso').onclick = () => {
-    alert('Funcionalidade Liberar Acesso não implementada ainda.');
-    menuLateral.classList.remove('aberto');
-  };
-
-  // Ao carregar a página, tenta já ler escala
+  // Ao carregar a página, já tenta ler escala
   lerEscalaDoFirestore().then(() => {
     if (escalaAtual.length === 0) gerarEscala().then(atualizarResultadoEFormulario);
     else atualizarResultadoEFormulario();
   });
 
-  </script>
+</script>
 </body>
 </html>
