@@ -479,46 +479,55 @@
   }
 
   async function gerarEscala() {
-    const retornantes = [...faltantesPendentes];
-    faltantesPendentes = [];
-    let usados = retornantes.map(f=>f.nome);
-    let idx = posicaoUltimaEscala;
+  let novosFaltantes = [...faltantesPendentes];
+  faltantesPendentes = [];
 
-    if(escalaAtual.length===0){
-      const idx1=proximoIndice(idx,usados);
-      const n1=nomes[idx1];
-      const t1=alternarTarefa(historicoTarefa[n1]||'mesa');
-      historicoTarefa[n1]=t1;
-      usados.push(n1);
+  let usados = escalaAtual.map(p => p.nome);
+  let novaEscala = [];
 
-      const idx2=proximoIndice(idx1,usados);
-      const n2=nomes[idx2];
-      const t2=alternarTarefa(t1);
-      historicoTarefa[n2]=t2;
+  for (let p of escalaAtual) {
+    const faltou = novosFaltantes.find(f => f.nome === p.nome);
+    if (faltou) {
+      // Substituir o faltante no dia atual
+      let idx = proximoIndice(posicaoUltimaEscala, usados);
+      if (idx === -1) continue; // todos foram usados
 
-      escalaAtual=[{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
-      posicaoUltimaEscala=idx2;
-      await salvarEscalaNoFirestore();
-      atualizarResultadoEFormulario();
-      return;
+      const substituto = nomes[idx];
+      const tarefa = p.tarefa;
+
+      historicoTarefa[substituto] = tarefa;
+      novaEscala.push({ nome: substituto, tarefa, index: idx });
+      usados.push(substituto);
+
+      // Jogar faltante para o próximo dia com a mesma tarefa
+      faltantesPendentes.push({ nome: p.nome, tarefa });
+    } else {
+      novaEscala.push(p); // permanece se não faltou
     }
-
-    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome===p.nome));
-    const substitutos = [];
-    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
-    for(let i=0;i<presentes.length;i++){
-      idx = proximoIndice(idx,usados);
-      const n=nomes[idx];
-      const t = i===0 ? alternarTarefa(historicoTarefa[presentes[i].nome]||'mesa') : alternarTarefa(substitutos[0].tarefa);
-      historicoTarefa[n]=t;
-      substitutos.push({nome:n,tarefa:t,index:idx});
-      usados.push(n);
-    }
-    escalaAtual = [...retornantes, ...substitutos];
-    posicaoUltimaEscala = substitutos.length > 0 ? substitutos[substitutos.length-1].index : posicaoUltimaEscala;
-    await salvarEscalaNoFirestore();
-    atualizarResultadoEFormulario();
   }
+
+  // Adicionar novos nomes se estiver incompleto
+  while (novaEscala.length < 2) {
+    let idx = proximoIndice(posicaoUltimaEscala, usados);
+    if (idx === -1) break;
+
+    const nome = nomes[idx];
+    const tarefa = novaEscala.length === 0
+      ? 'mesa'
+      : alternarTarefa(novaEscala[0].tarefa);
+
+    historicoTarefa[nome] = tarefa;
+    novaEscala.push({ nome, tarefa, index: idx });
+    usados.push(nome);
+  }
+
+  escalaAtual = novaEscala;
+  posicaoUltimaEscala = escalaAtual[escalaAtual.length - 1]?.index ?? posicaoUltimaEscala;
+
+  await salvarEscalaNoFirestore();
+  atualizarResultadoEFormulario();
+}
+
 
   function atualizarResultadoEFormulario() {
     const listaEscala = document.getElementById('listaEscala');
@@ -612,15 +621,9 @@
 
   // Botão Continuar: pula para o próximo dia com a mesma função para quem faltou
   document.getElementById('btnContinuar').addEventListener('click', () => {
-    faltantesPendentes = [];
-    escalaAtual.forEach(p => {
-      if(historicoTarefa[p.nome]) {
-        // mantém a mesma tarefa para o próximo dia (não altera)
-      }
-    });
-    posicaoUltimaEscala = escalaAtual.length > 0 ? escalaAtual[escalaAtual.length - 1].index : -1;
-    gerarEscala();
-  });
+  gerarEscala();
+});
+
 
   // Formulário para marcar quem faltou
   document.getElementById('formQuemLimpou').addEventListener('submit', e => {
