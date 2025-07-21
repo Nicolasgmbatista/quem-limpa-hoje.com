@@ -491,150 +491,112 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
   }
 
   async function gerarEscala() {
-  // Traz de volta os faltantes pendentes (de ontem) para hoje
-  const retornantes = [...faltantesPendentes];
-  faltantesPendentes = [];
+    const retornantes = [...faltantesPendentes];
+    faltantesPendentes = [];
+    let usados = retornantes.map(f=>f.nome);
+    let idx = posicaoUltimaEscala;
 
-  let usados = retornantes.map(f => f.nome);
-  let idx = posicaoUltimaEscala;
+    if(escalaAtual.length===0){
+      const idx1=proximoIndice(idx,usados);
+      const n1=nomes[idx1];
+      const t1=alternarTarefa(historicoTarefa[n1]||'mesa');
+      historicoTarefa[n1]=t1;
+      usados.push(n1);
 
-  if (escalaAtual.length === 0) {
-    // Primeiro dia de escala
-    const idx1 = proximoIndice(idx, usados);
-    const nome1 = nomes[idx1];
-    const tarefa1 = alternarTarefa(historicoTarefa[nome1] || 'mesa');
-    historicoTarefa[nome1] = tarefa1;
-    usados.push(nome1);
+      const idx2=proximoIndice(idx1,usados);
+      const n2=nomes[idx2];
+      const t2=alternarTarefa(t1);
+      historicoTarefa[n2]=t2;
 
-    const idx2 = proximoIndice(idx1, usados);
-    const nome2 = nomes[idx2];
-    const tarefa2 = alternarTarefa(tarefa1);
-    historicoTarefa[nome2] = tarefa2;
-
-    escalaAtual = [
-      { nome: nome1, tarefa: tarefa1, index: idx1 },
-      { nome: nome2, tarefa: tarefa2, index: idx2 }
-    ];
-    posicaoUltimaEscala = idx2;
-  } else {
-    // Já existe escala anterior
-    const nomesFaltaram = retornantes.map(f => f.nome);
-    const presentes = escalaAtual.filter(p => !nomesFaltaram.includes(p.nome));
-    const faltaram = escalaAtual.filter(p => nomesFaltaram.includes(p.nome));
-
-    const substitutos = [];
-    usados = escalaAtual.map(p => p.nome).concat(nomesFaltaram);
-
-    for (let faltante of faltaram) {
-      const tarefaOriginal = faltante.tarefa;
-      idx = proximoIndice(idx, usados);
-      const novoNome = nomes[idx];
-      historicoTarefa[novoNome] = tarefaOriginal;
-      substitutos.push({ nome: novoNome, tarefa: tarefaOriginal, index: idx });
-      usados.push(novoNome);
-    }
-
-    escalaAtual = [...presentes, ...substitutos];
-
-    // Mover os faltantes para o próximo dia com a mesma tarefa
-    faltantesPendentes = faltaram.map(p => ({
-      nome: p.nome,
-      tarefa: p.tarefa
-    }));
-
-    posicaoUltimaEscala = substitutos.length > 0
-      ? substitutos[substitutos.length - 1].index
-      : posicaoUltimaEscala;
-  }
-
-  await salvarEscalaNoFirestore();
-  atualizarResultadoEFormulario();
-}
-
-  function atualizarResultadoEFormulario() {
-    const listaEscala = document.getElementById('listaEscala');
-    listaEscala.innerHTML = '';
-    escalaAtual.forEach(p => {
-      const li = document.createElement('li');
-      li.textContent = `${p.nome} - ${p.tarefa}`;
-      listaEscala.appendChild(li);
-    });
-
-    // Mostrar o formulário para marcar faltas só se for admin
-    document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
-    montarCheckboxFaltantes();
-  }
-
-  function montarCheckboxFaltantes() {
-    const container = document.getElementById('checkboxContainer');
-    container.innerHTML = '';
-
-    escalaAtual.forEach(p => {
-      const div = document.createElement('div');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = 'chk_' + p.nome;
-      checkbox.value = p.nome;
-      const label = document.createElement('label');
-      label.htmlFor = checkbox.id;
-      label.textContent = p.nome;
-      div.appendChild(checkbox);
-      div.appendChild(label);
-      container.appendChild(div);
-    });
-  }
-
-  // Botões e eventos
-
-  document.getElementById('btnProfessor').addEventListener('click', () => {
-    mostrarTela('login');
-  });
-
-  document.getElementById('btnEstudante').addEventListener('click', () => {
-    usuarioLogado = { email: null, tipo: 'estudante' };
-    isAdmin = false;
-    mostrarTela('painel');
-    gerarEscala();
-  });
-
-    document.getElementById('btnResetar').addEventListener('click', async () => {
-  const confirmacao = confirm("Tem certeza que deseja resetar completamente a escala?");
-  if (!confirmacao) return;
-
-  posicaoUltimaEscala = -1;
-  historicoTarefa = {};
-  escalaAtual = [];
-  faltantesPendentes = [];
-
-  await db.collection('escala').doc('dados').set({
-    posicaoUltimaEscala,
-    historicoTarefa,
-    escalaAtual,
-    faltantesPendentes
-  });
-
-  atualizarResultadoEFormulario();
-  alert("Escala resetada com sucesso!");
-});
-
-  document.getElementById('btnEntrar').addEventListener('click', () => {
-    const email = document.getElementById('emailLogin').value.trim();
-    const senha = document.getElementById('senhaLogin').value.trim();
-
-    if(email.length === 0 || senha.length === 0){
-      document.getElementById('mensagemErro').textContent = 'Preencha email e senha!';
+      escalaAtual=[{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
+      posicaoUltimaEscala=idx2;
+      await salvarEscalaNoFirestore();
+      atualizarResultadoEFormulario();
       return;
     }
-    if(admins.includes(email)){
-      usuarioLogado = { email, tipo: 'admin' };
-      isAdmin = true;
-      document.getElementById('mensagemErro').textContent = '';
-      mostrarTela('painel');
-      gerarEscala();
-    } else {
-      document.getElementById('mensagemErro').textContent = 'Usuário não autorizado.';
+
+    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome===p.nome));
+    const substitutos = [];
+    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
+    for(let i=0;i<presentes.length;i++){
+      idx = proximoIndice(idx,usados);
+      const n=nomes[idx];
+      const t = i===0 ? alternarTarefa(historicoTarefa[n]||'mesa') : substitutos[0].tarefa==='mesa'?'chão':'mesa';
+      historicoTarefa[n]=t;
+      substitutos.push({nome:n,tarefa:t,index:idx});
+      usados.push(n);
     }
-  });
+
+    escalaAtual=[...retornantes,...substitutos].slice(0,2);
+    if(escalaAtual.length===2 && escalaAtual[0].tarefa===escalaAtual[1].tarefa){
+      escalaAtual[1].tarefa=alternarTarefa(escalaAtual[0].tarefa);
+      historicoTarefa[escalaAtual[1].nome]=escalaAtual[1].tarefa;
+    }
+    if(escalaAtual.length===2) posicaoUltimaEscala=escalaAtual[1].index;
+    await salvarEscalaNoFirestore();
+    atualizarResultadoEFormulario();
+  }
+
+  // Confirmar faltas e atualiza escala
+  async function confirmarFaltas(){
+    const faltaram=[], presentes=[];
+    escalaAtual.forEach(p=>{
+      const c=document.getElementById(p.nome);
+      if(c && c.checked) faltaram.push(p); else presentes.push(p);
+    });
+    faltantesPendentes = faltantesPendentes.concat(faltaram);
+    const novosSubstitutos = [];
+    let usados = escalaAtual.map(p=>p.nome).concat(faltantesPendentes.map(f=>f.nome));
+    let idx = posicaoUltimaEscala;
+    for(let f of faltaram){
+      idx = proximoIndice(idx, usados);
+      const n = nomes[idx];
+      historicoTarefa[f.nome] = f.tarefa;
+      novosSubstitutos.push({nome:n,tarefa:f.tarefa,index:idx});
+      usados.push(n);
+    }
+    presentes.forEach(p => historicoTarefa[p.nome] = p.tarefa);
+    escalaAtual = [...presentes, ...novosSubstitutos].slice(0,2);
+    if(escalaAtual.length===2 && escalaAtual[0].tarefa === escalaAtual[1].tarefa){
+      escalaAtual[1].tarefa = alternarTarefa(escalaAtual[0].tarefa);
+      historicoTarefa[escalaAtual[1].nome] = escalaAtual[1].tarefa;
+    }
+    if(escalaAtual.length===2) posicaoUltimaEscala = escalaAtual[1].index;
+    await salvarEscalaNoFirestore();
+    atualizarResultadoEFormulario();
+  }
+
+  // Atualizar UI
+  function atualizarResultadoEFormulario(){
+    const lista = document.getElementById('listaEscala');
+    lista.innerHTML = '';
+    escalaAtual.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = p.nome;
+      const span = document.createElement('span');
+      span.textContent = p.tarefa;
+      span.style.fontWeight = 'bold';
+      li.appendChild(span);
+      lista.appendChild(li);
+    });
+
+    if(isAdmin){
+      document.getElementById('pergunta').style.display = 'block';
+      const c = document.getElementById('checkboxContainer');
+      c.innerHTML = '';
+      escalaAtual.forEach(p => {
+        const d = document.createElement('div');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.id = p.nome; cb.name = 'faltou'; cb.value = p.nome;
+        const l = document.createElement('label');
+        l.htmlFor = p.nome; l.textContent = p.nome;
+        d.appendChild(cb); d.appendChild(l);
+        c.appendChild(d);
+      });
+    } else {
+      document.getElementById('pergunta').style.display = 'none';
+    }
+  }
 
   document.getElementById('btnVoltarLogin').addEventListener('click', () => {
     mostrarTela('inicio');
