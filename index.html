@@ -606,7 +606,7 @@
     // Funções da escala
     function proximoIndice(atual, ignorados = []) {
       let i = atual;
-      if (i < 0) i = nomes.length - 1; // Se índice inicial for -1, começar do último
+      if (i < 0 || i >= nomes.length) i = -1; // Resetar para o início se índice inválido
       for (let c = 0; c < nomes.length; c++) {
         i = (i + 1) % nomes.length; // Avança para o próximo índice
         if (!ignorados.includes(nomes[i])) {
@@ -662,24 +662,31 @@
         return;
       }
 
-      // Encontrar o índice do nome removido para começar a busca a partir dele
-      let idx = nomes.indexOf(nomeRemovido);
-      if (idx === -1) idx = posicaoUltimaEscala; // Fallback para posicaoUltimaEscala
+      // Remover o nome da escala e dos faltantes pendentes
+      escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
+      faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+
+      // Lista de nomes já usados
       let usados = escalaAtual.map(p => p.nome).concat(faltantesPendentes.map(f => f.nome));
-      idx = proximoIndice(idx, usados.filter(u => u !== nomeRemovido)); // Excluir nomeRemovido dos ignorados
+
+      // Encontrar o índice do nome removido para começar a busca
+      let idx = nomes.indexOf(nomeRemovido);
+      if (idx === -1) {
+        // Se o nome removido não está na lista, usar o próximo índice após o último da escala
+        idx = escalaAtual.length > 0 ? escalaAtual[escalaAtual.length - 1].index : posicaoUltimaEscala;
+      }
+
+      // Encontrar o próximo nome disponível
+      idx = proximoIndice(idx, usados);
       if (idx === -1) {
         console.log('Nenhum substituto disponível para', nomeRemovido);
-        escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
-        faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
         return;
       }
 
       const novoNome = nomes[idx];
-      escalaAtual = escalaAtual.filter(p => p.nome !== nomeRemovido);
       escalaAtual.push({ nome: novoNome, tarefa, index: idx });
       historicoTarefa[novoNome] = tarefa;
       posicaoUltimaEscala = idx;
-      faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nomeRemovido);
       console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
     }
 
@@ -943,10 +950,11 @@
         btnRemover.addEventListener('click', async () => {
           const pessoaNaEscala = escalaAtual.find(p => p.nome === nome);
           nomes.splice(idx, 1);
-          escalaAtual = escalaAtual.filter(p => p.nome !== nome);
-          faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nome);
           if (pessoaNaEscala && nomes.length > 0) {
             substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
+          } else {
+            escalaAtual = escalaAtual.filter(p => p.nome !== nome);
+            faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nome);
           }
           await salvarConfigNoFirestore();
           await salvarEscalaNoFirestore();
