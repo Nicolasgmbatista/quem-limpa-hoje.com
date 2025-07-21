@@ -934,11 +934,13 @@
         btnRemover.textContent = 'Remover';
         btnRemover.className = 'removerNomeBtn';
         btnRemover.addEventListener('click', async () => {
-          // Remover o nome da lista, mas não alterar a escala imediatamente
+          const pessoaNaEscala = escalaAtual.find(p => p.nome === nome);
           nomes.splice(idx, 1);
-          // Remover o nome da escalaAtual e faltantesPendentes, sem substituição
           escalaAtual = escalaAtual.filter(p => p.nome !== nome);
           faltantesPendentes = faltantesPendentes.filter(f => f.nome !== nome);
+          if (pessoaNaEscala && nomes.length > 0) {
+            substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
+          }
           await salvarConfigNoFirestore();
           await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
