@@ -477,126 +477,116 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
     }
   }
 
-  function alternarTarefa(tarefa) {
-    return tarefa === 'mesa' ? 'chão' : 'mesa';
+  // Alterna tarefa entre 'mesa' e 'chão'
+function alternarTarefa(tarefa) {
+  return tarefa === 'mesa' ? 'chão' : 'mesa';
+}
+
+// Retorna o próximo índice válido em nomes, ignorando os nomes passados
+function proximoIndice(atual, ignorados = []) {
+  let i = atual;
+  for (let c = 0; c < nomes.length; c++) {
+    i = (i + 1) % nomes.length;
+    if (!ignorados.includes(nomes[i])) return i;
   }
+  return -1;
+}
 
-  function proximoIndice(atual, ignorados=[]) {
-    let i = atual;
-    for(let c=0;c<nomes.length;c++) {
-      i = (i+1)%nomes.length;
-      if(!ignorados.includes(nomes[i])) return i;
-    }
-    return -1;
-  }
+// Gera a escala com lógica de faltantes
+async function gerarEscala() {
+  const retornantes = [...faltantesPendentes]; // quem faltou no dia anterior
+  faltantesPendentes = [];
+  let usados = retornantes.map(f => f.nome);
+  let idx = posicaoUltimaEscala;
 
-  async function gerarEscala() {
-    const retornantes = [...faltantesPendentes];
-    faltantesPendentes = [];
-    let usados = retornantes.map(f=>f.nome);
-    let idx = posicaoUltimaEscala;
+  // Se não há escala atual, criar a primeira escala
+  if (escalaAtual.length === 0) {
+    const idx1 = proximoIndice(idx, usados);
+    const n1 = nomes[idx1];
+    const t1 = alternarTarefa(historicoTarefa[n1] || 'mesa');
+    historicoTarefa[n1] = t1;
+    usados.push(n1);
 
-    if(escalaAtual.length===0){
-      const idx1=proximoIndice(idx,usados);
-      const n1=nomes[idx1];
-      const t1=alternarTarefa(historicoTarefa[n1]||'mesa');
-      historicoTarefa[n1]=t1;
-      usados.push(n1);
+    const idx2 = proximoIndice(idx1, usados);
+    const n2 = nomes[idx2];
+    const t2 = alternarTarefa(t1);
+    historicoTarefa[n2] = t2;
 
-      const idx2=proximoIndice(idx1,usados);
-      const n2=nomes[idx2];
-      const t2=alternarTarefa(t1);
-      historicoTarefa[n2]=t2;
-
-      escalaAtual=[{nome:n1,tarefa:t1,index:idx1},{nome:n2,tarefa:t2,index:idx2}];
-      posicaoUltimaEscala=idx2;
-      await salvarEscalaNoFirestore();
-      atualizarResultadoEFormulario();
-      return;
-    }
-
-    const presentes = escalaAtual.filter(p=>!retornantes.some(f=>f.nome===p.nome));
-    const substitutos = [];
-    usados = escalaAtual.map(p=>p.nome).concat(retornantes.map(f=>f.nome));
-    for(let i=0;i<presentes.length;i++){
-      idx = proximoIndice(idx,usados);
-      const n=nomes[idx];
-      const t = i===0 ? alternarTarefa(historicoTarefa[presentes[i].nome]||'mesa') : alternarTarefa(substitutos[0].tarefa);
-      historicoTarefa[n]=t;
-      substitutos.push({nome:n,tarefa:t,index:idx});
-      usados.push(n);
-    }
-    escalaAtual = [...retornantes, ...substitutos];
-    posicaoUltimaEscala = substitutos.length > 0 ? substitutos[substitutos.length-1].index : posicaoUltimaEscala;
+    escalaAtual = [
+      { nome: n1, tarefa: t1, index: idx1 },
+      { nome: n2, tarefa: t2, index: idx2 }
+    ];
+    posicaoUltimaEscala = idx2;
     await salvarEscalaNoFirestore();
     atualizarResultadoEFormulario();
+    return;
   }
 
-  function atualizarResultadoEFormulario() {
-    const listaEscala = document.getElementById('listaEscala');
-    listaEscala.innerHTML = '';
-    escalaAtual.forEach(p => {
-      const li = document.createElement('li');
-      li.textContent = `${p.nome} - ${p.tarefa}`;
-      listaEscala.appendChild(li);
-    });
+  // Quem está presente na escala e não faltou
+  const presentes = escalaAtual.filter(p => !retornantes.some(f => f.nome === p.nome));
+  const substitutos = [];
+  usados = escalaAtual.map(p => p.nome).concat(retornantes.map(f => f.nome));
 
-    // Mostrar o formulário para marcar faltas só se for admin
-    document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
-    montarCheckboxFaltantes();
+  for (let i = 0; i < presentes.length; i++) {
+    idx = proximoIndice(idx, usados);
+    const n = nomes[idx];
+    // Para o primeiro substituto, alterna a tarefa do presente; para o segundo, alterna a tarefa do primeiro substituto
+    const t = i === 0 ? alternarTarefa(historicoTarefa[presentes[i].nome] || 'mesa') : alternarTarefa(substitutos[0].tarefa);
+    historicoTarefa[n] = t;
+    substitutos.push({ nome: n, tarefa: t, index: idx });
+    usados.push(n);
   }
 
-  function montarCheckboxFaltantes() {
-    const container = document.getElementById('checkboxContainer');
-    container.innerHTML = '';
+  // Atualiza a escala com faltantes no início e substitutos no fim
+  escalaAtual = [...retornantes, ...substitutos];
+  posicaoUltimaEscala = substitutos.length > 0 ? substitutos[substitutos.length - 1].index : posicaoUltimaEscala;
 
-    escalaAtual.forEach(p => {
-      const div = document.createElement('div');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = 'chk_' + p.nome;
-      checkbox.value = p.nome;
-      const label = document.createElement('label');
-      label.htmlFor = checkbox.id;
-      label.textContent = p.nome;
-      div.appendChild(checkbox);
-      div.appendChild(label);
-      container.appendChild(div);
-    });
-  }
+  await salvarEscalaNoFirestore();
+  atualizarResultadoEFormulario();
+}
 
-  // Botões e eventos
-
-  document.getElementById('btnProfessor').addEventListener('click', () => {
-    mostrarTela('login');
+// Atualiza a lista exibida na tela e o formulário de faltantes
+function atualizarResultadoEFormulario() {
+  const listaEscala = document.getElementById('listaEscala');
+  listaEscala.innerHTML = '';
+  escalaAtual.forEach(p => {
+    const li = document.createElement('li');
+    li.textContent = `${p.nome} - ${p.tarefa}`;
+    listaEscala.appendChild(li);
   });
 
-  document.getElementById('btnEstudante').addEventListener('click', () => {
-    usuarioLogado = { email: null, tipo: 'estudante' };
-    isAdmin = false;
-    mostrarTela('painel');
-    gerarEscala();
+  // Mostrar o formulário para marcar faltas somente se for admin
+  document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
+  montarCheckboxFaltantes();
+}
+
+// Monta os checkboxes para selecionar quem faltou
+function montarCheckboxFaltantes() {
+  const container = document.getElementById('checkboxContainer');
+  container.innerHTML = '';
+
+  escalaAtual.forEach(p => {
+    const div = document.createElement('div');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = 'chk_' + p.nome;
+    checkbox.value = p.nome;
+    const label = document.createElement('label');
+    label.htmlFor = checkbox.id;
+    label.textContent = p.nome;
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    container.appendChild(div);
   });
+}
 
-    document.getElementById('btnResetar').addEventListener('click', async () => {
-  const confirmacao = confirm("Tem certeza que deseja resetar completamente a escala?");
-  if (!confirmacao) return;
-
-  posicaoUltimaEscala = -1;
-  historicoTarefa = {};
-  escalaAtual = [];
-  faltantesPendentes = [];
-
+// Salva os dados da escala no Firestore
+async function salvarEscalaNoFirestore() {
   await db.collection('escala').doc('dados').set({
     posicaoUltimaEscala,
     historicoTarefa,
-    escalaAtual,
-    faltantesPendentes
-  });
 
-  atualizarResultadoEFormulario();
-  alert("Escala resetada com sucesso!");
-});
+  
 
   document.getElementById('btnEntrar').addEventListener('click', () => {
     const email = document.getElementById('emailLogin').value.trim();
