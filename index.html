@@ -1265,7 +1265,11 @@
     });
 
     document.getElementById('btnVoltarGerenciarLaboratorio').addEventListener('click', function() {
-      mostrarTela('laboratorios');
+      if (isAdmin) {
+        mostrarTela('laboratorios');
+      } else {
+        mostrarTela('painel');
+      }
     });
 
     document.getElementById('btnResetar').addEventListener('click', async function() {
@@ -1616,21 +1620,19 @@
               })
               .catch((error) => {
                 console.error('Erro ao salvar config no Firestore:', error);
-                mensagemErro.textContent = 'Erro ao salvar alterações. Tente novamente.';
+                alert('Erro ao salvar configurações. Verifique sua conexão.');
               });
           })
           .catch((error) => {
             console.error('Erro ao alterar senha:', error);
             if (error.code === 'auth/requires-recent-login') {
-              mensagemErro.textContent = 'Por favor, faça login novamente para alterar a senha.';
-              auth.signOut().then(() => mostrarTela('login'));
+              mensagemErro.textContent = 'Faça login novamente para alterar a senha.';
             } else {
               mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
             }
           });
       } else {
-        mensagemErro.textContent = 'Usuário não autenticado. Faça login novamente.';
-        auth.signOut().then(() => mostrarTela('login'));
+        mensagemErro.textContent = 'Nenhum usuário logado. Faça login novamente.';
       }
     });
   </script>
