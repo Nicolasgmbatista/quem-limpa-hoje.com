@@ -251,9 +251,6 @@
       max-width: 300px;
     }
 
-    #botoesLogin).
-
-
     #botoesLogin {
       display: flex;
       flex-wrap: wrap;
@@ -851,6 +848,73 @@
       return -1;
     }
 
+    function substituirPessoaNaEscala(nomeRemovido, tarefa) {
+      if (!turmaAtual) return;
+      const turmaData = dadosTurmas[turmaAtual];
+      if (turmaData.nomes.length === 0) {
+        turmaData.escalaAtual = [];
+        turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
+        console.log('Nenhum nome disponível, escala zerada');
+        return;
+      }
+
+      const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
+      const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
+
+      // Remover a pessoa da escala atual
+      turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
+
+      // Se a escala ainda tiver menos de 2 pessoas, encontrar um substituto
+      if (turmaData.escalaAtual.length < 2) {
+        let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
+        let idx = -1;
+
+        // Buscar o próximo nome válido na ordem alfabética
+        for (let i = indiceRemovido + 1; i < turmaData.nomes.length; i++) {
+          if (!usados.includes(turmaData.nomes[i])) {
+            idx = i;
+            break;
+          }
+        }
+
+        // Se não encontrou substituto após o índice removido, buscar do início
+        if (idx === -1 && turmaData.escalaAtual.length > 0) {
+          const primeiraPessoaIndex = turmaData.escalaAtual[0].index;
+          for (let i = 0; i < primeiraPessoaIndex; i++) {
+            if (!usados.includes(turmaData.nomes[i])) {
+              idx = i;
+              break;
+            }
+          }
+        }
+
+        // Se ainda não encontrou, buscar qualquer nome disponível
+        if (idx === -1) {
+          for (let i = 0; i < turmaData.nomes.length; i++) {
+            if (!usados.includes(turmaData.nomes[i])) {
+              idx = i;
+              break;
+            }
+          }
+        }
+
+        if (idx !== -1) {
+          const novoNome = turmaData.nomes[idx];
+          turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
+          turmaData.historicoTarefa[novoNome] = tarefa;
+          turmaData.posicaoUltimaEscala = Math.max(turmaData.posicaoUltimaEscala, idx);
+          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
+        } else {
+          console.log(`Nenhum substituto disponível para ${nomeRemovido}`);
+        }
+
+        // Reordenar a escala para manter a ordem alfabética
+        turmaData.escalaAtual.sort((a, b) => a.index - b.index);
+      }
+
+      console.log(`Escala após substituição:`, turmaData.escalaAtual);
+    }
+
     async function gerarEscala() {
       if (!turmaAtual) return;
       const turmaData = dadosTurmas[turmaAtual];
@@ -888,61 +952,6 @@
       turmaData.faltantesPendentes = [];
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
-    }
-
-    function substituirPessoaNaEscala(nomeRemovido, tarefa) {
-      if (!turmaAtual) return;
-      const turmaData = dadosTurmas[turmaAtual];
-      if (turmaData.nomes.length === 0) {
-        turmaData.escalaAtual = [];
-        turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
-        console.log('Nenhum nome disponível, escala zerada');
-        return;
-      }
-
-      const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
-      const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
-
-      // Remover a pessoa da escala atual
-      turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
-
-      // Se a escala ainda tiver menos de 2 pessoas, encontrar um substituto
-      if (turmaData.escalaAtual.length < 2) {
-        let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-        let idx = indiceRemovido;
-
-        // Buscar o próximo nome válido na ordem alfabética
-        for (let i = indiceRemovido + 1; i < turmaData.nomes.length; i++) {
-          if (!usados.includes(turmaData.nomes[i])) {
-            idx = i;
-            break;
-          }
-        }
-
-        // Se não encontrou um nome válido após o índice removido, começar do início
-        if (idx === indiceRemovido) {
-          for (let i = 0; i < turmaData.nomes.length; i++) {
-            if (!usados.includes(turmaData.nomes[i]) && (turmaData.escalaAtual.length === 0 || i > turmaData.escalaAtual[0].index)) {
-              idx = i;
-              break;
-            }
-          }
-        }
-
-        if (idx !== indiceRemovido && idx !== -1) {
-          const novoNome = turmaData.nomes[idx];
-          turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
-          turmaData.historicoTarefa[novoNome] = tarefa;
-          turmaData.posicaoUltimaEscala = idx;
-          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
-        } else {
-          console.log(`Nenhum substituto disponível para ${nomeRemovido}`);
-        }
-      }
-
-      // Reordenar a escala para manter a ordem alfabética
-      turmaData.escalaAtual.sort((a, b) => a.index - b.index);
-      console.log(`Escala após substituição:`, turmaData.escalaAtual);
     }
 
     function atualizarResultadoEFormulario() {
@@ -1552,18 +1561,32 @@
       }
 
       try {
-        await auth.createUserWithEmailAndPassword(novoEmail, novaSenha);
-        admins.push(novoEmail);
-        adminConfig[novoEmail] = { primeiroLogin: true };
-        await salvarConfigNoFirestore();
-        atualizarListaAdminsEdicao();
-        inputEmail.value = '';
-        inputSenha.value = '';
-        alert('Administrador adicionado com sucesso!');
+        // Verificar se o email já existe no Firebase Authentication
+        const signInMethods = await auth.fetchSignInMethodsForEmail(novoEmail);
+        if (signInMethods.length > 0) {
+          // Email já existe, apenas adicionar à lista de admins
+          admins.push(novoEmail);
+          adminConfig[novoEmail] = adminConfig[novoEmail] || { primeiroLogin: false };
+          await salvarConfigNoFirestore();
+          atualizarListaAdminsEdicao();
+          inputEmail.value = '';
+          inputSenha.value = '';
+          alert('Administrador existente adicionado com sucesso à turma!');
+        } else {
+          // Email não existe, criar novo usuário
+          await auth.createUserWithEmailAndPassword(novoEmail, novaSenha);
+          admins.push(novoEmail);
+          adminConfig[novoEmail] = { primeiroLogin: true };
+          await salvarConfigNoFirestore();
+          atualizarListaAdminsEdicao();
+          inputEmail.value = '';
+          inputSenha.value = '';
+          alert('Novo administrador adicionado com sucesso!');
+        }
       } catch (error) {
         console.error('Erro ao adicionar administrador:', error);
-        if (error.code === 'auth/email-already-in-use') {
-          alert('Este email já está registrado!');
+        if (error.code === 'auth/invalid-email') {
+          alert('Email inválido!');
         } else {
           alert('Erro ao adicionar administrador. Tente novamente.');
         }
