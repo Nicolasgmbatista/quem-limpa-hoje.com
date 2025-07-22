@@ -733,15 +733,29 @@
     }
 
     async function lerDadosDoFirestore() {
-      if (!turmaAtual) return;
+      if (!turmaAtual) {
+        console.error("Erro: turmaAtual não definida ao tentar ler dados do Firestore");
+        return;
+      }
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout ao carregar dados do Firestore')), 5000);
+      });
+
       try {
-        const salaDoc = await db.collection('escala').doc(turmaAtual).collection('sala').doc('dados').get();
-        const configDoc = await db.collection('escala').doc(turmaAtual).collection('config').doc('dados').get();
-        const lab303Doc = await db.collection('escala').doc(turmaAtual).collection('lab303').doc('dados').get();
-        const lab304Doc = await db.collection('escala').doc(turmaAtual).collection('lab304').doc('dados').get();
+        console.log(`Iniciando leitura do Firestore para turma: ${turmaAtual}`);
+        const salaDocPromise = db.collection('escala').doc(turmaAtual).collection('sala').doc('dados').get();
+        const configDocPromise = db.collection('escala').doc(turmaAtual).collection('config').doc('dados').get();
+        const lab303DocPromise = db.collection('escala').doc(turmaAtual).collection('lab303').doc('dados').get();
+        const lab304DocPromise = db.collection('escala').doc(turmaAtual).collection('lab304').doc('dados').get();
+
+        const [salaDoc, configDoc, lab303Doc, lab304Doc] = await Promise.race([
+          Promise.all([salaDocPromise, configDocPromise, lab303DocPromise, lab304DocPromise]),
+          timeoutPromise
+        ]);
 
         const turmaData = dadosTurmas[turmaAtual];
-        
+
         if (salaDoc.exists) {
           const data = salaDoc.data();
           turmaData.posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
@@ -795,8 +809,20 @@
 
         atualizarResultadoEFormulario();
       } catch (error) {
-        console.error("Erro ao carregar do Firestore:", error);
-        alert("Erro ao carregar dados. Usando valores padrão.");
+        console.error(`Erro ao carregar dados do Firestore para ${turmaAtual}:`, error);
+        alert(`Erro ao carregar dados para ${turmaAtual}. Usando valores padrão.`);
+        const turmaData = dadosTurmas[turmaAtual];
+        if (!turmaData.escalaAtual) turmaData.escalaAtual = [];
+        if (!turmaData.posicaoUltimaEscala) turmaData.posicaoUltimaEscala = -1;
+        if (!turmaData.historicoTarefa) turmaData.historicoTarefa = {};
+        if (!turmaData.faltantesPendentes) turmaData.faltantesPendentes = [];
+        if (!turmaData.nomes) {
+          turmaData.nomes = turmaAtual === 'matutino' ? ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b)) : [];
+        }
+        if (!turmaData.admins) turmaData.admins = [ADMIN_PERMANENTE];
+        if (!turmaData.lab303) turmaData.lab303 = { grupos: [], posicaoUltimaFuncao: -1 };
+        if (!turmaData.lab304) turmaData.lab304 = { grupos: [], posicaoUltimaFuncao: -1 };
+        atualizarResultadoEFormulario();
       }
     }
 
@@ -996,14 +1022,30 @@
     }
 
     // Funções de autenticação
-    document.getElementById('btnMatutino').addEventListener('click', function() {
+    document.getElementById('btnMatutino').addEventListener('click', async function() {
+      console.log('Botão Matutino clicado');
       turmaAtual = 'matutino';
-      lerDadosDoFirestore().then(() => mostrarTela('inicio'));
+      try {
+        await lerDadosDoFirestore();
+        mostrarTela('inicio');
+        console.log('Transição para telaInicial após clicar em Matutino');
+      } catch (error) {
+        console.error('Erro ao processar clique em Matutino:', error);
+        mostrarTela('inicio'); // Forçar transição mesmo em caso de erro
+      }
     });
 
-    document.getElementById('btnVespertino').addEventListener('click', function() {
+    document.getElementById('btnVespertino').addEventListener('click', async function() {
+      console.log('Botão Vespertino clicado');
       turmaAtual = 'vespertino';
-      lerDadosDoFirestore().then(() => mostrarTela('inicio'));
+      try {
+        await lerDadosDoFirestore();
+        mostrarTela('inicio');
+        console.log('Transição para telaInicial após clicar em Vespertino');
+      } catch (error) {
+        console.error('Erro ao processar clique em Vespertino:', error);
+        mostrarTela('inicio'); // Forçar transição mesmo em caso de erro
+      }
     });
 
     document.getElementById('btnProfessor').addEventListener('click', function() {
@@ -1399,7 +1441,7 @@
           });
           li.appendChild(btnRemover);
         }
-        ul.appendChild<li);
+        ul.appendChild(li);
       });
     }
 
