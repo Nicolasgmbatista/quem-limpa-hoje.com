@@ -614,6 +614,7 @@
           console.log(`Próximo índice encontrado: ${i} (${nomes[i]})`);
           return i;
         }
+        console.log(`Índice ${i} (${nomes[i]}) ignorado, está em ignorados:`, ignorados);
       }
       console.log('Nenhum índice disponível para substituição');
       return -1;
@@ -682,7 +683,6 @@
       const turmaData = dadosTurmas[turmaAtual];
       if (turmaData.nomes.length === 0) {
         turmaData.escalaAtual = [];
-        turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
         console.log('Nenhum nome disponível, escala zerada');
         return;
       }
@@ -705,21 +705,6 @@
         }
       }
       turmaData.escalaAtual.sort((a, b) => a.index - b.index);
-      if (turmaData.escalaAtual.length === 2) {
-        const [p1, p2] = turmaData.escalaAtual;
-        if (p2.index <= p1.index && turmaData.nomes.length > usados.length) {
-          usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
-          idx = p1.index;
-          idx = proximoIndice(idx, usados);
-          if (idx !== -1) {
-            const novoNome = turmaData.nomes[idx];
-            turmaData.escalaAtual[1] = { nome: novoNome, tarefa: p2.tarefa, index: idx };
-            turmaData.historicoTarefa[novoNome] = p2.tarefa;
-            turmaData.posicaoUltimaEscala = Math.max(idx, turmaData.posicaoUltimaEscala);
-            console.log(`Corrigido segundo nome da escala: ${p2.nome} substituído por ${novoNome} - ${p2.tarefa} (índice ${idx})`);
-          }
-        }
-      }
       console.log(`Escala após substituição:`, JSON.parse(JSON.stringify(turmaData.escalaAtual)));
     }
     function atualizarResultadoEFormulario() {
