@@ -896,9 +896,8 @@
       const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
       const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
 
-      // Remover a pessoa da escala atual e dos faltantes pendentes
+      // Remover a pessoa da escala atual
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
-      turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
 
       // Se a escala ainda tiver menos de 2 pessoas, encontrar um substituto
       if (turmaData.escalaAtual.length < 2) {
@@ -1325,10 +1324,11 @@
         return pessoa ? { nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index } : null;
       }).filter(p => p !== null);
 
-      // Adicionar faltantes à lista de pendentes
+      // Adicionar faltantes à lista de pendentes antes de remover da escala
       turmaData.faltantesPendentes.push(...faltantes);
+      console.log(`Faltantes adicionados aos pendentes:`, turmaData.faltantesPendentes);
 
-      // Remover faltantes da escala atual
+      // Remover faltantes da escala atual e substituir
       for (let faltante of faltantes) {
         substituirPessoaNaEscala(faltante.nome, faltante.tarefa);
       }
