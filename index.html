@@ -831,6 +831,7 @@
     // Funções da escala de sala
     function proximoIndice(atual, ignorados = []) {
       const nomes = dadosTurmas[turmaAtual].nomes;
+      if (!nomes.length) return -1;
       let i = atual;
       if (i < 0 || i >= nomes.length) i = -1;
       for (let c = 0; c < nomes.length; c++) {
@@ -904,7 +905,7 @@
         let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
         let idx = indiceRemovido;
 
-        // Encontrar o próximo índice válido, começando exatamente após o índice removido
+        // Garantir que o próximo índice seja exatamente o seguinte na lista ordenada
         idx = proximoIndice(idx, usados);
         if (idx !== -1) {
           const novoNome = turmaData.nomes[idx];
