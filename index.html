@@ -428,12 +428,12 @@
     <div id="telaInicial" style="display:none;">
       <h1>Quem limpa a sala hoje?</h1>
       <p>Escolha seu perfil para continuar:</p>
-      <button id="btnProfessor">Professor / Representante</button>
+      <button id="btnAdministrador">Administrador</button>
       <button id="btnEstudante">Estudante</button>
     </div>
 
     <div id="telaLogin" style="display:none;">
-      <h1>Login - Professor / Representante</h1>
+      <h1>Login - Administrador</h1>
       <div id="mensagemErro"></div>
       <input type="email" id="emailLogin" placeholder="Email" autocomplete="username" />
       <input type="password" id="senhaLogin" placeholder="Senha" autocomplete="current-password" />
@@ -467,7 +467,7 @@
       </div>
     </div>
 
-    <!-- Menu lateral (com ordem corrigida) -->
+    <!-- Menu lateral -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
       <button id="btnMinhaConta" style="display:none;">Minha Conta</button>
@@ -897,11 +897,18 @@
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
       turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
 
-      let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-      let idx = turmaData.nomes.indexOf(nomeRemovido);
-      if (idx === -1) {
+      // Determinar o índice inicial para buscar o próximo nome
+      let idx;
+      if (turmaData.escalaAtual.length > 0) {
+        // Se ainda há alguém na escala, usar o índice do último nome restante
+        idx = turmaData.escalaAtual[turmaData.escalaAtual.length - 1].index;
+      } else {
+        // Se a escala está vazia, usar posicaoUltimaEscala
         idx = turmaData.posicaoUltimaEscala;
       }
+
+      // Encontrar nomes já usados
+      let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
 
       // Encontrar o próximo nome válido na lista
       idx = proximoIndice(idx, usados);
@@ -967,11 +974,13 @@
     async function avancarRodizioLaboratorio() {
       if (!turmaAtual || !laboratorioAtual) {
         console.error('Erro: turmaAtual ou laboratorioAtual não definidos');
+        document.getElementById('mensagemErroLaboratorio').textContent = 'Erro: Selecione uma turma e laboratório.';
         return;
       }
       const labData = dadosTurmas[turmaAtual][laboratorioAtual];
-      if (labData.grupos.length === 0) {
+      if (!labData.grupos || labData.grupos.length === 0) {
         console.log(`Nenhum grupo cadastrado para ${laboratorioAtual} em ${turmaAtual}`);
+        document.getElementById('mensagemErroLaboratorio').textContent = 'Nenhum grupo cadastrado para este laboratório.';
         return;
       }
 
@@ -980,7 +989,12 @@
       // Definir as funções na ordem desejada
       const funcoes = ['Pia', 'Chão', 'Valeta'];
       const n = labData.grupos.length;
-      const currentIndex = labData.posicaoUltimaFuncao === -1 ? 0 : labData.posicaoUltimaFuncao;
+      let currentIndex = labData.posicaoUltimaFuncao;
+
+      // Garantir que currentIndex seja válido
+      if (currentIndex < 0 || currentIndex >= funcoes.length) {
+        currentIndex = 0;
+      }
 
       // Atribuir funções ciclicamente com base na posição atual
       labData.grupos.forEach((grupo, index) => {
@@ -997,10 +1011,11 @@
       // Salvar no Firestore
       try {
         await salvarLaboratorioNoFirestore(laboratorioAtual);
+        document.getElementById('mensagemErroLaboratorio').textContent = '';
         console.log(`Rodízio salvo no Firestore para ${laboratorioAtual} em ${turmaAtual}`);
       } catch (error) {
         console.error(`Erro ao salvar rodízio no Firestore para ${laboratorioAtual}:`, error);
-        alert(`Erro ao salvar rodízio do ${laboratorioAtual.toUpperCase()}. Verifique sua conexão.`);
+        document.getElementById('mensagemErroLaboratorio').textContent = `Erro ao salvar rodízio do ${laboratorioAtual.toUpperCase()}. Verifique sua conexão.`;
       }
 
       // Atualizar a interface
@@ -1012,7 +1027,7 @@
       const labData = dadosTurmas[turmaAtual][laboratorioAtual];
       const ul = document.getElementById('listaGruposLaboratorio');
       ul.innerHTML = '';
-      if (labData.grupos.length === 0) {
+      if (!labData.grupos || labData.grupos.length === 0) {
         ul.innerHTML = '<li>Nenhum grupo cadastrado.</li>';
         return;
       }
@@ -1023,28 +1038,43 @@
           const btnEditar = document.createElement('button');
           btnEditar.textContent = 'Editar';
           btnEditar.className = 'editarGrupoBtn';
-          btnEditar.addEventListener('click', () => {
+          btnEditar.addEventListener('click', async () => {
             const novaFuncao = prompt('Digite a nova função para ' + grupo.nome, grupo.funcao);
             if (novaFuncao && novaFuncao.trim()) {
               labData.grupos[idx].funcao = novaFuncao.trim();
-              salvarLaboratorioNoFirestore(laboratorioAtual).then(() => {
+              try {
+                await salvarLaboratorioNoFirestore(laboratorioAtual);
                 atualizarListaGruposLaboratorio();
-              });
+                document.getElementById('mensagemErroLaboratorio').textContent = '';
+              } catch (error) {
+                console.error(`Erro ao salvar edição do grupo ${grupo.nome}:`, error);
+                document.getElementById('mensagemErroLaboratorio').textContent = 'Erro ao salvar edição do grupo.';
+              }
             }
           });
           const btnRemover = document.createElement('button');
           btnRemover.textContent = 'Remover';
           btnRemover.className = 'removerGrupoBtn';
           btnRemover.addEventListener('click', async () => {
-            labData.grupos.splice(idx, 1);
-            await salvarLaboratorioNoFirestore(laboratorioAtual);
-            atualizarListaGruposLaboratorio();
+            if (confirm(`Tem certeza que deseja remover o grupo "${grupo.nome}"?`)) {
+              try {
+                labData.grupos.splice(idx, 1);
+                await salvarLaboratorioNoFirestore(laboratorioAtual);
+                atualizarListaGruposLaboratorio();
+                document.getElementById('mensagemErroLaboratorio').textContent = '';
+                console.log(`Grupo ${grupo.nome} removido com sucesso.`);
+              } catch (error) {
+                console.error(`Erro ao remover grupo ${grupo.nome}:`, error);
+                document.getElementById('mensagemErroLaboratorio').textContent = 'Erro ao remover grupo.';
+              }
+            }
           });
           li.appendChild(btnEditar);
           li.appendChild(btnRemover);
         }
         ul.appendChild(li);
       });
+      console.log(`Lista de grupos atualizada para ${laboratorioAtual} em ${turmaAtual}:`, labData.grupos);
     }
 
     // Funções de autenticação
@@ -1074,7 +1104,7 @@
       }
     });
 
-    document.getElementById('btnProfessor').addEventListener('click', function() {
+    document.getElementById('btnAdministrador').addEventListener('click', function() {
       mostrarTela('login');
     });
 
@@ -1581,7 +1611,7 @@
       }
     }
 
-    document.getElementById('btnAlterarSenha').addEventListener('click', function() {
+    document.getElementById('btnAlterarSenha').addEventListener('click', async function() {
       const novaSenha = document.getElementById('novaSenhaInput').value.trim();
       const confirmarSenha = document.getElementById('confirmarSenhaInput').value.trim();
       const mensagemErro = document.getElementById('mensagemErroMinhaConta');
@@ -1599,31 +1629,23 @@
         return;
       }
 
-      const user = auth.currentUser;
-      if (user) {
-        user.updatePassword(novaSenha)
-          .then(() => {
-            adminConfig[usuarioLogado.email] = { primeiroLogin: false };
-            salvarConfigNoFirestore()
-              .then(() => {
-                alert('Senha alterada com sucesso!');
-                mostrarTela('painel');
-              })
-              .catch((error) => {
-                console.error('Erro ao salvar config no Firestore:', error);
-                alert('Erro ao salvar configurações. Verifique sua conexão.');
-              });
-          })
-          .catch((error) => {
-            console.error('Erro ao alterar senha:', error);
-            if (error.code === 'auth/requires-recent-login') {
-              mensagemErro.textContent = 'Faça login novamente para alterar a senha.';
-            } else {
-              mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
-            }
-          });
-      } else {
-        mensagemErro.textContent = 'Nenhum usuário logado. Faça login novamente.';
+      try {
+        const user = auth.currentUser;
+        await user.updatePassword(novaSenha);
+        if (adminConfig[user.email]) {
+          adminConfig[user.email].primeiroLogin = false;
+          await salvarConfigNoFirestore();
+        }
+        mensagemErro.textContent = '';
+        alert('Senha alterada com sucesso!');
+        mostrarTela('painel');
+      } catch (error) {
+        console.error('Erro ao alterar senha:', error);
+        if (error.code === 'auth/requires-recent-login') {
+          mensagemErro.textContent = 'Por segurança, faça login novamente para alterar a senha.';
+        } else {
+          mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
+        }
       }
     });
   </script>
