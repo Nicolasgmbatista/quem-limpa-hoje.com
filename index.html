@@ -831,11 +831,15 @@
     // Funções da escala de sala
     function proximoIndice(atual, ignorados = []) {
       const nomes = dadosTurmas[turmaAtual].nomes;
-      if (nomes.length === 0) return -1;
+      if (nomes.length === 0) {
+        console.log('Nenhum nome disponível para substituição');
+        return -1;
+      }
 
       let i = atual;
       if (i < 0 || i >= nomes.length) i = -1;
 
+      // Procurar o próximo índice válido na ordem alfabética
       for (let c = 0; c < nomes.length; c++) {
         i = (i + 1) % nomes.length;
         if (!ignorados.includes(nomes[i])) {
@@ -843,12 +847,15 @@
           return i;
         }
       }
-      console.log('Nenhum índice disponível para substituição');
+      console.log('Nenhum índice disponível para substituição após busca completa');
       return -1;
     }
 
     function substituirPessoaNaEscala(nomeRemovido, tarefa) {
-      if (!turmaAtual) return;
+      if (!turmaAtual) {
+        console.error('Erro: turmaAtual não definida');
+        return;
+      }
       const turmaData = dadosTurmas[turmaAtual];
       if (turmaData.nomes.length === 0) {
         turmaData.escalaAtual = [];
@@ -857,12 +864,26 @@
         return;
       }
 
-      // Encontrar a pessoa removida na escala atual
-      const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
-      const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
+      console.log(`Iniciando substituição de ${nomeRemovido} com tarefa ${tarefa}`);
+
+      // Encontrar o índice da pessoa removida na lista de nomes
+      const indiceRemovido = turmaData.nomes.indexOf(nomeRemovido);
+      if (indiceRemovido === -1) {
+        console.error(`Erro: ${nomeRemovido} não encontrado na lista de nomes`);
+        return;
+      }
 
       // Remover a pessoa da escala atual
+      const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
+
+      // Atualizar índices de outras pessoas na escala e faltantes pendentes
+      turmaData.escalaAtual.forEach(p => {
+        if (p.index > indiceRemovido) p.index--;
+      });
+      turmaData.faltantesPendentes.forEach(f => {
+        if (f.index > indiceRemovido) f.index--;
+      });
 
       // Se a escala tiver menos de 2 pessoas, buscar um substituto
       if (turmaData.escalaAtual.length < 2) {
@@ -870,24 +891,25 @@
         let usados = turmaData.escalaAtual.map(p => p.nome);
         let idx = indiceRemovido;
 
-        // Buscar o próximo índice válido
+        // Buscar o próximo índice válido na ordem alfabética
         idx = proximoIndice(idx, usados);
 
         if (idx !== -1) {
           const novoNome = turmaData.nomes[idx];
-          turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
-          turmaData.historicoTarefa[novoNome] = tarefa;
+          // Garantir que a tarefa do substituto seja a mesma da pessoa removida
+          const novaTarefa = tarefa || (turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa'));
+          turmaData.escalaAtual.push({ nome: novoNome, tarefa: novaTarefa, index: idx });
+          turmaData.historicoTarefa[novoNome] = novaTarefa;
           turmaData.posicaoUltimaEscala = Math.max(turmaData.posicaoUltimaEscala, idx);
-          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
+          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${novaTarefa}`);
         } else {
           console.log(`Nenhum substituto disponível para ${nomeRemovido}`);
         }
-
-        // Reordenar a escala para manter a ordem alfabética
-        turmaData.escalaAtual.sort((a, b) => a.index - b.index);
       }
 
-      console.log(`Escala após substituição:`, turmaData.escalaAtual);
+      // Reordenar a escala com base nos índices para manter a ordem alfabética
+      turmaData.escalaAtual.sort((a, b) => a.index - b.index);
+      console.log(`Escala após substituição:`, JSON.stringify(turmaData.escalaAtual));
     }
 
     async function gerarEscala() {
@@ -1514,7 +1536,6 @@
       }
 
       try {
-        // Adicionar o email à lista de admins da turma
         admins.push(novoEmail);
         adminConfig[novoEmail] = adminConfig[novoEmail] || { primeiroLogin: !!novaSenha };
         await salvarConfigNoFirestore();
