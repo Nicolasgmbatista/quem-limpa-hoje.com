@@ -904,7 +904,7 @@
         let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
         let idx = indiceRemovido;
 
-        // Encontrar o próximo índice válido
+        // Encontrar o próximo índice válido, começando exatamente após o índice removido
         idx = proximoIndice(idx, usados);
         if (idx !== -1) {
           const novoNome = turmaData.nomes[idx];
