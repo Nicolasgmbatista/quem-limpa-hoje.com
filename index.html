@@ -832,10 +832,13 @@
     function proximoIndice(atual, ignorados = []) {
       const nomes = dadosTurmas[turmaAtual].nomes;
       if (!nomes.length) return -1;
+
       let i = atual;
       if (i < 0 || i >= nomes.length) i = -1;
+
+      // Avançar para o próximo índice sequencialmente
       for (let c = 0; c < nomes.length; c++) {
-        i = (i + 1) % nomes.length;
+        i = (i + 1) % nomes.length; // Avança para o próximo índice, com loop circular
         if (!ignorados.includes(nomes[i])) {
           console.log(`Próximo índice encontrado: ${i} (${nomes[i]})`);
           return i;
@@ -900,12 +903,12 @@
       // Remover a pessoa da escala atual
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
 
-      // Se a escala ainda tiver menos de 2 pessoas, encontrar um substituto
+      // Se a escala tiver menos de 2 pessoas, encontrar um substituto
       if (turmaData.escalaAtual.length < 2) {
         let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-        let idx = indiceRemovido;
+        let idx = indiceRemovido; // Começar do índice da pessoa removida
 
-        // Garantir que o próximo índice seja exatamente o seguinte na lista ordenada
+        // Encontrar o próximo índice válido
         idx = proximoIndice(idx, usados);
         if (idx !== -1) {
           const novoNome = turmaData.nomes[idx];
@@ -1369,8 +1372,10 @@
         btnRemover.addEventListener('click', async () => {
           const pessoaNaEscala = turmaData.escalaAtual.find(p => p.nome === nome);
           const indexNaLista = turmaData.nomes.indexOf(nome);
+
+          // Remover o nome da lista
           turmaData.nomes.splice(indexNaLista, 1);
-          
+
           // Ajustar índices na escala atual e faltantes pendentes
           turmaData.escalaAtual.forEach(p => {
             if (p.index > indexNaLista) p.index--;
@@ -1378,13 +1383,16 @@
           turmaData.faltantesPendentes.forEach(f => {
             if (f.index > indexNaLista) f.index--;
           });
-          
+
+          // Se a pessoa estava na escala, substituir
           if (pessoaNaEscala && turmaData.nomes.length > 0) {
             substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
           } else {
+            // Se não estava na escala, apenas remover de faltantes pendentes
             turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nome);
             turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nome);
           }
+
           await salvarConfigNoFirestore();
           await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
