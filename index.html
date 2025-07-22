@@ -467,7 +467,7 @@
       </div>
     </div>
 
-    <!-- Menu lateral (com ordem corrigida) -->
+    <!-- Menu lateral -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
       <button id="btnMinhaConta" style="display:none;">Minha Conta</button>
@@ -900,9 +900,9 @@
       turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
 
       let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-      let idx = indiceRemovido !== -1 ? indiceRemovido : turmaData.posicaoUltimaEscala;
       
-      idx = proximoIndice(idx, usados);
+      // Encontrar o próximo índice a partir do índice da pessoa removida
+      let idx = proximoIndice(indiceRemovido, usados);
       if (idx === -1) {
         console.log('Nenhum substituto disponível para', nomeRemovido);
         return;
@@ -913,6 +913,9 @@
       turmaData.historicoTarefa[novoNome] = tarefa;
       turmaData.posicaoUltimaEscala = idx;
       console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
+      
+      // Reordenar a escala para manter a ordem alfabética
+      turmaData.escalaAtual.sort((a, b) => a.index - b.index);
     }
 
     function atualizarResultadoEFormulario() {
@@ -975,27 +978,23 @@
 
       console.log(`Iniciando rodízio para ${laboratorioAtual} em ${turmaAtual}. Grupos antes:`, JSON.parse(JSON.stringify(labData.grupos)));
 
-      // Definir a ordem fixa das funções
-      const funcoesOrdem = ['Pia', 'Chão', 'Valeta'];
-      
-      // Criar uma cópia dos grupos e suas funções atuais
-      const grupos = labData.grupos;
-      const n = grupos.length;
+      // Obter as funções atuais na ordem dos grupos
+      const funcoesAtuais = labData.grupos.map(g => g.funcao);
 
-      // Determinar a posição atual no rodízio
-      let posicaoAtual = labData.posicaoUltimaFuncao;
-      if (posicaoAtual < 0 || posicaoAtual >= funcoesOrdem.length) {
-        posicaoAtual = 0;
+      // Rotacionar as funções: G1 -> G2, G2 -> G3, G3 -> G1, etc.
+      const n = funcoesAtuais.length;
+      const funcoesRotacionadas = new Array(n);
+      for (let i = 0; i < n; i++) {
+        funcoesRotacionadas[i] = funcoesAtuais[(i - 1 + n) % n];
       }
 
-      // Atribuir funções com base na posição do rodízio
-      grupos.forEach((grupo, index) => {
-        const funcaoIndex = (posicaoAtual + index) % funcoesOrdem.length;
-        grupo.funcao = funcoesOrdem[funcaoIndex];
+      // Aplicar as funções rotacionadas aos grupos
+      labData.grupos.forEach((grupo, index) => {
+        grupo.funcao = funcoesRotacionadas[index];
       });
 
-      // Incrementar a posição do rodízio
-      labData.posicaoUltimaFuncao = (posicaoAtual + 1) % funcoesOrdem.length;
+      // Atualizar a posição do rodízio
+      labData.posicaoUltimaFuncao = (labData.posicaoUltimaFuncao + 1) % (labData.grupos.length || 1);
 
       console.log(`Grupos após rodízio para ${laboratorioAtual} em ${turmaAtual}:`, JSON.parse(JSON.stringify(labData.grupos)));
       console.log(`Nova posicaoUltimaFuncao: ${labData.posicaoUltimaFuncao}`);
@@ -1063,7 +1062,7 @@
         mostrarTela('inicio');
       } catch (error) {
         console.error('Erro ao processar clique em Matutino:', error);
-        mostrarTela('inicio'); // Forçar transição mesmo em caso de erro
+        mostrarTela('inicio');
       }
     });
 
@@ -1076,7 +1075,7 @@
         mostrarTela('inicio');
       } catch (error) {
         console.error('Erro ao processar clique em Vespertino:', error);
-        mostrarTela('inicio'); // Forçar transição mesmo em caso de erro
+        mostrarTela('inicio');
       }
     });
 
@@ -1336,7 +1335,7 @@
       // Substituir faltantes
       for (let faltante of faltantes) {
         if (turmaData.escalaAtual.length >= 2) break;
-        idx = proximoIndice(idx, usados);
+        idx = proximoIndice(faltante.index, usados);
         if (idx === -1) {
           console.log('Nenhum substituto disponível para', faltante.nome);
           break;
@@ -1355,7 +1354,7 @@
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
         const nome = turmaData.nomes[idx];
-        const tarefa = turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
+        const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
         turmaData.escalaAtual.push({ nome, tarefa, index: idx });
         turmaData.historicoTarefa[nome] = tarefa;
         usados.push(nome);
@@ -1363,7 +1362,7 @@
         console.log(`Complemento da escala: ${nome} - ${tarefa}`);
       }
 
-      // Reordenar a escala para manter a ordem dos índices
+      // Reordenar a escala para manter a ordem alfabética
       turmaData.escalaAtual.sort((a, b) => a.index - b.index);
 
       console.log(`Escala final para ${turmaAtual}:`, turmaData.escalaAtual);
@@ -1433,28 +1432,37 @@
         turmaData.nomes.push(novoNome);
         turmaData.nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
-        if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > turmaData.escalaAtual.length) {
-          let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-          let idx = proximoIndice(turmaData.posicaoUltimaEscala, usados);
-          if (idx !== -1) {
-            const nome = turmaData.nomes[idx];
+
+        // Verificar se a nova pessoa deve ser adicionada à escala
+        const idxNovoNome = turmaData.nomes.indexOf(novoNome);
+        let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
+
+        if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > usados.length) {
+          // Escala incompleta, adicionar o novo nome se possível
+          if (!usados.includes(novoNome)) {
             const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
-            turmaData.escalaAtual.push({ nome, tarefa, index: idx });
-            turmaData.historicoTarefa[nome] = tarefa;
-            turmaData.posicaoUltimaEscala = idx;
+            turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idxNovoNome });
+            turmaData.historicoTarefa[novoNome] = tarefa;
+            turmaData.posicaoUltimaEscala = idxNovoNome;
+            console.log(`Novo nome ${novoNome} adicionado à escala: ${tarefa}`);
           }
         } else if (turmaData.escalaAtual.length === 2) {
-          const primeiraPessoa = turmaData.escalaAtual[0];
-          turmaData.escalaAtual = [primeiraPessoa];
-          let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-          let idx = turmaData.nomes.indexOf(novoNome);
-          if (idx !== -1 && !usados.includes(novoNome)) {
-            const tarefa = primeiraPessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
-            turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
-            turmaData.historicoTarefa[novoNome] = tarefa;
-            turmaData.posicaoUltimaEscala = idx;
+          // Escala completa, verificar se o novo nome deve substituir alguém
+          const [primeiraPessoa, segundaPessoa] = turmaData.escalaAtual;
+          const idxPrimeira = primeiraPessoa.index;
+          const idxSegunda = segundaPessoa.index;
+
+          if (idxNovoNome > idxPrimeira && idxNovoNome < idxSegunda && !usados.includes(novoNome)) {
+            // Novo nome está entre a primeira e a segunda pessoa na ordem alfabética
+            turmaData.escalaAtual = [primeiraPessoa, { nome: novoNome, tarefa: segundaPessoa.tarefa, index: idxNovoNome }];
+            turmaData.historicoTarefa[novoNome] = segundaPessoa.tarefa;
+            turmaData.posicaoUltimaEscala = idxNovoNome;
+            console.log(`Novo nome ${novoNome} substituiu ${segundaPessoa.nome} na escala`);
+          } else {
+            console.log(`Novo nome ${novoNome} não substitui ninguém, apenas adicionado à lista`);
           }
         }
+
         await salvarConfigNoFirestore();
         await salvarEscalaNoFirestore();
         atualizarListaNomesEdicao();
@@ -1550,42 +1558,25 @@
       }
 
       try {
-        const signInMethods = await auth.fetchSignInMethodsForEmail(novoEmail);
-        if (signInMethods.length > 0) {
-          admins.push(novoEmail);
-          admins.sort((a, b) => a.localeCompare(b));
-          adminConfig[novoEmail] = { primeiroLogin: true };
-          inputEmail.value = '';
-          inputSenha.value = '';
-          atualizarListaAdminsEdicao();
-          await salvarConfigNoFirestore();
-          alert('Administrador adicionado com sucesso!');
-        } else {
-          const userCredential = await auth.createUserWithEmailAndPassword(novoEmail, novaSenha);
-          admins.push(novoEmail);
-          admins.sort((a, b) => a.localeCompare(b));
-          adminConfig[novoEmail] = { primeiroLogin: true };
-          inputEmail.value = '';
-          inputSenha.value = '';
-          atualizarListaAdminsEdicao();
-          await salvarConfigNoFirestore();
-          await userCredential.user.sendEmailVerification();
-          console.log('Email de verificação enviado para:', novoEmail);
-          alert('Administrador adicionado com sucesso! Um email de verificação foi enviado.');
-        }
+        await auth.createUserWithEmailAndPassword(novoEmail, novaSenha);
+        admins.push(novoEmail);
+        adminConfig[novoEmail] = { primeiroLogin: true };
+        await salvarConfigNoFirestore();
+        atualizarListaAdminsEdicao();
+        inputEmail.value = '';
+        inputSenha.value = '';
+        alert('Administrador adicionado com sucesso!');
       } catch (error) {
         console.error('Erro ao adicionar administrador:', error);
         if (error.code === 'auth/email-already-in-use') {
-          alert('Este email já está registrado, mas não como administrador.');
-        } else if (error.code === 'auth/invalid-email') {
-          alert('Email inválido.');
+          alert('Este email já está registrado!');
         } else {
           alert('Erro ao adicionar administrador. Tente novamente.');
         }
       }
     });
 
-    // Funções de Minha Conta
+    // Funções de gerenciamento de conta
     document.getElementById('btnMinhaConta').addEventListener('click', function() {
       if (isAdmin) {
         mostrarTela('minha-conta');
@@ -1599,59 +1590,41 @@
     function atualizarTelaMinhaConta() {
       const mensagemAviso = document.getElementById('mensagemAviso');
       const mensagemErro = document.getElementById('mensagemErroMinhaConta');
+      mensagemAviso.textContent = adminConfig[usuarioLogado.email]?.primeiroLogin ? 'Você precisa alterar sua senha no primeiro login.' : '';
       mensagemErro.textContent = '';
       document.getElementById('novaSenhaInput').value = '';
       document.getElementById('confirmarSenhaInput').value = '';
-      if (adminConfig[usuarioLogado.email]?.primeiroLogin) {
-        mensagemAviso.textContent = 'Bem-vindo! Por favor, defina uma nova senha para sua conta.';
-      } else {
-        mensagemAviso.textContent = '';
-      }
     }
 
-    document.getElementById('btnAlterarSenha').addEventListener('click', function() {
+    document.getElementById('btnAlterarSenha').addEventListener('click', async function() {
       const novaSenha = document.getElementById('novaSenhaInput').value.trim();
       const confirmarSenha = document.getElementById('confirmarSenhaInput').value.trim();
       const mensagemErro = document.getElementById('mensagemErroMinhaConta');
 
-      if (!novaSenha || !confirmarSenha) {
-        mensagemErro.textContent = 'Preencha ambos os campos de senha!';
+      if (novaSenha.length < 6) {
+        mensagemErro.textContent = 'A senha deve ter pelo menos 6 caracteres!';
         return;
       }
       if (novaSenha !== confirmarSenha) {
         mensagemErro.textContent = 'As senhas não coincidem!';
         return;
       }
-      if (novaSenha.length < 6) {
-        mensagemErro.textContent = 'A senha deve ter pelo menos 6 caracteres!';
-        return;
-      }
 
-      const user = auth.currentUser;
-      if (user) {
-        user.updatePassword(novaSenha)
-          .then(() => {
-            adminConfig[usuarioLogado.email] = { primeiroLogin: false };
-            salvarConfigNoFirestore()
-              .then(() => {
-                alert('Senha alterada com sucesso!');
-                mostrarTela('painel');
-              })
-              .catch((error) => {
-                console.error('Erro ao salvar config no Firestore:', error);
-                alert('Erro ao salvar configurações. Verifique sua conexão.');
-              });
-          })
-          .catch((error) => {
-            console.error('Erro ao alterar senha:', error);
-            if (error.code === 'auth/requires-recent-login') {
-              mensagemErro.textContent = 'Faça login novamente para alterar a senha.';
-            } else {
-              mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
-            }
-          });
-      } else {
-        mensagemErro.textContent = 'Nenhum usuário logado. Faça login novamente.';
+      try {
+        const user = auth.currentUser;
+        await user.updatePassword(novaSenha);
+        adminConfig[usuarioLogado.email] = { primeiroLogin: false };
+        await salvarConfigNoFirestore();
+        mensagemErro.textContent = '';
+        alert('Senha alterada com sucesso!');
+        mostrarTela('painel');
+      } catch (error) {
+        console.error('Erro ao alterar senha:', error);
+        if (error.code === 'auth/requires-recent-login') {
+          mensagemErro.textContent = 'Por segurança, faça login novamente antes de alterar a senha.';
+        } else {
+          mensagemErro.textContent = 'Erro ao alterar a senha. Tente novamente.';
+        }
       }
     });
   </script>
