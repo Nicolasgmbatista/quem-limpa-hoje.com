@@ -893,15 +893,17 @@
         return;
       }
 
+      // Remover a pessoa da escala atual e dos faltantes pendentes
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
       turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
 
       let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
       let idx = turmaData.nomes.indexOf(nomeRemovido);
       if (idx === -1) {
-        idx = turmaData.escalaAtual.length > 0 ? turmaData.escalaAtual[turmaData.escalaAtual.length - 1].index : turmaData.posicaoUltimaEscala;
+        idx = turmaData.posicaoUltimaEscala;
       }
 
+      // Encontrar o próximo nome válido na lista
       idx = proximoIndice(idx, usados);
       if (idx === -1) {
         console.log('Nenhum substituto disponível para', nomeRemovido);
@@ -975,23 +977,19 @@
 
       console.log(`Iniciando rodízio para ${laboratorioAtual} em ${turmaAtual}. Grupos antes:`, JSON.parse(JSON.stringify(labData.grupos)));
 
-      // Criar uma cópia das funções atuais
-      const funcoesAtuais = labData.grupos.map(g => g.funcao);
-      const n = funcoesAtuais.length;
+      // Definir as funções na ordem desejada
+      const funcoes = ['Pia', 'Chão', 'Valeta'];
+      const n = labData.grupos.length;
+      const currentIndex = labData.posicaoUltimaFuncao === -1 ? 0 : labData.posicaoUltimaFuncao;
 
-      // Rotacionar funções: G1 → G2, G2 → G3, ..., GN → G1
-      const novasFuncoes = Array(n);
-      for (let i = 0; i < n; i++) {
-        novasFuncoes[i] = funcoesAtuais[(i + 1) % n]; // Move a função do grupo atual para o próximo grupo
-      }
-
-      // Atualizar as funções dos grupos
+      // Atribuir funções ciclicamente com base na posição atual
       labData.grupos.forEach((grupo, index) => {
-        grupo.funcao = novasFuncoes[index];
+        const funcaoIndex = (currentIndex + index) % funcoes.length;
+        grupo.funcao = funcoes[funcaoIndex];
       });
 
       // Atualizar a posição do rodízio
-      labData.posicaoUltimaFuncao = (labData.posicaoUltimaFuncao + 1) % n;
+      labData.posicaoUltimaFuncao = (currentIndex + 1) % funcoes.length;
 
       console.log(`Grupos após rodízio para ${laboratorioAtual} em ${turmaAtual}:`, JSON.parse(JSON.stringify(labData.grupos)));
       console.log(`Nova posicaoUltimaFuncao: ${labData.posicaoUltimaFuncao}`);
@@ -1312,29 +1310,32 @@
       }
 
       const escalaAntes = [...turmaData.escalaAtual];
-      turmaData.faltantesPendentes = [];
+      const faltantes = [];
       checkboxes.forEach(cb => {
         const nome = cb.value;
         const pessoa = turmaData.escalaAtual.find(p => p.nome === nome);
         if (pessoa) {
-          turmaData.faltantesPendentes.push({ nome, tarefa: pessoa.tarefa });
+          faltantes.push({ nome, tarefa: pessoa.tarefa });
           console.log(`Faltante adicionado: ${nome} - ${pessoa.tarefa}`);
         }
         cb.checked = false;
       });
 
-      turmaData.escalaAtual = turmaData.escalaAtual.filter(p => !turmaData.faltantesPendentes.some(f => f.nome === p.nome));
-      console.log(`Escala após remover faltantes para ${turmaAtual}:`, turmaData.escalaAtual);
+      // Remover os faltantes da escala atual
+      turmaData.escalaAtual = turmaData.escalaAtual.filter(p => !faltantes.some(f => f.nome === p.nome));
 
+      // Adicionar faltantes aos pendentes
+      turmaData.faltantesPendentes.push(...faltantes);
+
+      // Preencher a escala com o próximo nome disponível
       let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
       let idx = turmaData.posicaoUltimaEscala;
 
-      for (let faltante of turmaData.faltantesPendentes) {
-        if (turmaData.escalaAtual.length >= 2) break;
+      for (let faltante of faltantes) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) {
           console.log('Nenhum substituto disponível para', faltante.nome);
-          break;
+          continue;
         }
         const nome = turmaData.nomes[idx];
         const tarefa = faltante.tarefa;
@@ -1345,11 +1346,12 @@
         console.log(`Substituto adicionado: ${nome} - ${tarefa}`);
       }
 
+      // Garantir que a escala tenha duas pessoas, se possível
       while (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
         const nome = turmaData.nomes[idx];
-        const tarefa = turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
+        const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
         turmaData.escalaAtual.push({ nome, tarefa, index: idx });
         turmaData.historicoTarefa[nome] = tarefa;
         usados.push(nome);
@@ -1414,7 +1416,7 @@
         turmaData.nomes.push(novoNome);
         turmaData.nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
-        if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > turmaData.escalaAtual.length) {
+        if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > turmaData.escalaAtual.length + turmaData.faltantesPendentes.length) {
           let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
           let idx = proximoIndice(turmaData.posicaoUltimaEscala, usados);
           if (idx !== -1) {
@@ -1422,17 +1424,6 @@
             const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
             turmaData.escalaAtual.push({ nome, tarefa, index: idx });
             turmaData.historicoTarefa[nome] = tarefa;
-            turmaData.posicaoUltimaEscala = idx;
-          }
-        } else if (turmaData.escalaAtual.length === 2) {
-          const primeiraPessoa = turmaData.escalaAtual[0];
-          turmaData.escalaAtual = [primeiraPessoa];
-          let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-          let idx = turmaData.nomes.indexOf(novoNome);
-          if (idx !== -1 && !usados.includes(novoNome)) {
-            const tarefa = primeiraPessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
-            turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
-            turmaData.historicoTarefa[novoNome] = tarefa;
             turmaData.posicaoUltimaEscala = idx;
           }
         }
