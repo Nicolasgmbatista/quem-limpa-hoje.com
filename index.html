@@ -686,19 +686,20 @@
         console.log('Nenhum nome disponível, escala zerada');
         return;
       }
+      console.log(`Substituindo ${nomeRemovido} com tarefa ${tarefa}. Escala antes:`, JSON.parse(JSON.stringify(turmaData.escalaAtual)));
       const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
       const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
-      if (turmaData.escalaAtual.length < 2) {
-        let usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
-        let idx = indiceRemovido;
+      let usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
+      let idx = indiceRemovido;
+      if (turmaData.nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx !== -1) {
           const novoNome = turmaData.nomes[idx];
           turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
           turmaData.historicoTarefa[novoNome] = tarefa;
           turmaData.posicaoUltimaEscala = Math.max(idx, turmaData.posicaoUltimaEscala);
-          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
+          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa} (índice ${idx})`);
         } else {
           console.log(`Nenhum substituto disponível para ${nomeRemovido}`);
         }
@@ -706,16 +707,16 @@
       turmaData.escalaAtual.sort((a, b) => a.index - b.index);
       if (turmaData.escalaAtual.length === 2) {
         const [p1, p2] = turmaData.escalaAtual;
-        if (p2.index <= p1.index) {
-          let usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
-          let idx = p1.index;
+        if (p2.index <= p1.index && turmaData.nomes.length > usados.length) {
+          usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
+          idx = p1.index;
           idx = proximoIndice(idx, usados);
           if (idx !== -1) {
             const novoNome = turmaData.nomes[idx];
             turmaData.escalaAtual[1] = { nome: novoNome, tarefa: p2.tarefa, index: idx };
             turmaData.historicoTarefa[novoNome] = p2.tarefa;
             turmaData.posicaoUltimaEscala = Math.max(idx, turmaData.posicaoUltimaEscala);
-            console.log(`Corrigido segundo nome da escala: ${p2.nome} substituído por ${novoNome} - ${p2.tarefa}`);
+            console.log(`Corrigido segundo nome da escala: ${p2.nome} substituído por ${novoNome} - ${p2.tarefa} (índice ${idx})`);
           }
         }
       }
