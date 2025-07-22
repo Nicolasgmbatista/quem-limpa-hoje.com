@@ -898,7 +898,7 @@
       }
 
       const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
-      const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
+      let indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
 
       // Remover a pessoa da escala atual
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
@@ -906,7 +906,7 @@
       // Se a escala tiver menos de 2 pessoas, encontrar um substituto
       if (turmaData.escalaAtual.length < 2) {
         let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-        let idx = indiceRemovido; // Começar do índice da pessoa removida
+        let idx = indiceRemovido;
 
         // Encontrar o próximo índice válido
         idx = proximoIndice(idx, usados);
@@ -914,8 +914,14 @@
           const novoNome = turmaData.nomes[idx];
           turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
           turmaData.historicoTarefa[novoNome] = tarefa;
-          turmaData.posicaoUltimaEscala = idx;
-          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
+          if (turmaData.escalaAtual.length === 1) {
+            // Se for o único na escala, atualizar posicaoUltimaEscala
+            turmaData.posicaoUltimaEscala = idx;
+          } else {
+            // Garantir que posicaoUltimaEscala seja o maior índice da escala
+            turmaData.posicaoUltimaEscala = Math.max(...turmaData.escalaAtual.map(p => p.index));
+          }
+          console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}, posicaoUltimaEscala: ${turmaData.posicaoUltimaEscala}`);
         } else {
           console.log(`Nenhum substituto disponível para ${nomeRemovido}`);
         }
@@ -1371,10 +1377,11 @@
         btnRemover.className = 'removerNomeBtn';
         btnRemover.addEventListener('click', async () => {
           const pessoaNaEscala = turmaData.escalaAtual.find(p => p.nome === nome);
-          const indexNaLista = turmaData.nomes.indexOf(nome);
+          const indexNaLista = idx;
 
           // Remover o nome da lista
           turmaData.nomes.splice(indexNaLista, 1);
+          console.log(`Nome ${nome} removido da lista, nova lista:`, turmaData.nomes);
 
           // Ajustar índices na escala atual e faltantes pendentes
           turmaData.escalaAtual.forEach(p => {
@@ -1385,18 +1392,26 @@
           });
 
           // Se a pessoa estava na escala, substituir
-          if (pessoaNaEscala && turmaData.nomes.length > 0) {
+          if (pessoaNaEscala) {
+            console.log(`Pessoa ${nome} estava na escala, substituindo...`);
             substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
+          }
+
+          // Remover a pessoa de faltantes pendentes, se estiver lá
+          turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nome);
+
+          // Atualizar posicaoUltimaEscala se necessário
+          if (turmaData.escalaAtual.length > 0) {
+            turmaData.posicaoUltimaEscala = Math.max(...turmaData.escalaAtual.map(p => p.index));
           } else {
-            // Se não estava na escala, apenas remover de faltantes pendentes
-            turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nome);
-            turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nome);
+            turmaData.posicaoUltimaEscala = -1;
           }
 
           await salvarConfigNoFirestore();
           await salvarEscalaNoFirestore();
           atualizarListaNomesEdicao();
           atualizarResultadoEFormulario();
+          console.log(`Após remoção de ${nome}, escala atual:`, turmaData.escalaAtual, `posicaoUltimaEscala: ${turmaData.posicaoUltimaEscala}`);
         });
         li.appendChild(btnRemover);
         ul.appendChild(li);
