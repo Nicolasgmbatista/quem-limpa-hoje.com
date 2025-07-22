@@ -857,18 +857,20 @@
         return;
       }
 
+      // Encontrar a pessoa removida na escala atual
       const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
       const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
 
       // Remover a pessoa da escala atual
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
 
-      // Se a escala ainda tiver menos de 2 pessoas, encontrar um substituto
+      // Se a escala tiver menos de 2 pessoas, buscar um substituto
       if (turmaData.escalaAtual.length < 2) {
-        let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
+        // Usar apenas nomes atualmente na escala como ignorados
+        let usados = turmaData.escalaAtual.map(p => p.nome);
         let idx = indiceRemovido;
 
-        // Buscar o próximo nome válido na ordem alfabética
+        // Buscar o próximo índice válido
         idx = proximoIndice(idx, usados);
 
         if (idx !== -1) {
@@ -1519,7 +1521,6 @@
         atualizarListaAdminsEdicao();
         inputEmail.value = '';
         inputSenha.value = '';
-        alert('Administrador adicionado com sucesso à turma!');
       } catch (error) {
         console.error('Erro ao adicionar administrador:', error);
         alert('Erro ao adicionar administrador. Verifique sua conexão e tente novamente.');
