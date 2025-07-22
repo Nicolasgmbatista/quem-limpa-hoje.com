@@ -65,4 +65,4 @@ E-mail: nicolasgmbatista15@gmail.com
 
 -------------------------------------------------
 
-Desenvolvido por Nicolas Guilerme Batista malysz
+Desenvolvido por Nicolas Guilerme Batista Malysz
