@@ -465,14 +465,14 @@
       </div>
     </div>
 
-    <!-- Menu lateral (apenas para administradores) -->
+    <!-- Menu lateral (com ordem corrigida) -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
       <button id="btnMinhaConta" style="display:none;">Minha Conta</button>
+      <button id="btnGerenciarLaboratorios" style="display:none;">Gerenciar Laboratórios</button>
       <button id="btnEditarNomes" style="display:none;">Editar Nomes</button>
       <button id="btnLiberarAcesso" style="display:none;">Liberar Acesso</button>
       <button id="btnResetar" style="display:none;">Resetar Escala</button>
-      <button id="btnGerenciarLaboratorios" style="display:none;">Gerenciar Laboratórios</button>
       <button id="btnSair" style="display:none;">Sair</button>
     </nav>
 
@@ -646,10 +646,10 @@
           document.getElementById('botoesLaboratorios').style.display = isAdmin ? 'none' : 'flex';
           document.getElementById('pergunta').style.display = isAdmin ? 'block' : 'none';
           document.getElementById('btnMinhaConta').style.display = isAdmin ? 'block' : 'none';
+          document.getElementById('btnGerenciarLaboratorios').style.display = isAdmin ? 'block' : 'none';
           document.getElementById('btnEditarNomes').style.display = isAdmin ? 'block' : 'none';
           document.getElementById('btnLiberarAcesso').style.display = isAdmin ? 'block' : 'none';
           document.getElementById('btnResetar').style.display = isAdmin ? 'block' : 'none';
-          document.getElementById('btnGerenciarLaboratorios').style.display = isAdmin ? 'block' : 'none';
           document.getElementById('btnSair').style.display = isAdmin ? 'block' : 'none';
           atualizarResultadoEFormulario();
           if (isAdmin) montarCheckboxFaltantes();
@@ -961,24 +961,50 @@
 
     // Funções de laboratórios
     async function avancarRodizioLaboratorio() {
-      if (!turmaAtual || !laboratorioAtual) return;
+      if (!turmaAtual || !laboratorioAtual) {
+        console.error('Erro: turmaAtual ou laboratorioAtual não definidos');
+        return;
+      }
       const labData = dadosTurmas[turmaAtual][laboratorioAtual];
-      if (labData.grupos.length === 0) return;
+      if (labData.grupos.length === 0) {
+        console.log(`Nenhum grupo cadastrado para ${laboratorioAtual} em ${turmaAtual}`);
+        return;
+      }
 
-      const funcoes = labData.grupos.map(g => g.funcao);
-      const n = funcoes.length;
+      console.log(`Iniciando rodízio para ${laboratorioAtual} em ${turmaAtual}. Grupos antes:`, JSON.parse(JSON.stringify(labData.grupos)));
+
+      // Criar uma cópia das funções atuais
+      const funcoesAtuais = labData.grupos.map(g => g.funcao);
+      const n = funcoesAtuais.length;
+
+      // Rotacionar funções: G1 → G2, G2 → G3, ..., GN → G1
       const novasFuncoes = Array(n);
       for (let i = 0; i < n; i++) {
-        novasFuncoes[i] = funcoes[(i + 1) % n]; // Move cada função para o próximo grupo
+        novasFuncoes[i] = funcoesAtuais[(i + 1) % n]; // Move a função do grupo atual para o próximo grupo
       }
+
+      // Atualizar as funções dos grupos
       labData.grupos.forEach((grupo, index) => {
         grupo.funcao = novasFuncoes[index];
       });
+
+      // Atualizar a posição do rodízio
       labData.posicaoUltimaFuncao = (labData.posicaoUltimaFuncao + 1) % n;
 
-      await salvarLaboratorioNoFirestore(laboratorioAtual);
+      console.log(`Grupos após rodízio para ${laboratorioAtual} em ${turmaAtual}:`, JSON.parse(JSON.stringify(labData.grupos)));
+      console.log(`Nova posicaoUltimaFuncao: ${labData.posicaoUltimaFuncao}`);
+
+      // Salvar no Firestore
+      try {
+        await salvarLaboratorioNoFirestore(laboratorioAtual);
+        console.log(`Rodízio salvo no Firestore para ${laboratorioAtual} em ${turmaAtual}`);
+      } catch (error) {
+        console.error(`Erro ao salvar rodízio no Firestore para ${laboratorioAtual}:`, error);
+        alert(`Erro ao salvar rodízio do ${laboratorioAtual.toUpperCase()}. Verifique sua conexão.`);
+      }
+
+      // Atualizar a interface
       atualizarListaGruposLaboratorio();
-      console.log(`Rodízio avançado para ${laboratorioAtual} em ${turmaAtual}:`, labData.grupos);
     }
 
     function atualizarListaGruposLaboratorio() {
@@ -1027,8 +1053,8 @@
       turmaAtual = 'matutino';
       try {
         await lerDadosDoFirestore();
+        console.log('Dados carregados para Matutino, mostrando telaInicial');
         mostrarTela('inicio');
-        console.log('Transição para telaInicial após clicar em Matutino');
       } catch (error) {
         console.error('Erro ao processar clique em Matutino:', error);
         mostrarTela('inicio'); // Forçar transição mesmo em caso de erro
@@ -1040,8 +1066,8 @@
       turmaAtual = 'vespertino';
       try {
         await lerDadosDoFirestore();
+        console.log('Dados carregados para Vespertino, mostrando telaInicial');
         mostrarTela('inicio');
-        console.log('Transição para telaInicial após clicar em Vespertino');
       } catch (error) {
         console.error('Erro ao processar clique em Vespertino:', error);
         mostrarTela('inicio'); // Forçar transição mesmo em caso de erro
