@@ -836,9 +836,9 @@
       let i = atual;
       if (i < 0 || i >= nomes.length) i = -1;
 
-      // Avançar para o próximo índice sequencialmente
+      // Procurar o próximo nome disponível na ordem alfabética
       for (let c = 0; c < nomes.length; c++) {
-        i = (i + 1) % nomes.length; // Avança para o próximo índice, com loop circular
+        i = (i + 1) % nomes.length; // Avança sequencialmente, com loop circular
         if (!ignorados.includes(nomes[i])) {
           console.log(`Próximo índice encontrado: ${i} (${nomes[i]})`);
           return i;
@@ -897,10 +897,15 @@
         return;
       }
 
-      const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
-      let indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
+      // Encontrar o índice da pessoa removida na lista de nomes
+      const indiceRemovido = turmaData.nomes.indexOf(nomeRemovido);
+      if (indiceRemovido === -1) {
+        console.log(`Nome ${nomeRemovido} não encontrado na lista de nomes`);
+        return;
+      }
 
       // Remover a pessoa da escala atual
+      const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
 
       // Se a escala tiver menos de 2 pessoas, encontrar um substituto
@@ -908,19 +913,16 @@
         let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
         let idx = indiceRemovido;
 
-        // Encontrar o próximo índice válido
+        // Encontrar o próximo índice válido na ordem alfabética
         idx = proximoIndice(idx, usados);
         if (idx !== -1) {
           const novoNome = turmaData.nomes[idx];
           turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
           turmaData.historicoTarefa[novoNome] = tarefa;
-          if (turmaData.escalaAtual.length === 1) {
-            // Se for o único na escala, atualizar posicaoUltimaEscala
-            turmaData.posicaoUltimaEscala = idx;
-          } else {
-            // Garantir que posicaoUltimaEscala seja o maior índice da escala
-            turmaData.posicaoUltimaEscala = Math.max(...turmaData.escalaAtual.map(p => p.index));
-          }
+          // Atualizar posicaoUltimaEscala para o maior índice na escala
+          turmaData.posicaoUltimaEscala = turmaData.escalaAtual.length > 0 
+            ? Math.max(...turmaData.escalaAtual.map(p => p.index))
+            : idx;
           console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}, posicaoUltimaEscala: ${turmaData.posicaoUltimaEscala}`);
         } else {
           console.log(`Nenhum substituto disponível para ${nomeRemovido}`);
@@ -1400,7 +1402,7 @@
           // Remover a pessoa de faltantes pendentes, se estiver lá
           turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nome);
 
-          // Atualizar posicaoUltimaEscala se necessário
+          // Atualizar posicaoUltimaEscala
           if (turmaData.escalaAtual.length > 0) {
             turmaData.posicaoUltimaEscala = Math.max(...turmaData.escalaAtual.map(p => p.index));
           } else {
@@ -1433,7 +1435,6 @@
         let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
 
         if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > usados.length) {
-          // Escala incompleta, adicionar o novo nome se possível
           if (!usados.includes(novoNome)) {
             const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
             turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idxNovoNome });
@@ -1442,13 +1443,11 @@
             console.log(`Novo nome ${novoNome} adicionado à escala: ${tarefa}`);
           }
         } else if (turmaData.escalaAtual.length === 2) {
-          // Escala completa, verificar se o novo nome deve substituir alguém
           const [primeiraPessoa, segundaPessoa] = turmaData.escalaAtual;
           const idxPrimeira = primeiraPessoa.index;
           const idxSegunda = segundaPessoa.index;
 
           if (idxNovoNome > idxPrimeira && idxNovoNome < idxSegunda && !usados.includes(novoNome)) {
-            // Novo nome está entre a primeira e a segunda pessoa na ordem alfabética
             turmaData.escalaAtual = [primeiraPessoa, { nome: novoNome, tarefa: segundaPessoa.tarefa, index: idxNovoNome }];
             turmaData.historicoTarefa[novoNome] = segundaPessoa.tarefa;
             turmaData.posicaoUltimaEscala = idxNovoNome;
@@ -1618,7 +1617,7 @@
         if (error.code === 'auth/requires-recent-login') {
           mensagemErro.textContent = 'Por segurança, faça login novamente antes de alterar a senha.';
         } else {
-          mensagemErro.textContent = 'Erro ao alterar a senha. Tente novamente.';
+          mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
         }
       }
     });
