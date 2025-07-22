@@ -152,11 +152,12 @@
       gap: 10px;
       justify-content: center;
       margin-top: 20px;
+      flex-wrap: wrap;
     }
 
     #botoesLaboratorios button {
-      width: 48%;
-      max-width: 140px;
+      width: 32%;
+      max-width: 120px;
     }
 
     #checkboxContainer {
@@ -454,6 +455,7 @@
         <div id="botoesLaboratorios" style="display:none;">
           <button id="btnLab303Estudante">LAB 303</button>
           <button id="btnLab304Estudante">LAB 304</button>
+          <button id="btnVoltarEstudante">Voltar</button>
         </div>
       </div>
       <div id="pergunta" style="display:none;">
@@ -1219,6 +1221,14 @@
       mostrarTela('gerenciar-laboratorio');
     });
 
+    document.getElementById('btnVoltarEstudante').addEventListener('click', function() {
+      usuarioLogado = null;
+      isAdmin = false;
+      turmaAtual = null;
+      laboratorioAtual = null;
+      mostrarTela('selecao-turma');
+    });
+
     document.getElementById('btnVoltarLaboratorios').addEventListener('click', function() {
       mostrarTela('painel');
     });
@@ -1256,6 +1266,29 @@
 
     document.getElementById('btnVoltarGerenciarLaboratorio').addEventListener('click', function() {
       mostrarTela('laboratorios');
+    });
+
+    document.getElementById('btnResetar').addEventListener('click', async function() {
+      if (!turmaAtual || !isAdmin) return;
+      if (confirm('Tem certeza que deseja resetar a escala? Isso apagará a escala atual, os faltantes pendentes e o histórico de tarefas.')) {
+        const turmaData = dadosTurmas[turmaAtual];
+        turmaData.escalaAtual = [];
+        turmaData.faltantesPendentes = [];
+        turmaData.historicoTarefa = {};
+        turmaData.posicaoUltimaEscala = -1;
+        try {
+          await salvarEscalaNoFirestore();
+          atualizarResultadoEFormulario();
+          alert('Escala resetada com sucesso!');
+          menuLateral.classList.remove('aberto');
+          setTimeout(() => {
+            menuLateral.style.display = 'none';
+          }, 300);
+        } catch (error) {
+          console.error('Erro ao resetar escala:', error);
+          alert('Erro ao resetar a escala. Verifique sua conexão.');
+        }
+      }
     });
 
     document.getElementById('formQuemLimpou').addEventListener('submit', async function(e) {
