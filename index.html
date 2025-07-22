@@ -428,7 +428,7 @@
     <div id="telaInicial" style="display:none;">
       <h1>Quem limpa a sala hoje?</h1>
       <p>Escolha seu perfil para continuar:</p>
-      <button id="btnAdministrador">Administrador</button>
+      <button id="btnProfessor">Administrador</button>
       <button id="btnEstudante">Estudante</button>
     </div>
 
@@ -467,7 +467,7 @@
       </div>
     </div>
 
-    <!-- Menu lateral -->
+    <!-- Menu lateral (com ordem corrigida) -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
       <button id="btnMinhaConta" style="display:none;">Minha Conta</button>
@@ -893,24 +893,15 @@
         return;
       }
 
-      // Remover a pessoa da escala atual e dos faltantes pendentes
+      const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
+      const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
+
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
       turmaData.faltantesPendentes = turmaData.faltantesPendentes.filter(f => f.nome !== nomeRemovido);
 
-      // Determinar o índice inicial para buscar o próximo nome
-      let idx;
-      if (turmaData.escalaAtual.length > 0) {
-        // Se ainda há alguém na escala, usar o índice do último nome restante
-        idx = turmaData.escalaAtual[turmaData.escalaAtual.length - 1].index;
-      } else {
-        // Se a escala está vazia, usar posicaoUltimaEscala
-        idx = turmaData.posicaoUltimaEscala;
-      }
-
-      // Encontrar nomes já usados
       let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-
-      // Encontrar o próximo nome válido na lista
+      let idx = indiceRemovido !== -1 ? indiceRemovido : turmaData.posicaoUltimaEscala;
+      
       idx = proximoIndice(idx, usados);
       if (idx === -1) {
         console.log('Nenhum substituto disponível para', nomeRemovido);
@@ -974,36 +965,37 @@
     async function avancarRodizioLaboratorio() {
       if (!turmaAtual || !laboratorioAtual) {
         console.error('Erro: turmaAtual ou laboratorioAtual não definidos');
-        document.getElementById('mensagemErroLaboratorio').textContent = 'Erro: Selecione uma turma e laboratório.';
         return;
       }
       const labData = dadosTurmas[turmaAtual][laboratorioAtual];
-      if (!labData.grupos || labData.grupos.length === 0) {
+      if (labData.grupos.length === 0) {
         console.log(`Nenhum grupo cadastrado para ${laboratorioAtual} em ${turmaAtual}`);
-        document.getElementById('mensagemErroLaboratorio').textContent = 'Nenhum grupo cadastrado para este laboratório.';
         return;
       }
 
       console.log(`Iniciando rodízio para ${laboratorioAtual} em ${turmaAtual}. Grupos antes:`, JSON.parse(JSON.stringify(labData.grupos)));
 
-      // Definir as funções na ordem desejada
-      const funcoes = ['Pia', 'Chão', 'Valeta'];
-      const n = labData.grupos.length;
-      let currentIndex = labData.posicaoUltimaFuncao;
+      // Definir a ordem fixa das funções
+      const funcoesOrdem = ['Pia', 'Chão', 'Valeta'];
+      
+      // Criar uma cópia dos grupos e suas funções atuais
+      const grupos = labData.grupos;
+      const n = grupos.length;
 
-      // Garantir que currentIndex seja válido
-      if (currentIndex < 0 || currentIndex >= funcoes.length) {
-        currentIndex = 0;
+      // Determinar a posição atual no rodízio
+      let posicaoAtual = labData.posicaoUltimaFuncao;
+      if (posicaoAtual < 0 || posicaoAtual >= funcoesOrdem.length) {
+        posicaoAtual = 0;
       }
 
-      // Atribuir funções ciclicamente com base na posição atual
-      labData.grupos.forEach((grupo, index) => {
-        const funcaoIndex = (currentIndex + index) % funcoes.length;
-        grupo.funcao = funcoes[funcaoIndex];
+      // Atribuir funções com base na posição do rodízio
+      grupos.forEach((grupo, index) => {
+        const funcaoIndex = (posicaoAtual + index) % funcoesOrdem.length;
+        grupo.funcao = funcoesOrdem[funcaoIndex];
       });
 
-      // Atualizar a posição do rodízio
-      labData.posicaoUltimaFuncao = (currentIndex + 1) % funcoes.length;
+      // Incrementar a posição do rodízio
+      labData.posicaoUltimaFuncao = (posicaoAtual + 1) % funcoesOrdem.length;
 
       console.log(`Grupos após rodízio para ${laboratorioAtual} em ${turmaAtual}:`, JSON.parse(JSON.stringify(labData.grupos)));
       console.log(`Nova posicaoUltimaFuncao: ${labData.posicaoUltimaFuncao}`);
@@ -1011,11 +1003,10 @@
       // Salvar no Firestore
       try {
         await salvarLaboratorioNoFirestore(laboratorioAtual);
-        document.getElementById('mensagemErroLaboratorio').textContent = '';
         console.log(`Rodízio salvo no Firestore para ${laboratorioAtual} em ${turmaAtual}`);
       } catch (error) {
         console.error(`Erro ao salvar rodízio no Firestore para ${laboratorioAtual}:`, error);
-        document.getElementById('mensagemErroLaboratorio').textContent = `Erro ao salvar rodízio do ${laboratorioAtual.toUpperCase()}. Verifique sua conexão.`;
+        alert(`Erro ao salvar rodízio do ${laboratorioAtual.toUpperCase()}. Verifique sua conexão.`);
       }
 
       // Atualizar a interface
@@ -1027,7 +1018,7 @@
       const labData = dadosTurmas[turmaAtual][laboratorioAtual];
       const ul = document.getElementById('listaGruposLaboratorio');
       ul.innerHTML = '';
-      if (!labData.grupos || labData.grupos.length === 0) {
+      if (labData.grupos.length === 0) {
         ul.innerHTML = '<li>Nenhum grupo cadastrado.</li>';
         return;
       }
@@ -1038,43 +1029,28 @@
           const btnEditar = document.createElement('button');
           btnEditar.textContent = 'Editar';
           btnEditar.className = 'editarGrupoBtn';
-          btnEditar.addEventListener('click', async () => {
+          btnEditar.addEventListener('click', () => {
             const novaFuncao = prompt('Digite a nova função para ' + grupo.nome, grupo.funcao);
             if (novaFuncao && novaFuncao.trim()) {
               labData.grupos[idx].funcao = novaFuncao.trim();
-              try {
-                await salvarLaboratorioNoFirestore(laboratorioAtual);
+              salvarLaboratorioNoFirestore(laboratorioAtual).then(() => {
                 atualizarListaGruposLaboratorio();
-                document.getElementById('mensagemErroLaboratorio').textContent = '';
-              } catch (error) {
-                console.error(`Erro ao salvar edição do grupo ${grupo.nome}:`, error);
-                document.getElementById('mensagemErroLaboratorio').textContent = 'Erro ao salvar edição do grupo.';
-              }
+              });
             }
           });
           const btnRemover = document.createElement('button');
           btnRemover.textContent = 'Remover';
           btnRemover.className = 'removerGrupoBtn';
           btnRemover.addEventListener('click', async () => {
-            if (confirm(`Tem certeza que deseja remover o grupo "${grupo.nome}"?`)) {
-              try {
-                labData.grupos.splice(idx, 1);
-                await salvarLaboratorioNoFirestore(laboratorioAtual);
-                atualizarListaGruposLaboratorio();
-                document.getElementById('mensagemErroLaboratorio').textContent = '';
-                console.log(`Grupo ${grupo.nome} removido com sucesso.`);
-              } catch (error) {
-                console.error(`Erro ao remover grupo ${grupo.nome}:`, error);
-                document.getElementById('mensagemErroLaboratorio').textContent = 'Erro ao remover grupo.';
-              }
-            }
+            labData.grupos.splice(idx, 1);
+            await salvarLaboratorioNoFirestore(laboratorioAtual);
+            atualizarListaGruposLaboratorio();
           });
           li.appendChild(btnEditar);
           li.appendChild(btnRemover);
         }
         ul.appendChild(li);
       });
-      console.log(`Lista de grupos atualizada para ${laboratorioAtual} em ${turmaAtual}:`, labData.grupos);
     }
 
     // Funções de autenticação
@@ -1104,7 +1080,7 @@
       }
     });
 
-    document.getElementById('btnAdministrador').addEventListener('click', function() {
+    document.getElementById('btnProfessor').addEventListener('click', function() {
       mostrarTela('login');
     });
 
@@ -1340,32 +1316,30 @@
       }
 
       const escalaAntes = [...turmaData.escalaAtual];
-      const faltantes = [];
-      checkboxes.forEach(cb => {
-        const nome = cb.value;
-        const pessoa = turmaData.escalaAtual.find(p => p.nome === nome);
-        if (pessoa) {
-          faltantes.push({ nome, tarefa: pessoa.tarefa });
-          console.log(`Faltante adicionado: ${nome} - ${pessoa.tarefa}`);
-        }
-        cb.checked = false;
-      });
+      const faltantes = Array.from(checkboxes).map(cb => {
+        const pessoa = turmaData.escalaAtual.find(p => p.nome === cb.value);
+        return pessoa ? { nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index } : null;
+      }).filter(p => p !== null);
 
-      // Remover os faltantes da escala atual
-      turmaData.escalaAtual = turmaData.escalaAtual.filter(p => !faltantes.some(f => f.nome === p.nome));
-
-      // Adicionar faltantes aos pendentes
+      // Adicionar faltantes à lista de pendentes
       turmaData.faltantesPendentes.push(...faltantes);
 
-      // Preencher a escala com o próximo nome disponível
+      // Remover faltantes da escala atual
+      turmaData.escalaAtual = turmaData.escalaAtual.filter(p => !faltantes.some(f => f.nome === p.nome));
+
+      // Reordenar a escala para manter a ordem original
+      turmaData.escalaAtual.sort((a, b) => a.index - b.index);
+
       let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
       let idx = turmaData.posicaoUltimaEscala;
 
+      // Substituir faltantes
       for (let faltante of faltantes) {
+        if (turmaData.escalaAtual.length >= 2) break;
         idx = proximoIndice(idx, usados);
         if (idx === -1) {
           console.log('Nenhum substituto disponível para', faltante.nome);
-          continue;
+          break;
         }
         const nome = turmaData.nomes[idx];
         const tarefa = faltante.tarefa;
@@ -1376,18 +1350,21 @@
         console.log(`Substituto adicionado: ${nome} - ${tarefa}`);
       }
 
-      // Garantir que a escala tenha duas pessoas, se possível
+      // Completar a escala se necessário
       while (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
         const nome = turmaData.nomes[idx];
-        const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
+        const tarefa = turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa';
         turmaData.escalaAtual.push({ nome, tarefa, index: idx });
         turmaData.historicoTarefa[nome] = tarefa;
         usados.push(nome);
         turmaData.posicaoUltimaEscala = idx;
         console.log(`Complemento da escala: ${nome} - ${tarefa}`);
       }
+
+      // Reordenar a escala para manter a ordem dos índices
+      turmaData.escalaAtual.sort((a, b) => a.index - b.index);
 
       console.log(`Escala final para ${turmaAtual}:`, turmaData.escalaAtual);
       console.log(`Faltantes pendentes:`, turmaData.faltantesPendentes);
@@ -1420,7 +1397,17 @@
         btnRemover.className = 'removerNomeBtn';
         btnRemover.addEventListener('click', async () => {
           const pessoaNaEscala = turmaData.escalaAtual.find(p => p.nome === nome);
-          turmaData.nomes.splice(idx, 1);
+          const indexNaLista = turmaData.nomes.indexOf(nome);
+          turmaData.nomes.splice(indexNaLista, 1);
+          
+          // Ajustar índices na escala atual e faltantes pendentes
+          turmaData.escalaAtual.forEach(p => {
+            if (p.index > indexNaLista) p.index--;
+          });
+          turmaData.faltantesPendentes.forEach(f => {
+            if (f.index > indexNaLista) f.index--;
+          });
+          
           if (pessoaNaEscala && turmaData.nomes.length > 0) {
             substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
           } else {
@@ -1446,7 +1433,7 @@
         turmaData.nomes.push(novoNome);
         turmaData.nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
-        if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > turmaData.escalaAtual.length + turmaData.faltantesPendentes.length) {
+        if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > turmaData.escalaAtual.length) {
           let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
           let idx = proximoIndice(turmaData.posicaoUltimaEscala, usados);
           if (idx !== -1) {
@@ -1454,6 +1441,17 @@
             const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
             turmaData.escalaAtual.push({ nome, tarefa, index: idx });
             turmaData.historicoTarefa[nome] = tarefa;
+            turmaData.posicaoUltimaEscala = idx;
+          }
+        } else if (turmaData.escalaAtual.length === 2) {
+          const primeiraPessoa = turmaData.escalaAtual[0];
+          turmaData.escalaAtual = [primeiraPessoa];
+          let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
+          let idx = turmaData.nomes.indexOf(novoNome);
+          if (idx !== -1 && !usados.includes(novoNome)) {
+            const tarefa = primeiraPessoa.tarefa === 'mesa' ? 'chão' : 'mesa';
+            turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
+            turmaData.historicoTarefa[novoNome] = tarefa;
             turmaData.posicaoUltimaEscala = idx;
           }
         }
@@ -1611,7 +1609,7 @@
       }
     }
 
-    document.getElementById('btnAlterarSenha').addEventListener('click', async function() {
+    document.getElementById('btnAlterarSenha').addEventListener('click', function() {
       const novaSenha = document.getElementById('novaSenhaInput').value.trim();
       const confirmarSenha = document.getElementById('confirmarSenhaInput').value.trim();
       const mensagemErro = document.getElementById('mensagemErroMinhaConta');
@@ -1629,23 +1627,31 @@
         return;
       }
 
-      try {
-        const user = auth.currentUser;
-        await user.updatePassword(novaSenha);
-        if (adminConfig[user.email]) {
-          adminConfig[user.email].primeiroLogin = false;
-          await salvarConfigNoFirestore();
-        }
-        mensagemErro.textContent = '';
-        alert('Senha alterada com sucesso!');
-        mostrarTela('painel');
-      } catch (error) {
-        console.error('Erro ao alterar senha:', error);
-        if (error.code === 'auth/requires-recent-login') {
-          mensagemErro.textContent = 'Por segurança, faça login novamente para alterar a senha.';
-        } else {
-          mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
-        }
+      const user = auth.currentUser;
+      if (user) {
+        user.updatePassword(novaSenha)
+          .then(() => {
+            adminConfig[usuarioLogado.email] = { primeiroLogin: false };
+            salvarConfigNoFirestore()
+              .then(() => {
+                alert('Senha alterada com sucesso!');
+                mostrarTela('painel');
+              })
+              .catch((error) => {
+                console.error('Erro ao salvar config no Firestore:', error);
+                alert('Erro ao salvar configurações. Verifique sua conexão.');
+              });
+          })
+          .catch((error) => {
+            console.error('Erro ao alterar senha:', error);
+            if (error.code === 'auth/requires-recent-login') {
+              mensagemErro.textContent = 'Faça login novamente para alterar a senha.';
+            } else {
+              mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
+            }
+          });
+      } else {
+        mensagemErro.textContent = 'Nenhum usuário logado. Faça login novamente.';
       }
     });
   </script>
