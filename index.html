@@ -16,7 +16,6 @@
       margin: 0;
       padding: 20px;
     }
-
     #app {
       width: 420px;
       background: #fff;
@@ -28,20 +27,8 @@
       border: 1px solid #e0e0e0;
       margin-bottom: 60px;
     }
-
-    h1 {
-      margin-bottom: 20px;
-      font-weight: 600;
-      font-size: 24px;
-      color: #2c3e50;
-    }
-
-    h2 {
-      font-size: 20px;
-      margin-bottom: 16px;
-      color: #2c3e50;
-    }
-
+    h1 { margin-bottom: 20px; font-weight: 600; font-size: 24px; color: #2c3e50; }
+    h2 { font-size: 20px; margin-bottom: 16px; color: #2c3e50; }
     button, input {
       font-size: 16px;
       border-radius: 8px;
@@ -53,16 +40,8 @@
       transition: all 0.3s ease;
       outline: none;
     }
-
-    button {
-      background-color: #2c3e50;
-      color: white;
-    }
-
-    button:hover {
-      background-color: #34495e;
-    }
-
+    button { background-color: #2c3e50; color: white; }
+    button:hover { background-color: #34495e; }
     input[type="email"], input[type="password"], input[type="text"], input[type="number"] {
       width: 100%;
       max-width: 300px;
@@ -71,11 +50,9 @@
       padding: 12px;
       box-sizing: border-box;
     }
-
     input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus, input[type="number"]:focus {
       border-color: #2c3e50;
     }
-
     #menuBtn {
       position: absolute;
       top: 20px;
@@ -87,7 +64,6 @@
       cursor: pointer;
       padding: 0;
     }
-
     #menuLateral {
       position: fixed;
       top: 0;
@@ -104,38 +80,17 @@
       z-index: 1000;
       transition: right 0.3s ease;
     }
-
-    #menuLateral.aberto {
-      right: 0;
-      display: flex;
-    }
-
-    #menuLateral button,
-    #fecharMenu {
+    #menuLateral.aberto { right: 0; display: flex; }
+    #menuLateral button, #fecharMenu {
       background: #34495e;
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       font-size: 16px;
     }
-
-    #menuLateral button:hover,
-    #fecharMenu:hover {
-      background: #3c5a7a;
-    }
-
-    #resultado h2 {
-      margin-bottom: 12px;
-      font-weight: 600;
-    }
-
-    #resultado ul {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 20px 0;
-      text-align: left;
-    }
-
+    #menuLateral button:hover, #fecharMenu:hover { background: #3c5a7a; }
+    #resultado h2 { margin-bottom: 12px; font-weight: 600; }
+    #resultado ul { list-style: none; padding: 0; margin: 0 0 20px 0; text-align: left; }
     #resultado li {
       background: #f5f7fa;
       margin-bottom: 8px;
@@ -146,7 +101,6 @@
       display: flex;
       justify-content: space-between;
     }
-
     #botoesLaboratorios {
       display: flex;
       gap: 10px;
@@ -154,131 +108,31 @@
       margin-top: 20px;
       flex-wrap: wrap;
     }
-
-    #botoesLaboratorios button {
-      width: 32%;
-      max-width: 120px;
-    }
-
-    #checkboxContainer {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      margin-top: 12px;
-    }
-
-    #checkboxContainer div {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    #formQuemLimpou {
-      margin-top: 20px;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #formQuemLimpou button[type="submit"] {
-      margin-top: 20px;
-      width: 100%;
-      max-width: 300px;
-    }
-
-    #btnReset {
-      background-color: #c0392b;
-    }
-
-    #btnReset:hover {
-      background-color: #e74c3c;
-    }
-
+    #botoesLaboratorios button { width: 32%; max-width: 120px; }
+    #checkboxContainer { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 12px; }
+    #checkboxContainer div { display: flex; align-items: center; gap: 8px; }
+    #formQuemLimpou { margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto; }
+    #formQuemLimpou button[type="submit"] { margin-top: 20px; width: 100%; max-width: 300px; }
+    #btnReset { background-color: #c0392b; }
+    #btnReset:hover { background-color: #e74c3c; }
     #mensagemErro, #mensagemErroMinhaConta, #mensagemErroLaboratorio {
       color: #c0392b;
       font-weight: 500;
       margin-bottom: 12px;
       font-size: 14px;
     }
-
-    #mensagemAviso {
-      color: #e67e22;
-      font-weight: 500;
-      margin-bottom: 12px;
-      font-size: 14px;
-    }
-
-    #btnContinuar {
-      margin-top: 12px;
-      background-color: #27ae60;
-      width: 100%;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #btnContinuar:hover {
-      background-color: #2ecc71;
-    }
-
-    #telaInicial button, #telaSelecaoTurma button {
-      width: 100%;
-      max-width: 200px;
-    }
-
-    #checkboxContainer div label {
-      font-size: 16px;
-    }
-
-    #avisoReset {
-      margin-top: 20px;
-      color: #e74c3c;
-      font-weight: 500;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    #telaLogin {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    #telaLogin input {
-      width: 100%;
-      max-width: 300px;
-    }
-
-    #botoesLogin {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      width: 100%;
-      max-width: 300px;
-    }
-
-    #botoesLogin button {
-      width: 48%;
-      min-width: 120px;
-    }
-
-    #btnEsqueciSenha {
-      background: transparent;
-      color: #2c3e50;
-      text-decoration: underline;
-      font-size: 14px;
-      padding: 5px;
-      margin-top: 5px;
-      width: auto;
-    }
-
-    #btnEsqueciSenha:hover {
-      color: #34495e;
-    }
-
+    #mensagemAviso { color: #e67e22; font-weight: 500; margin-bottom: 12px; font-size: 14px; }
+    #btnContinuar { margin-top: 12px; background-color: #27ae60; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; }
+    #btnContinuar:hover { background-color: #2ecc71; }
+    #telaInicial button, #telaSelecaoTurma button { width: 100%; max-width: 200px; }
+    #checkboxContainer div label { font-size: 16px; }
+    #avisoReset { margin-top: 20px; color: #e74c3c; font-weight: 500; font-size: 14px; text-align: center; }
+    #telaLogin { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    #telaLogin input { width: 100%; max-width: 300px; }
+    #botoesLogin { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; max-width: 300px; }
+    #botoesLogin button { width: 48%; min-width: 120px; }
+    #btnEsqueciSenha { background: transparent; color: #2c3e50; text-decoration: underline; font-size: 14px; padding: 5px; margin-top: 5px; width: auto; }
+    #btnEsqueciSenha:hover { color: #34495e; }
     #telaEditarNomes, #telaGerenciarAdmins, #telaMinhaConta, #telaLaboratorios, #telaGerenciarLaboratorio {
       display: none;
       flex-direction: column;
@@ -286,7 +140,6 @@
       max-width: 360px;
       margin: 0 auto;
     }
-
     #listaNomesEdicao, #listaAdminsEdicao, #listaGruposLaboratorio {
       list-style: none;
       padding: 0;
@@ -298,7 +151,6 @@
       border-radius: 8px;
       background: #f9fafb;
     }
-
     #listaNomesEdicao li, #listaAdminsEdicao li, #listaGruposLaboratorio li {
       display: flex;
       justify-content: space-between;
@@ -309,11 +161,7 @@
       color: #2c3e50;
       word-break: break-word;
     }
-
-    #listaNomesEdicao li:last-child, #listaAdminsEdicao li:last-child, #listaGruposLaboratorio li:last-child {
-      border-bottom: none;
-    }
-
+    #listaNomesEdicao li:last-child, #listaAdminsEdicao li:last-child, #listaGruposLaboratorio li:last-child { border-bottom: none; }
     #listaAdminsEdicao button.removerAdminBtn, #listaGruposLaboratorio button.removerGrupoBtn, #listaGruposLaboratorio button.editarGrupoBtn {
       background-color: #c0392b;
       padding: 6px 10px;
@@ -324,7 +172,6 @@
       text-align: center;
       line-height: 1.2;
     }
-
     #listaNomesEdicao button.removerNomeBtn {
       background-color: #c0392b;
       padding: 6px 10px;
@@ -336,19 +183,11 @@
       line-height: 1.2;
       white-space: nowrap;
     }
-
     #listaNomesEdicao button.removerNomeBtn:hover, #listaAdminsEdicao button.removerAdminBtn:hover, #listaGruposLaboratorio button.removerGrupoBtn:hover, #listaGruposLaboratorio button.editarGrupoBtn:hover {
       background-color: #e74c3c;
     }
-
-    #listaGruposLaboratorio button.editarGrupoBtn {
-      background-color: #2980b9;
-    }
-
-    #listaGruposLaboratorio button.editarGrupoBtn:hover {
-      background-color: #3498db;
-    }
-
+    #listaGruposLaboratorio button.editarGrupoBtn { background-color: #2980b9; }
+    #listaGruposLaboratorio button.editarGrupoBtn:hover { background-color: #3498db; }
     #listaAdminsEdicao span.criador {
       background-color: #f1c40f;
       color: #fff;
@@ -361,7 +200,6 @@
       text-align: center;
       line-height: 1.2;
     }
-
     #novoNomeContainer, #novoAdminContainer, #alterarSenhaContainer, #novoGrupoContainer {
       display: flex;
       flex-direction: column;
@@ -370,7 +208,6 @@
       max-width: 300px;
       margin-bottom: 16px;
     }
-
     #novoNomeInput, #novoAdminInput, #novaSenhaAdminInput, #novaSenhaInput, #confirmarSenhaInput, #nomeGrupoInput, #funcaoGrupoInput {
       width: 100%;
       padding: 12px;
@@ -378,17 +215,14 @@
       border-radius: 8px;
       border: 2px solid #dcdcdc;
     }
-
     #novoNomeContainer button, #novoAdminContainer button, #novoGrupoContainer button {
       width: 100%;
       max-width: 300px;
     }
-
     #telaEditarNomes button, #telaGerenciarAdmins button, #telaMinhaConta button, #telaLaboratorios button, #telaGerenciarLaboratorio button {
       width: 100%;
       max-width: 300px;
     }
-
     footer {
       position: fixed;
       bottom: 0;
@@ -402,36 +236,24 @@
       border-top: 1px solid #34495e;
       z-index: 1000;
     }
-
-    footer a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
+    footer a { color: #fff; text-decoration: none; font-weight: 500; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- Tela de seleção de turma -->
     <div id="telaSelecaoTurma">
       <h1>Quem limpa a sala hoje?</h1>
       <p>Escolha a turma:</p>
       <button id="btnMatutino">Matutino</button>
       <button id="btnVespertino">Vespertino</button>
     </div>
-
-    <!-- Telas iniciais e login -->
     <div id="telaInicial" style="display:none;">
       <h1>Quem limpa a sala hoje?</h1>
       <p>Escolha seu perfil para continuar:</p>
       <button id="btnProfessor">Administrador</button>
       <button id="btnEstudante">Estudante</button>
     </div>
-
     <div id="telaLogin" style="display:none;">
       <h1>Login - Administrador</h1>
       <div id="mensagemErro"></div>
@@ -443,8 +265,6 @@
       </div>
       <button id="btnEsqueciSenha">Esqueci minha senha</button>
     </div>
-
-    <!-- Tela principal da escala -->
     <div id="conteudoEscala" style="display:none;">
       <button id="menuBtn" title="Abrir menu" style="display:none;">☰</button>
       <h1>Quem limpa a sala hoje?</h1>
@@ -466,8 +286,6 @@
         </form>
       </div>
     </div>
-
-    <!-- Menu lateral -->
     <nav id="menuLateral">
       <button id="fecharMenu" title="Voltar">Voltar</button>
       <button id="btnMinhaConta" style="display:none;">Minha Conta</button>
@@ -477,8 +295,6 @@
       <button id="btnResetar" style="display:none;">Resetar Escala</button>
       <button id="btnSair" style="display:none;">Sair</button>
     </nav>
-
-    <!-- Tela para edição dos nomes -->
     <div id="telaEditarNomes">
       <h2>Editar Nomes</h2>
       <ul id="listaNomesEdicao"></ul>
@@ -489,8 +305,6 @@
       <button id="btnZerarNomes">Zerar</button>
       <button id="btnVoltarEdicao">Voltar</button>
     </div>
-
-    <!-- Tela para gerenciar administradores -->
     <div id="telaGerenciarAdmins">
       <h2>Gerenciar Administradores</h2>
       <ul id="listaAdminsEdicao"></ul>
@@ -501,8 +315,6 @@
       </div>
       <button id="btnVoltarAdmins">Voltar</button>
     </div>
-
-    <!-- Tela para minha conta -->
     <div id="telaMinhaConta">
       <h2>Minha Conta</h2>
       <div id="mensagemAviso"></div>
@@ -514,16 +326,12 @@
       </div>
       <button id="btnVoltarMinhaConta">Voltar</button>
     </div>
-
-    <!-- Tela de seleção de laboratório -->
     <div id="telaLaboratorios">
       <h2>Escolha o Laboratório</h2>
       <button id="btnLab303">LAB 303</button>
       <button id="btnLab304">LAB 304</button>
       <button id="btnVoltarLaboratorios">Voltar</button>
     </div>
-
-    <!-- Tela para gerenciar laboratório -->
     <div id="telaGerenciarLaboratorio">
       <h2 id="tituloLaboratorio">Gerenciar Laboratório</h2>
       <div id="mensagemErroLaboratorio"></div>
@@ -537,18 +345,13 @@
       <button id="btnVoltarGerenciarLaboratorio">Voltar</button>
     </div>
   </div>
-
   <footer>
     © 2025 Nicolas GBM — Criador | Contato: <a href="mailto:nicolasgmbatista15@gmail.com">nicolasgmbatista15@gmail.com</a>
   </footer>
-
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  
   <script>
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAGkdnFfJNw4r6yYpSGIpgjwISBOppwR60",
       authDomain: "quem-limpa-hoje.firebaseapp.com",
@@ -560,26 +363,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    // Variáveis globais
-    let turmaAtual = null; // 'matutino' ou 'vespertino'
+    let turmaAtual = null;
     const ADMIN_PERMANENTE = "nicolasgmbatista15@gmail.com";
     let usuarioLogado = null;
     let isAdmin = false;
     let telaAtual = 'selecao-turma';
     let adminConfig = {};
-    let laboratorioAtual = null; // 'lab303' ou 'lab304'
-
-    // Dados por turma
+    let laboratorioAtual = null;
     let dadosTurmas = {
       matutino: {
-        admins: [
-          "gonzagamezzomozaira@gmail.com",
-          "fabiana.martini@edu.sc.senai.br",
-          "beatriz_k_morais@estudante.sesisenai.org.br",
-          "nicolasgmbatista15@gmail.com",
-          "cassia.savi@edu.sc.senai.br"
-        ],
+        admins: ["gonzagamezzomozaira@gmail.com", "fabiana.martini@edu.sc.senai.br", "beatriz_k_morais@estudante.sesisenai.org.br", "nicolasgmbatista15@gmail.com", "cassia.savi@edu.sc.senai.br"],
         nomes: ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b)),
         posicaoUltimaEscala: -1,
         historicoTarefa: {},
@@ -599,8 +392,6 @@
         lab304: { grupos: [], posicaoUltimaFuncao: -1 }
       }
     };
-
-    // Funções para mostrar/ocultar telas
     function mostrarTela(t) {
       telaAtual = t;
       document.getElementById('telaSelecaoTurma').style.display = 'none';
@@ -626,7 +417,6 @@
       document.getElementById('btnResetar').style.display = 'none';
       document.getElementById('btnGerenciarLaboratorios').style.display = 'none';
       document.getElementById('btnSair').style.display = 'none';
-
       switch (t) {
         case 'selecao-turma':
           document.getElementById('telaSelecaoTurma').style.display = 'block';
@@ -681,11 +471,7 @@
       }
       console.log(`Tela atual: ${telaAtual}, Turma: ${turmaAtual}, Laboratório: ${laboratorioAtual}`);
     }
-
-    // Inicializa app
     mostrarTela('selecao-turma');
-
-    // Funções de persistência
     async function salvarEscalaNoFirestore() {
       if (!turmaAtual) return;
       try {
@@ -702,7 +488,6 @@
         alert("Erro ao salvar a escala. Verifique sua conexão.");
       }
     }
-
     async function salvarConfigNoFirestore() {
       if (!turmaAtual) return;
       try {
@@ -718,7 +503,6 @@
         alert('Erro ao salvar configurações. Verifique sua conexão.');
       }
     }
-
     async function salvarLaboratorioNoFirestore(lab) {
       if (!turmaAtual || !lab) return;
       try {
@@ -733,31 +517,25 @@
         alert(`Erro ao salvar dados do laboratório ${lab.toUpperCase()}. Verifique sua conexão.`);
       }
     }
-
     async function lerDadosDoFirestore() {
       if (!turmaAtual) {
         console.error("Erro: turmaAtual não definida ao tentar ler dados do Firestore");
         return;
       }
-
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Timeout ao carregar dados do Firestore')), 5000);
       });
-
       try {
         console.log(`Iniciando leitura do Firestore para turma: ${turmaAtual}`);
         const salaDocPromise = db.collection('escala').doc(turmaAtual).collection('sala').doc('dados').get();
         const configDocPromise = db.collection('escala').doc(turmaAtual).collection('config').doc('dados').get();
         const lab303DocPromise = db.collection('escala').doc(turmaAtual).collection('lab303').doc('dados').get();
         const lab304DocPromise = db.collection('escala').doc(turmaAtual).collection('lab304').doc('dados').get();
-
         const [salaDoc, configDoc, lab303Doc, lab304Doc] = await Promise.race([
           Promise.all([salaDocPromise, configDocPromise, lab303DocPromise, lab304DocPromise]),
           timeoutPromise
         ]);
-
         const turmaData = dadosTurmas[turmaAtual];
-
         if (salaDoc.exists) {
           const data = salaDoc.data();
           turmaData.posicaoUltimaEscala = data.posicaoUltimaEscala ?? -1;
@@ -773,7 +551,6 @@
           turmaData.faltantesPendentes = [];
           await salvarEscalaNoFirestore();
         }
-
         if (configDoc.exists) {
           const configData = configDoc.data();
           turmaData.nomes = configData.nomes ?? (turmaAtual === 'matutino' ? ["Ana", "Beatriz", "Bernardo", "Emanuelly", "Gabriel", "Gabrielle", "Greicy", "Henzo", "Igor", "Isadora", "Jennifer", "Joedna", "Kemilly Silva", "Kemilly Puff", "Luiz", "Mateus Yuri", "Mateus Chagas", "Nayara", "Nicolas", "Norehangeles", "Pedro", "Samuel", "Sebastião", "Zaira"].sort((a, b) => a.localeCompare(b)) : []);
@@ -788,7 +565,6 @@
           }
           await salvarConfigNoFirestore();
         }
-
         if (lab303Doc.exists) {
           const labData = lab303Doc.data();
           turmaData.lab303.grupos = labData.grupos ?? [];
@@ -798,7 +574,6 @@
           turmaData.lab303 = { grupos: [], posicaoUltimaFuncao: -1 };
           await salvarLaboratorioNoFirestore('lab303');
         }
-
         if (lab304Doc.exists) {
           const labData = lab304Doc.data();
           turmaData.lab304.grupos = labData.grupos ?? [];
@@ -808,7 +583,7 @@
           turmaData.lab304 = { grupos: [], posicaoUltimaFuncao: -1 };
           await salvarLaboratorioNoFirestore('lab304');
         }
-
+        ajustarEscala();
         atualizarResultadoEFormulario();
       } catch (error) {
         console.error(`Erro ao carregar dados do Firestore para ${turmaAtual}:`, error);
@@ -824,13 +599,13 @@
         if (!turmaData.admins) turmaData.admins = [ADMIN_PERMANENTE];
         if (!turmaData.lab303) turmaData.lab303 = { grupos: [], posicaoUltimaFuncao: -1 };
         if (!turmaData.lab304) turmaData.lab304 = { grupos: [], posicaoUltimaFuncao: -1 };
+        ajustarEscala();
         atualizarResultadoEFormulario();
       }
     }
-
-    // Funções da escala de sala
     function proximoIndice(atual, ignorados = []) {
       const nomes = dadosTurmas[turmaAtual].nomes;
+      if (!nomes.length) return -1;
       let i = atual;
       if (i < 0 || i >= nomes.length) i = -1;
       for (let c = 0; c < nomes.length; c++) {
@@ -843,7 +618,30 @@
       console.log('Nenhum índice disponível para substituição');
       return -1;
     }
-
+    async function ajustarEscala() {
+      if (!turmaAtual) return;
+      const turmaData = dadosTurmas[turmaAtual];
+      console.log(`Ajustando escala para ${turmaAtual}. Escala atual:`, JSON.parse(JSON.stringify(turmaData.escalaAtual)), `Faltantes pendentes:`, JSON.parse(JSON.stringify(turmaData.faltantesPendentes)));
+      let usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
+      let idx = turmaData.posicaoUltimaEscala;
+      while (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > usados.length) {
+        idx = proximoIndice(idx, usados);
+        if (idx === -1) break;
+        const nome = turmaData.nomes[idx];
+        const ultimaTarefa = turmaData.historicoTarefa[nome];
+        let tarefa = turmaData.escalaAtual.length === 0 
+          ? (ultimaTarefa === 'chão' ? 'mesa' : 'chão')
+          : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
+        turmaData.escalaAtual.push({ nome, tarefa, index: idx });
+        turmaData.historicoTarefa[nome] = tarefa;
+        usados.push(nome);
+        turmaData.posicaoUltimaEscala = idx;
+        console.log(`Adicionado à escala durante ajuste: ${nome} - ${tarefa}`);
+      }
+      turmaData.escalaAtual.sort((a, b) => a.index - b.index);
+      await salvarEscalaNoFirestore();
+      console.log(`Escala ajustada para ${turmaAtual}:`, JSON.parse(JSON.stringify(turmaData.escalaAtual)));
+    }
     async function gerarEscala() {
       if (!turmaAtual) return;
       const turmaData = dadosTurmas[turmaAtual];
@@ -857,12 +655,10 @@
         console.log('Nenhum nome cadastrado, escala vazia');
         return;
       }
-
-      console.log(`Gerando nova escala para ${turmaAtual}, faltantes pendentes:`, turmaData.faltantesPendentes);
+      console.log(`Gerando nova escala para ${turmaAtual}, faltantes pendentes:`, JSON.parse(JSON.stringify(turmaData.faltantesPendentes)));
       turmaData.escalaAtual = [...turmaData.faltantesPendentes];
       let usados = turmaData.escalaAtual.map(p => p.nome);
       let idx = turmaData.posicaoUltimaEscala;
-
       while (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > usados.length) {
         idx = proximoIndice(idx, usados);
         if (idx === -1) break;
@@ -877,12 +673,10 @@
         turmaData.posicaoUltimaEscala = idx;
         console.log(`Adicionado à escala: ${nome} - ${tarefa}`);
       }
-
       turmaData.faltantesPendentes = [];
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
     }
-
     function substituirPessoaNaEscala(nomeRemovido, tarefa) {
       if (!turmaAtual) return;
       const turmaData = dadosTurmas[turmaAtual];
@@ -892,36 +686,41 @@
         console.log('Nenhum nome disponível, escala zerada');
         return;
       }
-
       const pessoaRemovida = turmaData.escalaAtual.find(p => p.nome === nomeRemovido);
       const indiceRemovido = pessoaRemovida ? pessoaRemovida.index : turmaData.nomes.indexOf(nomeRemovido);
-
-      // Remover a pessoa da escala atual
       turmaData.escalaAtual = turmaData.escalaAtual.filter(p => p.nome !== nomeRemovido);
-
-      // Se a escala ainda tiver menos de 2 pessoas, encontrar um substituto
       if (turmaData.escalaAtual.length < 2) {
-        let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
+        let usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
         let idx = indiceRemovido;
-
-        // Encontrar o próximo índice válido
         idx = proximoIndice(idx, usados);
         if (idx !== -1) {
           const novoNome = turmaData.nomes[idx];
           turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idx });
           turmaData.historicoTarefa[novoNome] = tarefa;
-          turmaData.posicaoUltimaEscala = idx;
+          turmaData.posicaoUltimaEscala = Math.max(idx, turmaData.posicaoUltimaEscala);
           console.log(`Substituído ${nomeRemovido} por ${novoNome} - ${tarefa}`);
         } else {
           console.log(`Nenhum substituto disponível para ${nomeRemovido}`);
         }
       }
-
-      // Reordenar a escala para manter a ordem alfabética
       turmaData.escalaAtual.sort((a, b) => a.index - b.index);
-      console.log(`Escala após substituição:`, turmaData.escalaAtual);
+      if (turmaData.escalaAtual.length === 2) {
+        const [p1, p2] = turmaData.escalaAtual;
+        if (p2.index <= p1.index) {
+          let usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
+          let idx = p1.index;
+          idx = proximoIndice(idx, usados);
+          if (idx !== -1) {
+            const novoNome = turmaData.nomes[idx];
+            turmaData.escalaAtual[1] = { nome: novoNome, tarefa: p2.tarefa, index: idx };
+            turmaData.historicoTarefa[novoNome] = p2.tarefa;
+            turmaData.posicaoUltimaEscala = Math.max(idx, turmaData.posicaoUltimaEscala);
+            console.log(`Corrigido segundo nome da escala: ${p2.nome} substituído por ${novoNome} - ${p2.tarefa}`);
+          }
+        }
+      }
+      console.log(`Escala após substituição:`, JSON.parse(JSON.stringify(turmaData.escalaAtual)));
     }
-
     function atualizarResultadoEFormulario() {
       if (!turmaAtual) return;
       const turmaData = dadosTurmas[turmaAtual];
@@ -943,9 +742,8 @@
         document.getElementById('botoesLaboratorios').style.display = isAdmin ? 'none' : 'flex';
         if (isAdmin) montarCheckboxFaltantes();
       }
-      console.log(`Interface atualizada para ${turmaAtual}, escala atual:`, turmaData.escalaAtual, 'Faltantes pendentes:', turmaData.faltantesPendentes);
+      console.log(`Interface atualizada para ${turmaAtual}, escala atual:`, JSON.parse(JSON.stringify(turmaData.escalaAtual)), 'Faltantes pendentes:', JSON.parse(JSON.stringify(turmaData.faltantesPendentes)));
     }
-
     function montarCheckboxFaltantes() {
       if (!turmaAtual) return;
       const turmaData = dadosTurmas[turmaAtual];
@@ -967,8 +765,6 @@
       });
       console.log(`Checkboxes montados para ${turmaAtual}:`, turmaData.escalaAtual.map(p => p.nome));
     }
-
-    // Funções de laboratórios
     async function avancarRodizioLaboratorio() {
       if (!turmaAtual || !laboratorioAtual) {
         console.error('Erro: turmaAtual ou laboratorioAtual não definidos');
@@ -979,31 +775,19 @@
         console.log(`Nenhum grupo cadastrado para ${laboratorioAtual} em ${turmaAtual}`);
         return;
       }
-
       console.log(`Iniciando rodízio para ${laboratorioAtual} em ${turmaAtual}. Grupos antes:`, JSON.parse(JSON.stringify(labData.grupos)));
-
-      // Obter as funções atuais na ordem dos grupos
       const funcoesAtuais = labData.grupos.map(g => g.funcao);
-
-      // Rotacionar as funções: G1 -> G2, G2 -> G3, G3 -> G1, etc.
       const n = funcoesAtuais.length;
       const funcoesRotacionadas = new Array(n);
       for (let i = 0; i < n; i++) {
         funcoesRotacionadas[i] = funcoesAtuais[(i - 1 + n) % n];
       }
-
-      // Aplicar as funções rotacionadas aos grupos
       labData.grupos.forEach((grupo, index) => {
         grupo.funcao = funcoesRotacionadas[index];
       });
-
-      // Atualizar a posição do rodízio
       labData.posicaoUltimaFuncao = (labData.posicaoUltimaFuncao + 1) % (labData.grupos.length || 1);
-
       console.log(`Grupos após rodízio para ${laboratorioAtual} em ${turmaAtual}:`, JSON.parse(JSON.stringify(labData.grupos)));
       console.log(`Nova posicaoUltimaFuncao: ${labData.posicaoUltimaFuncao}`);
-
-      // Salvar no Firestore
       try {
         await salvarLaboratorioNoFirestore(laboratorioAtual);
         console.log(`Rodízio salvo no Firestore para ${laboratorioAtual} em ${turmaAtual}`);
@@ -1011,11 +795,8 @@
         console.error(`Erro ao salvar rodízio no Firestore para ${laboratorioAtual}:`, error);
         alert(`Erro ao salvar rodízio do ${laboratorioAtual.toUpperCase()}. Verifique sua conexão.`);
       }
-
-      // Atualizar a interface
       atualizarListaGruposLaboratorio();
     }
-
     function atualizarListaGruposLaboratorio() {
       if (!turmaAtual || !laboratorioAtual) return;
       const labData = dadosTurmas[turmaAtual][laboratorioAtual];
@@ -1055,8 +836,6 @@
         ul.appendChild(li);
       });
     }
-
-    // Funções de autenticação
     document.getElementById('btnMatutino').addEventListener('click', async function() {
       console.log('Botão Matutino clicado');
       turmaAtual = 'matutino';
@@ -1069,7 +848,6 @@
         mostrarTela('inicio');
       }
     });
-
     document.getElementById('btnVespertino').addEventListener('click', async function() {
       console.log('Botão Vespertino clicado');
       turmaAtual = 'vespertino';
@@ -1082,27 +860,22 @@
         mostrarTela('inicio');
       }
     });
-
     document.getElementById('btnProfessor').addEventListener('click', function() {
       mostrarTela('login');
     });
-
     document.getElementById('btnEstudante').addEventListener('click', function() {
       usuarioLogado = { email: null, tipo: 'estudante' };
       isAdmin = false;
       mostrarTela('painel');
     });
-
     document.getElementById('btnEntrar').addEventListener('click', function() {
       const email = document.getElementById('emailLogin').value.trim();
       const senha = document.getElementById('senhaLogin').value.trim();
       const mensagemErro = document.getElementById('mensagemErro');
-
       if (email.length === 0 || senha.length === 0) {
         mensagemErro.textContent = 'Preencha email e senha!';
         return;
       }
-
       auth.signInWithEmailAndPassword(email, senha)
         .then((userCredential) => {
           const user = userCredential.user;
@@ -1131,20 +904,16 @@
           }
         });
     });
-
     document.getElementById('btnVoltarLogin').addEventListener('click', function() {
       mostrarTela('selecao-turma');
     });
-
     document.getElementById('btnEsqueciSenha').addEventListener('click', function() {
       const email = document.getElementById('emailLogin').value.trim();
       const mensagemErro = document.getElementById('mensagemErro');
-
       if (!email) {
         mensagemErro.textContent = 'Digite seu email para redefinir a senha!';
         return;
       }
-
       auth.sendPasswordResetEmail(email)
         .then(() => {
           mensagemErro.textContent = 'Email de redefinição de senha enviado! Verifique sua caixa de entrada ou pasta de spam.';
@@ -1160,25 +929,21 @@
           }
         });
     });
-
     const menuBtn = document.getElementById('menuBtn');
     const menuLateral = document.getElementById('menuLateral');
     const fecharMenu = document.getElementById('fecharMenu');
-
     menuBtn.addEventListener('click', function() {
       if (isAdmin) {
         menuLateral.style.display = 'flex';
         menuLateral.classList.toggle('aberto');
       }
     });
-
     fecharMenu.addEventListener('click', function() {
       menuLateral.classList.remove('aberto');
       setTimeout(() => {
         menuLateral.style.display = 'none';
       }, 300);
     });
-
     document.getElementById('btnSair').addEventListener('click', function() {
       auth.signOut()
         .then(() => {
@@ -1194,40 +959,33 @@
           alert('Erro ao sair. Tente novamente.');
         });
     });
-
     document.getElementById('btnContinuar').addEventListener('click', async function() {
       if (isAdmin) {
         console.log(`Botão Continuar clicado, gerando nova escala para ${turmaAtual}`);
         await gerarEscala();
       }
     });
-
     document.getElementById('btnGerenciarLaboratorios').addEventListener('click', function() {
       if (isAdmin) {
         mostrarTela('laboratorios');
       }
     });
-
     document.getElementById('btnLab303').addEventListener('click', function() {
       laboratorioAtual = 'lab303';
       mostrarTela('gerenciar-laboratorio');
     });
-
     document.getElementById('btnLab304').addEventListener('click', function() {
       laboratorioAtual = 'lab304';
       mostrarTela('gerenciar-laboratorio');
     });
-
     document.getElementById('btnLab303Estudante').addEventListener('click', function() {
       laboratorioAtual = 'lab303';
       mostrarTela('gerenciar-laboratorio');
     });
-
     document.getElementById('btnLab304Estudante').addEventListener('click', function() {
       laboratorioAtual = 'lab304';
       mostrarTela('gerenciar-laboratorio');
     });
-
     document.getElementById('btnVoltarEstudante').addEventListener('click', function() {
       usuarioLogado = null;
       isAdmin = false;
@@ -1235,28 +993,23 @@
       laboratorioAtual = null;
       mostrarTela('selecao-turma');
     });
-
     document.getElementById('btnVoltarLaboratorios').addEventListener('click', function() {
       mostrarTela('painel');
     });
-
     document.getElementById('btnAdicionarGrupo').addEventListener('click', async function() {
       if (!turmaAtual || !laboratorioAtual) return;
       const nomeGrupo = document.getElementById('nomeGrupoInput').value.trim();
       const funcaoGrupo = document.getElementById('funcaoGrupoInput').value.trim();
       const mensagemErro = document.getElementById('mensagemErroLaboratorio');
-
       if (!nomeGrupo || !funcaoGrupo) {
         mensagemErro.textContent = 'Preencha o nome e a função do grupo!';
         return;
       }
-
       const labData = dadosTurmas[turmaAtual][laboratorioAtual];
       if (labData.grupos.some(g => g.nome.toLowerCase() === nomeGrupo.toLowerCase())) {
         mensagemErro.textContent = 'Este nome de grupo já existe!';
         return;
       }
-
       labData.grupos.push({ nome: nomeGrupo, funcao: funcaoGrupo });
       document.getElementById('nomeGrupoInput').value = '';
       document.getElementById('funcaoGrupoInput').value = '';
@@ -1264,13 +1017,11 @@
       await salvarLaboratorioNoFirestore(laboratorioAtual);
       atualizarListaGruposLaboratorio();
     });
-
     document.getElementById('btnAvancarRodizio').addEventListener('click', async function() {
       if (isAdmin) {
         await avancarRodizioLaboratorio();
       }
     });
-
     document.getElementById('btnVoltarGerenciarLaboratorio').addEventListener('click', function() {
       if (isAdmin) {
         mostrarTela('laboratorios');
@@ -1278,7 +1029,6 @@
         mostrarTela('painel');
       }
     });
-
     document.getElementById('btnResetar').addEventListener('click', async function() {
       if (!turmaAtual || !isAdmin) return;
       if (confirm('Tem certeza que deseja resetar a escala? Isso apagará a escala atual, os faltantes pendentes e o histórico de tarefas.')) {
@@ -1301,59 +1051,43 @@
         }
       }
     });
-
     document.getElementById('formQuemLimpou').addEventListener('submit', async function(e) {
       e.preventDefault();
       if (!turmaAtual) return;
       console.log(`Evento submit disparado em formQuemLimpou para ${turmaAtual}`);
-
       const turmaData = dadosTurmas[turmaAtual];
       const checkboxes = document.querySelectorAll('#checkboxContainer input[name="faltante"]:checked');
       console.log('Checkboxes marcados:', checkboxes.length, Array.from(checkboxes).map(cb => cb.value));
-
       if (checkboxes.length === 0) {
         console.log('Nenhum faltante selecionado, mantendo escala atual');
         await salvarEscalaNoFirestore();
         atualizarResultadoEFormulario();
         return;
       }
-
       const escalaAntes = [...turmaData.escalaAtual];
       const faltantes = Array.from(checkboxes).map(cb => {
         const pessoa = turmaData.escalaAtual.find(p => p.nome === cb.value);
         return pessoa ? { nome: pessoa.nome, tarefa: pessoa.tarefa, index: pessoa.index } : null;
       }).filter(p => p !== null);
-
-      // Adicionar faltantes à lista de pendentes antes de remover da escala
       turmaData.faltantesPendentes.push(...faltantes);
-      console.log(`Faltantes adicionados aos pendentes:`, turmaData.faltantesPendentes);
-
-      // Remover faltantes da escala atual e substituir
+      console.log(`Faltantes adicionados aos pendentes:`, JSON.parse(JSON.stringify(turmaData.faltantesPendentes)));
       for (let faltante of faltantes) {
         substituirPessoaNaEscala(faltante.nome, faltante.tarefa);
       }
-
-      // Reordenar a escala para manter a ordem alfabética
       turmaData.escalaAtual.sort((a, b) => a.index - b.index);
-
-      console.log(`Escala final para ${turmaAtual}:`, turmaData.escalaAtual);
-      console.log(`Faltantes pendentes:`, turmaData.faltantesPendentes);
-      console.log(`Histórico de tarefas:`, turmaData.historicoTarefa);
+      console.log(`Escala final para ${turmaAtual}:`, JSON.parse(JSON.stringify(turmaData.escalaAtual)));
+      console.log(`Faltantes pendentes:`, JSON.parse(JSON.stringify(turmaData.faltantesPendentes)));
+      console.log(`Histórico de tarefas:`, JSON.parse(JSON.stringify(turmaData.historicoTarefa)));
       console.log(`Escala antes vs depois:`, { antes: escalaAntes, depois: turmaData.escalaAtual });
-
       await salvarEscalaNoFirestore();
       atualizarResultadoEFormulario();
     });
-
-    // Funções de edição de nomes
     document.getElementById('btnEditarNomes').addEventListener('click', function() {
       mostrarTela('editar-nomes');
     });
-
     document.getElementById('btnVoltarEdicao').addEventListener('click', function() {
       mostrarTela('painel');
     });
-
     function atualizarListaNomesEdicao() {
       if (!turmaAtual) return;
       const turmaData = dadosTurmas[turmaAtual];
@@ -1369,15 +1103,12 @@
           const pessoaNaEscala = turmaData.escalaAtual.find(p => p.nome === nome);
           const indexNaLista = turmaData.nomes.indexOf(nome);
           turmaData.nomes.splice(indexNaLista, 1);
-          
-          // Ajustar índices na escala atual e faltantes pendentes
           turmaData.escalaAtual.forEach(p => {
             if (p.index > indexNaLista) p.index--;
           });
           turmaData.faltantesPendentes.forEach(f => {
             if (f.index > indexNaLista) f.index--;
           });
-          
           if (pessoaNaEscala && turmaData.nomes.length > 0) {
             substituirPessoaNaEscala(nome, pessoaNaEscala.tarefa);
           } else {
@@ -1393,7 +1124,6 @@
         ul.appendChild(li);
       });
     }
-
     document.getElementById('btnAdicionarNome').addEventListener('click', async function() {
       if (!turmaAtual) return;
       const input = document.getElementById('novoNomeInput');
@@ -1403,13 +1133,9 @@
         turmaData.nomes.push(novoNome);
         turmaData.nomes.sort((a, b) => a.localeCompare(b));
         input.value = '';
-
-        // Verificar se a nova pessoa deve ser adicionada à escala
         const idxNovoNome = turmaData.nomes.indexOf(novoNome);
-        let usados = turmaData.escalaAtual.map(p => p.nome).concat(turmaData.faltantesPendentes.map(f => f.nome));
-
+        let usados = [...turmaData.escalaAtual.map(p => p.nome), ...turmaData.faltantesPendentes.map(f => f.nome)];
         if (turmaData.escalaAtual.length < 2 && turmaData.nomes.length > usados.length) {
-          // Escala incompleta, adicionar o novo nome se possível
           if (!usados.includes(novoNome)) {
             const tarefa = turmaData.escalaAtual.length === 0 ? 'chão' : (turmaData.escalaAtual[0].tarefa === 'mesa' ? 'chão' : 'mesa');
             turmaData.escalaAtual.push({ nome: novoNome, tarefa, index: idxNovoNome });
@@ -1418,13 +1144,10 @@
             console.log(`Novo nome ${novoNome} adicionado à escala: ${tarefa}`);
           }
         } else if (turmaData.escalaAtual.length === 2) {
-          // Escala completa, verificar se o novo nome deve substituir alguém
           const [primeiraPessoa, segundaPessoa] = turmaData.escalaAtual;
           const idxPrimeira = primeiraPessoa.index;
           const idxSegunda = segundaPessoa.index;
-
           if (idxNovoNome > idxPrimeira && idxNovoNome < idxSegunda && !usados.includes(novoNome)) {
-            // Novo nome está entre a primeira e a segunda pessoa na ordem alfabética
             turmaData.escalaAtual = [primeiraPessoa, { nome: novoNome, tarefa: segundaPessoa.tarefa, index: idxNovoNome }];
             turmaData.historicoTarefa[novoNome] = segundaPessoa.tarefa;
             turmaData.posicaoUltimaEscala = idxNovoNome;
@@ -1433,7 +1156,6 @@
             console.log(`Novo nome ${novoNome} não substitui ninguém, apenas adicionado à lista`);
           }
         }
-
         await salvarConfigNoFirestore();
         await salvarEscalaNoFirestore();
         atualizarListaNomesEdicao();
@@ -1442,7 +1164,6 @@
         alert('Nome inválido ou já existe!');
       }
     });
-
     document.getElementById('btnZerarNomes').addEventListener('click', async function() {
       if (!turmaAtual) return;
       if (confirm('Tem certeza que quer apagar todos os nomes?')) {
@@ -1458,18 +1179,14 @@
         alert('Lista de nomes zerada com sucesso!');
       }
     });
-
-    // Funções de gerenciamento de administradores
     document.getElementById('btnLiberarAcesso').addEventListener('click', function() {
       if (isAdmin) {
         mostrarTela('gerenciar-admins');
       }
     });
-
     document.getElementById('btnVoltarAdmins').addEventListener('click', function() {
       mostrarTela('painel');
     });
-
     function atualizarListaAdminsEdicao() {
       if (!turmaAtual) return;
       const ul = document.getElementById('listaAdminsEdicao');
@@ -1505,7 +1222,6 @@
         ul.appendChild(li);
       });
     }
-
     document.getElementById('btnAdicionarAdmin').addEventListener('click', async function() {
       if (!turmaAtual) return;
       const inputEmail = document.getElementById('novoAdminInput');
@@ -1513,7 +1229,6 @@
       const novoEmail = inputEmail.value.trim();
       const novaSenha = inputSenha.value.trim();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
       if (!novoEmail || !emailRegex.test(novoEmail)) {
         alert('Digite um email válido!');
         return;
@@ -1527,7 +1242,6 @@
         alert('A senha deve ter pelo menos 6 caracteres!');
         return;
       }
-
       try {
         await auth.createUserWithEmailAndPassword(novoEmail, novaSenha);
         admins.push(novoEmail);
@@ -1546,18 +1260,14 @@
         }
       }
     });
-
-    // Funções de gerenciamento de conta
     document.getElementById('btnMinhaConta').addEventListener('click', function() {
       if (isAdmin) {
         mostrarTela('minha-conta');
       }
     });
-
     document.getElementById('btnVoltarMinhaConta').addEventListener('click', function() {
       mostrarTela('painel');
     });
-
     function atualizarTelaMinhaConta() {
       const mensagemAviso = document.getElementById('mensagemAviso');
       const mensagemErro = document.getElementById('mensagemErroMinhaConta');
@@ -1566,12 +1276,10 @@
       document.getElementById('novaSenhaInput').value = '';
       document.getElementById('confirmarSenhaInput').value = '';
     }
-
     document.getElementById('btnAlterarSenha').addEventListener('click', async function() {
       const novaSenha = document.getElementById('novaSenhaInput').value.trim();
       const confirmarSenha = document.getElementById('confirmarSenhaInput').value.trim();
       const mensagemErro = document.getElementById('mensagemErroMinhaConta');
-
       if (novaSenha.length < 6) {
         mensagemErro.textContent = 'A senha deve ter pelo menos 6 caracteres!';
         return;
@@ -1580,10 +1288,8 @@
         mensagemErro.textContent = 'As senhas não coincidem!';
         return;
       }
-
       try {
-        const user = auth.currentUser;
-        await user.updatePassword(novaSenha);
+        await auth.currentUser.updatePassword(novaSenha);
         adminConfig[usuarioLogado.email] = { primeiroLogin: false };
         await salvarConfigNoFirestore();
         mensagemErro.textContent = '';
@@ -1591,11 +1297,7 @@
         mostrarTela('painel');
       } catch (error) {
         console.error('Erro ao alterar senha:', error);
-        if (error.code === 'auth/requires-recent-login') {
-          mensagemErro.textContent = 'Por segurança, faça login novamente antes de alterar a senha.';
-        } else {
-          mensagemErro.textContent = 'Erro ao alterar a senha. Tente novamente.';
-        }
+        mensagemErro.textContent = 'Erro ao alterar senha. Tente novamente.';
       }
     });
   </script>
