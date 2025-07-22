@@ -26,6 +26,7 @@
       text-align: center;
       position: relative;
       border: 1px solid #e0e0e0;
+      margin-bottom: 60px; /* Espaço para o rodapé */
     }
 
     h1 {
@@ -327,6 +328,19 @@
       background-color: #e74c3c;
     }
 
+    #listaAdminsEdicao span.criador {
+      background-color: #f1c40f;
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      min-width: 60px;
+      width: 60px;
+      text-align: center;
+      line-height: 1.2;
+    }
+
     #novoNomeContainer, #novoAdminContainer, #alterarSenhaContainer {
       display: flex;
       flex-direction: column;
@@ -352,6 +366,30 @@
     #telaEditarNomes button, #telaGerenciarAdmins button, #telaMinhaConta button {
       width: 100%;
       max-width: 300px;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #2c3e50;
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: 400;
+      border-top: 1px solid #34495e;
+      z-index: 1000;
+    }
+
+    footer a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -426,7 +464,6 @@
         <input type="password" id="novaSenhaAdminInput" placeholder="Senha inicial" />
         <button id="btnAdicionarAdmin">Adicionar</button>
       </div>
-      <button id="btnSalvarAdmins">Salvar</button>
       <button id="btnVoltarAdmins">Voltar</button>
     </div>
 
@@ -443,6 +480,10 @@
       <button id="btnVoltarMinhaConta">Voltar</button>
     </div>
   </div>
+
+  <footer>
+    © 2025 Nicolas GBM — Criador | Contato: <a href="mailto:nicolasgmbatista15@gmail.com">nicolasgmbatista15@gmail.com</a>
+  </footer>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -480,6 +521,7 @@
     let isAdmin = false;
     let telaAtual = 'inicio';
     let adminConfig = {};
+    const ADMIN_PERMANENTE = "nicolasgmbatista15@gmail.com";
 
     // Funções para mostrar/ocultar telas
     function mostrarTela(t) {
@@ -1036,28 +1078,35 @@
       admins.forEach((email, idx) => {
         const li = document.createElement('li');
         li.textContent = email;
-        const btnRemover = document.createElement('button');
-        btnRemover.textContent = 'Remover';
-        btnRemover.className = 'removerAdminBtn';
-        btnRemover.addEventListener('click', () => {
-          if (admins.length <= 1) {
-            alert('Não é possível remover o último administrador!');
-            return;
-          }
-          if (usuarioLogado.email === email) {
-            alert('Você não pode remover seu próprio email!');
-            return;
-          }
-          admins.splice(idx, 1);
-          atualizarListaAdminsEdicao();
-          salvarConfigNoFirestore();
-        });
-        li.appendChild(btnRemover);
+        if (email === ADMIN_PERMANENTE) {
+          const spanCriador = document.createElement('span');
+          spanCriador.textContent = 'Criador';
+          spanCriador.className = 'criador';
+          li.appendChild(spanCriador);
+        } else {
+          const btnRemover = document.createElement('button');
+          btnRemover.textContent = 'Remover';
+          btnRemover.className = 'removerAdminBtn';
+          btnRemover.addEventListener('click', () => {
+            if (admins.length <= 1) {
+              alert('Não é possível remover o último administrador!');
+              return;
+            }
+            if (usuarioLogado.email === email) {
+              alert('Você não pode remover seu próprio email!');
+              return;
+            }
+            admins.splice(idx, 1);
+            atualizarListaAdminsEdicao();
+            salvarConfigNoFirestore();
+          });
+          li.appendChild(btnRemover);
+        }
         ul.appendChild(li);
       });
     }
 
-    document.getElementById('btnAdicionarAdmin').addEventListener('click', function() {
+    document.getElementById('btnAdicionarAdmin').addEventListener('click', async function() {
       const inputEmail = document.getElementById('novoAdminInput');
       const inputSenha = document.getElementById('novaSenhaAdminInput');
       const novoEmail = inputEmail.value.trim();
@@ -1077,60 +1126,39 @@
         return;
       }
 
-      auth.fetchSignInMethodsForEmail(novoEmail)
-        .then((signInMethods) => {
-          if (signInMethods.length > 0) {
-            admins.push(novoEmail);
-            admins.sort((a, b) => a.localeCompare(b));
-            adminConfig[novoEmail] = { primeiroLogin: true };
-            inputEmail.value = '';
-            inputSenha.value = '';
-            atualizarListaAdminsEdicao();
-            salvarConfigNoFirestore();
-          } else {
-            auth.createUserWithEmailAndPassword(novoEmail, novaSenha)
-              .then((userCredential) => {
-                admins.push(novoEmail);
-                admins.sort((a, b) => a.localeCompare(b));
-                adminConfig[novoEmail] = { primeiroLogin: true };
-                inputEmail.value = '';
-                inputSenha.value = '';
-                atualizarListaAdminsEdicao();
-                salvarConfigNoFirestore();
-                userCredential.user.sendEmailVerification()
-                  .then(() => {
-                    console.log('Email de verificação enviado para:', novoEmail);
-                  })
-                  .catch((error) => {
-                    console.error('Erro ao enviar email de verificação:', error);
-                  });
-              })
-              .catch((error) => {
-                console.error('Erro ao criar usuário:', error);
-                if (error.code === 'auth/email-already-in-use') {
-                  alert('Este email já está registrado, mas não como administrador.');
-                } else if (error.code === 'auth/invalid-email') {
-                  alert('Email inválido.');
-                } else {
-                  alert('Erro ao criar usuário. Tente novamente.');
-                }
-              });
-          }
-        })
-        .catch((error) => {
-          console.error('Erro ao verificar email:', error);
-          alert('Erro ao verificar o email. Verifique se é válido e tente novamente.');
-        });
-    });
-
-    document.getElementById('btnSalvarAdmins').addEventListener('click', async function() {
       try {
-        await salvarConfigNoFirestore();
-        alert('Lista de administradores salva com sucesso!');
-        mostrarTela('painel');
+        const signInMethods = await auth.fetchSignInMethodsForEmail(novoEmail);
+        if (signInMethods.length > 0) {
+          admins.push(novoEmail);
+          admins.sort((a, b) => a.localeCompare(b));
+          adminConfig[novoEmail] = { primeiroLogin: true };
+          inputEmail.value = '';
+          inputSenha.value = '';
+          atualizarListaAdminsEdicao();
+          await salvarConfigNoFirestore();
+          alert('Administrador adicionado com sucesso!');
+        } else {
+          const userCredential = await auth.createUserWithEmailAndPassword(novoEmail, novaSenha);
+          admins.push(novoEmail);
+          admins.sort((a, b) => a.localeCompare(b));
+          adminConfig[novoEmail] = { primeiroLogin: true };
+          inputEmail.value = '';
+          inputSenha.value = '';
+          atualizarListaAdminsEdicao();
+          await salvarConfigNoFirestore();
+          await userCredential.user.sendEmailVerification();
+          console.log('Email de verificação enviado para:', novoEmail);
+          alert('Administrador adicionado com sucesso! Um email de verificação foi enviado.');
+        }
       } catch (error) {
-        console.error('Erro ao salvar administradores no Firestore:', error);
-        alert('Erro ao salvar administradores. Verifique sua conexão.');
+        console.error('Erro ao adicionar administrador:', error);
+        if (error.code === 'auth/email-already-in-use') {
+          alert('Este email já está registrado, mas não como administrador.');
+        } else if (error.code === 'auth/invalid-email') {
+          alert('Email inválido.');
+        } else {
+          alert('Erro ao adicionar administrador. Tente novamente.');
+        }
       }
     });
 
